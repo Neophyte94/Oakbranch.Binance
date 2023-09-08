@@ -7,6 +7,7 @@
     <DefineConstants />
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Oakbranch.Common\Oakbranch.Common\Oakbranch.Common.csproj" />
     <ProjectReference Include="..\Oakbranch.Binance\Oakbranch.Binance.csproj" />
   </ItemGroup>
 </Project>
