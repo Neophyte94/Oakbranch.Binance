@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants />
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Oakbranch.Binance\Oakbranch.Binance.csproj" />
+  </ItemGroup>
+</Project>
