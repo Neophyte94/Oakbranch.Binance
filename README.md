@@ -21,7 +21,7 @@ Oakbranch.Binance is a .NET library that provides high-level access to the Binan
 
 ### Usage
 
-To start making calls to Binance API, follow these initialization steps:
+To get started with making calls to the Binance API, follow these steps:
 
 1. **Time Provider**: You must have an instance of `ITimeProvider`, which is used as a source of query timestamps. You can use one of the built-in implementations: `ServerTimeProvider` or `SystemTimeProvider`.
 
@@ -36,51 +36,56 @@ Once your client is set up, you can:
 - Or make direct queries using the client's methods.
 
 ```csharp
-// Here for the example API keys are constants, but in production a secure keys container is recommended.
-const string apiKey = "my_binance_api_key";
-const string secretKey = "my_binance_secret_key"; // Optional, needed only for secured queries.
+using System;
+using System.Threading.Tasks;
+using Oakbranch.Common.Logging;
+using Oakbranch.Binance.RateLimits;
+using Oakbranch.Binance.Spot;
 
-// For testing SystemTimeProvider is sufficient, but for production ServerTimeProvider is recommended.
-ITimeProvider timeProvider = new SystemTimeProvider();
-ILogger logger = new ConsoleLogger();
-IRateLimitsRegistry rateLimits = new RateLimitsRegistry();
-           
-// Prepare variables for disposable objects.
-IApiConnector connector = null;
-SpotMarketApiClient client = null;
-try
+public async Task TestDemoQueryAsync(string apiKey, string secretKey = null, CancellationToken ct = default)
 {
-    // Initialize a low-level HTTP connector with API keys granted by Binance.
-    connector = new ApiConnector(
-        apiKey: apiKey,
-        secretKey: secretKey,
-        timeProvider: timeProvider,
-        logger: logger);
+    // For testing SystemTimeProvider is sufficient, but for production ServerTimeProvider is recommended.
+    ITimeProvider timeProvider = new SystemTimeProvider();
+    ILogger logger = new ConsoleLogger();
+    IRateLimitsRegistry rateLimits = new RateLimitsRegistry();
 
-    // Initialize a high-level client for accessing Spot Market endpoints.
-    client = new SpotMarketApiClient(
-        connector: connector,
-        limitsRegistry: rateLimits,
-        logger: logger);
-    await client.InitializeAsync(default).ConfigureAwait(false);
-
-    // Prepare a test web query for a deferred or immediate execution.
-    DateTime serverTime;
-    using (IDeferredQuery<DateTime> query = client.PrepareCheckServerTime())
+    // Prepare variables for disposable objects.
+    IApiConnector connector = null;
+    SpotMarketApiClient client = null;
+    try
     {
-        // Call the query's execution whenever we are ready.
-        serverTime = await query.ExecuteAsync(default).ConfigureAwait(false);
+        // Initialize a low-level HTTP connector with API keys granted by Binance.
+        connector = new ApiConnector(
+            apiKey: apiKey,
+            secretKey: secretKey,
+            timeProvider: timeProvider,
+            logger: logger);
+
+        // Initialize a high-level client for accessing Spot Market endpoints.
+        client = new SpotMarketApiClient(
+            connector: connector,
+            limitsRegistry: rateLimits,
+            logger: logger);
+        await client.InitializeAsync(default).ConfigureAwait(false);
+
+        // Prepare a test web query for a deferred or immediate execution.
+        DateTime serverTime;
+        using (IDeferredQuery<DateTime> query = client.PrepareCheckServerTime())
+        {
+            // Call the query's execution whenever we are ready.
+            serverTime = await query.ExecuteAsync(default).ConfigureAwait(false);
+        }
+
+        // Use the result of the query.
+        Console.WriteLine($"The reported server time is {serverTime} (UTC).");
     }
-
-    // Use the result of the query.
-    Console.WriteLine($"The reported server time is {serverTime} (UTC).");
-}
-finally
-{
-    client?.Dispose();
-    if (connector is IDisposable disposableConnector)
+    finally
     {
-        disposableConnector.Dispose();
+        client?.Dispose();
+        if (connector is IDisposable disposableConnector)
+        {
+            disposableConnector.Dispose();
+        }
     }
 }
 ```
