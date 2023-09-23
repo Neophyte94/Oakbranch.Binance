@@ -35,10 +35,14 @@ Once your client is set up, you can:
 - Create and execute deferred queries.
 - Or make direct queries using the client's methods.
 
+Below is an example that demonstrates the full initialization process and how to retrieve server time using a deferred query.
+
 ```csharp
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Oakbranch.Common.Logging;
+using Oakbranch.Binance;
 using Oakbranch.Binance.RateLimits;
 using Oakbranch.Binance.Spot;
 
