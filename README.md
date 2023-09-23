@@ -46,52 +46,49 @@ using Oakbranch.Binance;
 using Oakbranch.Binance.RateLimits;
 using Oakbranch.Binance.Spot;
 
-public static class BinanceQueriesTest
+public static async Task TestDemoQueryAsync(string apiKey, string secretKey = null, CancellationToken ct = default)
 {
-    public static async Task TestDemoQueryAsync(string apiKey, string secretKey = null, CancellationToken ct = default)
+    // For testing SystemTimeProvider is sufficient, but for production ServerTimeProvider is recommended.
+    ITimeProvider timeProvider = new SystemTimeProvider();
+    ILogger logger = new ConsoleLogger();
+    IRateLimitsRegistry rateLimits = new RateLimitsRegistry();
+
+    // Prepare variables for disposable objects.
+    IApiConnector connector = null;
+    SpotMarketApiClient client = null;
+    try
     {
-        // For testing SystemTimeProvider is sufficient, but for production ServerTimeProvider is recommended.
-        ITimeProvider timeProvider = new SystemTimeProvider();
-        ILogger logger = new ConsoleLogger();
-        IRateLimitsRegistry rateLimits = new RateLimitsRegistry();
-    
-        // Prepare variables for disposable objects.
-        IApiConnector connector = null;
-        SpotMarketApiClient client = null;
-        try
+        // Initialize a low-level HTTP connector with API keys granted by Binance.
+        connector = new ApiConnector(
+            apiKey: apiKey,
+            secretKey: secretKey,
+            timeProvider: timeProvider,
+            logger: logger);
+
+        // Initialize a high-level client for accessing Spot Market endpoints.
+        client = new SpotMarketApiClient(
+            connector: connector,
+            limitsRegistry: rateLimits,
+            logger: logger);
+        await client.InitializeAsync(default).ConfigureAwait(false);
+
+        // Prepare a test web query for a deferred or immediate execution.
+        DateTime serverTime;
+        using (IDeferredQuery<DateTime> query = client.PrepareCheckServerTime())
         {
-            // Initialize a low-level HTTP connector with API keys granted by Binance.
-            connector = new ApiConnector(
-                apiKey: apiKey,
-                secretKey: secretKey,
-                timeProvider: timeProvider,
-                logger: logger);
-    
-            // Initialize a high-level client for accessing Spot Market endpoints.
-            client = new SpotMarketApiClient(
-                connector: connector,
-                limitsRegistry: rateLimits,
-                logger: logger);
-            await client.InitializeAsync(default).ConfigureAwait(false);
-    
-            // Prepare a test web query for a deferred or immediate execution.
-            DateTime serverTime;
-            using (IDeferredQuery<DateTime> query = client.PrepareCheckServerTime())
-            {
-                // Call the query's execution whenever we are ready.
-                serverTime = await query.ExecuteAsync(default).ConfigureAwait(false);
-            }
-    
-            // Use the result of the query.
-            Console.WriteLine($"The reported server time is {serverTime} (UTC).");
+            // Call the query's execution whenever we are ready.
+            serverTime = await query.ExecuteAsync(default).ConfigureAwait(false);
         }
-        finally
+
+        // Use the result of the query.
+        Console.WriteLine($"The reported server time is {serverTime} (UTC).");
+    }
+    finally
+    {
+        client?.Dispose();
+        if (connector is IDisposable disposableConnector)
         {
-            client?.Dispose();
-            if (connector is IDisposable disposableConnector)
-            {
-                disposableConnector.Dispose();
-            }
+            disposableConnector.Dispose();
         }
     }
 }
