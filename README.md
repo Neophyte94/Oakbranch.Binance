@@ -1,6 +1,6 @@
 # Oakbranch.Binance
 
-Oakbranch.Binance is a .NET library that provides high-level access to the Binance REST API. The library facilitates an object-oriented programming (OOP) approach for interacting with Binance servers, covering tasks like fetching market data, monitoring accounts, and executing trades.
+Oakbranch.Binance is a .NET library that provides high-level access to the Binance REST API. The library facilitates an OOP approach for interacting with Binance servers, covering tasks like fetching market data, monitoring accounts, and executing trades.
 
 ## Features
 
