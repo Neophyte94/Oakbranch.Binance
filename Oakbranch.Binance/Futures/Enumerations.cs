@@ -122,7 +122,11 @@ namespace Oakbranch.Binance.Futures
         /// <summary>
         /// An order will either be posted on the orders book or immediately expire.
         /// </summary>
-        GoodTillCrossing
+        GoodTillCrossing,
+        /// <summary>
+        /// An order will be automatically canceled upon the certain date if not executed before.
+        /// </summary>
+        GoodTillDate
     }
 
     /// <summary>

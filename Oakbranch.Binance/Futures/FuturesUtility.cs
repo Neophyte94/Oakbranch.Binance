@@ -169,6 +169,8 @@ namespace Oakbranch.Binance.Futures
                     return "IOC";
                 case TimeInForce.GoodTillCrossing:
                     return "GTX";
+                case TimeInForce.GoodTillDate:
+                    return "GTD";
                 default:
                     throw new NotImplementedException($"The time-in-force type \"{value}\" is not implemented.");
             }
@@ -189,6 +191,8 @@ namespace Oakbranch.Binance.Futures
                     return TimeInForce.FillOrKill;
                 case "GTX":
                     return TimeInForce.GoodTillCrossing;
+                case "GTD":
+                    return TimeInForce.GoodTillDate;
                 default:
                     throw new JsonException($"An unknown time in force rule \"{s}\" was encountered.");
             }
