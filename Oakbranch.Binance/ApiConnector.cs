@@ -301,7 +301,7 @@ namespace Oakbranch.Binance
         // Query sending and response processing.
         /// <summary>
         /// Sends a query with the specified parameters asynchronously.
-        /// <para>If <see cref="QueryParams.IsSecured"/> is <c>True</c> the query is automatically signed.</para>
+        /// <para>If <see cref="QueryParams.IsSecured"/> is <see langword="true"/> the query is automatically signed.</para>
         /// <para>It is recommended to reserve extra 121 character space in the <see cref="QueryParams.QueryString"/> instance
         /// for secured queries, provided the query string is not empty.</para>
         /// </summary>
@@ -358,7 +358,7 @@ namespace Oakbranch.Binance
                 byte[] content;
                 try
                 {
-                    content = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+                    content = await response.Content.ReadAsByteArrayAsync(ct).ConfigureAwait(false);
                 }
                 catch (Exception exc)
                 {
@@ -382,7 +382,11 @@ namespace Oakbranch.Binance
                 else
                 {
                     long? retryAfterDelay = DetermineRetryAfterTime(response.StatusCode, response.Headers);
-                    if (retryAfterDelay != null) ActivateBanPreventionDelay(retryAfterDelay.Value);
+                    if (retryAfterDelay != null)
+                    {
+                        ActivateBanPreventionDelay(retryAfterDelay.Value);
+                    }
+
                     return new Response(content);
                 }
             }
@@ -568,7 +572,7 @@ namespace Oakbranch.Binance
         /// and returns the result.
         /// </summary>
         /// <param name="relativeEndpoint">The discriminative endpoint to check the map status for.</param>
-        /// <returns><c>True</c> if the map has been registered for <paramref name="relativeEndpoint"/>, otherwise <c>False</c>.</returns>
+        /// <returns><see langword="true"/> if the map has been registered for <paramref name="relativeEndpoint"/>, otherwise <see langword="false"/>.</returns>
         public bool IsLimitMetricsMapRegistered(string relativeEndpoint)
         {
             return m_LimitMetricsMapsDict.ContainsKey(relativeEndpoint);
@@ -644,16 +648,34 @@ namespace Oakbranch.Binance
 
         public void Dispose()
         {
-            if (m_IsDisposed) return;
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-            Common.Utility.CommonUtility.Clear(ref m_SecretKey);
+        private void Dispose(bool releaseManaged)
+        {
+            if (m_IsDisposed) return;
             m_IsDisposed = true;
 
-            m_Client?.Dispose();
-            m_TimeProvider = null;
-            m_Logger = null;
-            m_LimitMetricsMapsDict.Clear();
-            m_BanPreventionTimer.Stop();
+            Common.Utility.CommonUtility.Clear(ref m_SecretKey);
+
+            if (releaseManaged)
+            {
+                m_Client?.Dispose();
+                m_TimeProvider = null;
+                m_Logger = null;
+                m_LimitMetricsMapsDict.Clear();
+                m_BanPreventionTimer.Stop();
+            }
+        }
+
+        #endregion
+
+        #region Destructor
+
+        ~ApiConnector()
+        {
+            Dispose(false);
         }
 
         #endregion

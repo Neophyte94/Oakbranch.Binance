@@ -478,21 +478,48 @@ namespace Oakbranch.Binance
 
         public void Dispose()
         {
-            if (m_State == ClientState.Disposed) return;
-            m_State = ClientState.Disposed;
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-            try { OnDisposing(); }
+        private void Dispose(bool releaseManaged)
+        {
+            if (m_State == ClientState.Disposed) return;
+
+            // Set in the beginning to prevent any asynchronous usage of the class before the disposal completes.
+            m_State = ClientState.Disposed; 
+
+            try
+            {
+                OnDisposing(true);
+            }
             catch (Exception exc)
             {
                 PostLogMessage(LogLevel.Error, $"The disposal of the {GetType().Name} instance failed:\r\n{exc}");
             }
 
-            m_LimitsRegistry = null;
-            m_Logger = null;
-            m_Connector = null;
+            if (releaseManaged)
+            {
+                m_LimitsRegistry = null;
+                m_Logger = null;
+                m_Connector = null;
+            }
         }
 
-        protected virtual void OnDisposing() { }
+        /// <summary>
+        /// Invoked from the <see cref="Dispose"/> method before any resources are released by the base class.
+        /// </summary>
+        /// <param name="releaseManaged">Indicates whether managed resources should be released.</param>
+        protected virtual void OnDisposing(bool releaseManaged) { }
+
+        #endregion
+
+        #region Destructor
+
+        ~ApiClientBase()
+        {
+            Dispose(false);
+        }
 
         #endregion
     }
