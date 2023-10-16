@@ -20,7 +20,7 @@ namespace Oakbranch.Binance.RateLimits
         /// </summary>
         /// <param name="id">The ID of the new rate limit.</param>
         /// <param name="limitParams">The parameters of the new rate limit.</param>
-        /// <returns><c>True</c> if the limit has been successfully registered, otherwise <c>False</c>.</returns>
+        /// <returns><see langword="true"/> if the limit has been successfully registered, otherwise <see langword="false"/>.</returns>
         bool TryRegisterLimit(int id, RateLimitInfo limitParams);
         /// <summary>
         /// Sets the maximum usage level of the rate limit with the specified ID to the specified value.
@@ -32,7 +32,7 @@ namespace Oakbranch.Binance.RateLimits
         /// Determines whether a rate limit with the specified ID is registered.
         /// </summary>
         /// <param name="id">The ID of the rate limit to check.</param>
-        /// <returns><c>True</c> if a rate limit with the specified ID is registered, otherwise <c>False</c>.</returns>
+        /// <returns><see langword="true"/> if a rate limit with the specified ID is registered, otherwise <see langword="false"/>.</returns>
         bool ContainsLimit(int id);
         /// <summary>
         /// Determines whether an action with the specified weights violates any registered rate limits.
@@ -40,7 +40,7 @@ namespace Oakbranch.Binance.RateLimits
         /// <param name="weights">The weights defining the additional footprint on each affected weight dimension.</param>
         /// <param name="violatedLimitId">An output parameter to receive the ID of the violated rate limit (if any).</param>
         /// <returns>
-        /// <c>True</c> if none of the limits is potentially violated, otherwise <c>False</c>.
+        /// <see langword="true"/> if none of the limits is potentially violated, otherwise <see langword="false"/>.
         /// </returns>
         /// <exception cref="KeyNotFoundException">
         /// Thrown when any of the weight dimensions specified in <paramref name="weights"/> is not found.

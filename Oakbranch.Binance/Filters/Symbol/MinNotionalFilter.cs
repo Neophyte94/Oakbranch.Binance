@@ -18,7 +18,7 @@ namespace Oakbranch.Binance.Filters.Symbol
         /// <summary>
         /// Defines the number of minutes the average price is calculated over.
         /// <para>The <c>Null</c> value means the last price (spot) or mark price (futures) is used.</para>
-        /// <para>Average price is only used if <see cref="DoesApplyToMarket"/> is <c>True</c>.</para>
+        /// <para>Average price is only used if <see cref="DoesApplyToMarket"/> is <see langword="true"/>.</para>
         /// </summary>
         public uint? AvgPriceInterval;
     }

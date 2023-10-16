@@ -60,8 +60,8 @@ namespace Oakbranch.Binance
         public DateTime? UpdateTime;
         /// <summary>
         /// Indicates whether the order has been activated by the matching engine or not.
-        /// <para>The value is <c>True</c> if the order is activated and waiting to be filled, or has already been filled.</para>
-        /// <para>The value is <c>False</c> in all the other cases, i.e. waiting for some conditions to be activated, or cancelled, or rejected.</para>
+        /// <para>The value is <see langword="true"/> if the order is activated and waiting to be filled, or has already been filled.</para>
+        /// <para>The value is <see langword="false"/> in all the other cases, i.e. waiting for some conditions to be activated, or cancelled, or rejected.</para>
         /// </summary>
         public bool IsWorking;
     }

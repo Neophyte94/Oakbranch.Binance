@@ -57,7 +57,7 @@ namespace Oakbranch.Binance.Margin
         public bool IsBestMatch;
         /// <summary>
         /// Indicates the type of the account the trade was made from.
-        /// <para>The value is <c>True</c> for an isolated margin accounts, and <c>False</c> for the cross margin account.</para>
+        /// <para>The value is <see langword="true"/> for an isolated margin accounts, and <see langword="false"/> for the cross margin account.</para>
         /// </summary>
         public bool IsIsolated;
     }

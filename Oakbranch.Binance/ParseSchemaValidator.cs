@@ -49,7 +49,7 @@ namespace Oakbranch.Binance
         /// <summary>
         /// Checks whether all tracked properties have been registered.
         /// </summary>
-        /// <returns><c>True</c> if all tracked properties have been registered, <c>False</c> otherwise.</returns>
+        /// <returns><see langword="true"/> if all tracked properties have been registered, <see langword="false"/> otherwise.</returns>
         public bool IsComplete()
         {
             // Check whether the mask has all bits set.

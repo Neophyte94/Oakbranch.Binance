@@ -25,7 +25,7 @@ namespace Oakbranch.Binance
         /// Determines whether a rate limit metrics map has been registered for the specified endpoint.
         /// </summary>
         /// <param name="relativeEndpoint">A relative endpoint to check a map for.</param>
-        /// <returns><c>True</c> if a limit map is registered for the specified endpoint, otherwise <c>False</c>.</returns>
+        /// <returns><see langword="true"/> if a limit map is registered for the specified endpoint, otherwise <see langword="false"/>.</returns>
         bool IsLimitMetricsMapRegistered(string relativeEndpoint);
         /// <summary>
         /// Registers or updates a rate limit metrics map for the specified relative endpoint.

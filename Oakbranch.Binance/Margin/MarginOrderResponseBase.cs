@@ -10,7 +10,7 @@ namespace Oakbranch.Binance.Margin
         public abstract OrderResponseType Type { get; }
         /// <summary>
         /// Defines the type of a margin account the order was posted from.
-        /// <para>The value <c>True</c> for an isolated margin account, <c>False</c> for the cross margin account.</para>
+        /// <para>The value <see langword="true"/> for an isolated margin account, <see langword="false"/> for the cross margin account.</para>
         /// </summary>
         public bool IsIsolated;
     }

@@ -917,7 +917,7 @@ namespace Oakbranch.Binance.Margin
         /// <param name="pageSize">A limit of transactions per page to return.
         /// <para>If not specified, the default limit (10) will be used. The maximum value is <see cref="MaxResultPageSize"/> (100).</para></param>
         /// <param name="isArchived">Specifies whether to look for archived data from 6 months ago.
-        /// <para>If not specified, <c>False</c> will be used.</para></param>
+        /// <para>If not specified, <see langword="false"/> will be used.</para></param>
         public IDeferredQuery<ResultsPage<TransferTransaction>> PrepareGetCrossTrasferHistory(
             string crossAsset = null, TransferDirection? direction = null,
             DateTime? startTime = null, DateTime? endTime = null,
@@ -1144,7 +1144,7 @@ namespace Oakbranch.Binance.Margin
         /// <param name="pageSize">The limit of transactions per page to return.
         /// <para>If not specified, the default limit (10) will be used. The maximum value is <see cref="MaxResultPageSize"/> (100).</para></param>
         /// <param name="isArchived">Specifies whether to look for archived data from 6 months ago.
-        /// <para>If not specified, <c>False</c> will be used.</para></param>
+        /// <para>If not specified, <see langword="false"/> will be used.</para></param>
         public IDeferredQuery<ResultsPage<TransferTransaction>> PrepareGetIsolatedTrasferHistory(
             string isolatedSymbol, string asset = null, TransferDirection? direction = null,
             DateTime? startTime = null, DateTime? endTime = null,
@@ -1557,7 +1557,7 @@ namespace Oakbranch.Binance.Margin
         /// <param name="pageSize">The limit of borrow records per page to return.
         /// <para>If not specified, the default limit (10) will be used. The maximum value is <see cref="MaxResultPageSize"/> (100).</para></param>
         /// <param name="isArchived">Specifies whether to look for archived data older than 6 months.
-        /// <para>If not specified, <c>False</c> will be used.</para></param>
+        /// <para>If not specified, <see langword="false"/> will be used.</para></param>
         /// <returns>A deferred query for a paginated list of borrow records.</returns>
         public IDeferredQuery<ResultsPage<LoanTransaction>> PrepareGetBorrowRecords(
             string crossAsset, DateTime startTime, DateTime? endTime,
@@ -1583,7 +1583,7 @@ namespace Oakbranch.Binance.Margin
         /// <param name="pageSize">The limit of borrow records per page to return.
         /// <para>If not specified, the default limit (10) will be used. The maximum value is <see cref="MaxResultPageSize"/> (100).</para></param>
         /// <param name="isArchived">Specifies whether to look for archived data older than 6 months.
-        /// <para>If not specified, <c>False</c> will be used.</para></param>
+        /// <para>If not specified, <see langword="false"/> will be used.</para></param>
         /// <returns>A deferred query for a paginated list of borrow records.</returns>
         public IDeferredQuery<ResultsPage<LoanTransaction>> PrepareGetBorrowRecords(
             string isolatedSymbol, string asset, DateTime startTime, DateTime? endTime,
@@ -1856,7 +1856,7 @@ namespace Oakbranch.Binance.Margin
         /// <param name="pageSize">The limit of repayment records per page to return.
         /// <para>If not specified, the default limit (10) will be used. The maximum value is <see cref="MaxResultPageSize"/> (100).</para></param>
         /// <param name="isArchived">Specifies whether to look for archived data older than 6 months.
-        /// <para>If not specified, <c>False</c> will be used.</para></param>
+        /// <para>If not specified, <see langword="false"/> will be used.</para></param>
         /// <returns>A deferred query for a paginated list of repayment records.</returns>
         public IDeferredQuery<ResultsPage<RepayTransaction>> PrepareGetRepayRecords(
             string crossAsset, DateTime startTime, DateTime? endTime,
@@ -1882,7 +1882,7 @@ namespace Oakbranch.Binance.Margin
         /// <param name="pageSize">The limit of repayment records per page to return.
         /// <para>If not specified, the default limit (10) will be used. The maximum value is <see cref="MaxResultPageSize"/> (100).</para></param>
         /// <param name="isArchived">Specifies whether to look for archived data older than 6 months.
-        /// <para>If not specified, <c>False</c> will be used.</para></param>
+        /// <para>If not specified, <see langword="false"/> will be used.</para></param>
         /// <returns>A deferred query for a paginated list of repayment records.</returns>
         public IDeferredQuery<ResultsPage<RepayTransaction>> PrepareGetRepayRecords(
             string isolatedSymbol, string asset, DateTime startTime, DateTime? endTime,
@@ -3275,7 +3275,7 @@ namespace Oakbranch.Binance.Margin
         /// /// <param name="isIsolated">Indicates whether to fetch orders for the isolated margin account or the cross margin one.</param>
         /// <param name="symbol">
         /// The symbol to list open orders on.
-        /// <para>If <paramref name="isIsolated"/> is <c>False</c> the value can be <c>Null</c>, otherwise it must be specified.</para>
+        /// <para>If <paramref name="isIsolated"/> is <see langword="false"/> the value can be <c>Null</c>, otherwise it must be specified.</para>
         /// </param>
         public IDeferredQuery<List<MarginOrder>> PrepareGetOpenOrders(bool isIsolated, string symbol)
         {
