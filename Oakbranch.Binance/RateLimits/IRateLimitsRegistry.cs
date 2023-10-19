@@ -16,7 +16,7 @@ namespace Oakbranch.Binance.RateLimits
         RateLimitInfo this[int id] { get; }
 
         /// <summary>
-        /// Tries to registers a new rate limit with the specified parameters, and returns the operation's status.
+        /// Tries to register a new rate limit with the specified parameters, and returns the operation's result.
         /// </summary>
         /// <param name="id">The ID of the new rate limit.</param>
         /// <param name="limitParams">The parameters of the new rate limit.</param>
