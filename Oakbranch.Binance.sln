@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Oakbranch.Binance.Benchmark
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Oakbranch.Common", "..\Oakbranch.Common\Oakbranch.Common\Oakbranch.Common.csproj", "{17102769-57DB-4233-9D7F-7FDB223D10C6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Oakbranch.Binance.UnitTests", "Oakbranch.Binance.UnitTests\Oakbranch.Binance.UnitTests.csproj", "{17252AEF-2F32-46B6-9E5A-40F9282334F7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,18 @@ Global
 		{17102769-57DB-4233-9D7F-7FDB223D10C6}.Release|x64.Build.0 = Release|x64
 		{17102769-57DB-4233-9D7F-7FDB223D10C6}.Release|x86.ActiveCfg = Release|x86
 		{17102769-57DB-4233-9D7F-7FDB223D10C6}.Release|x86.Build.0 = Release|x86
+		{17252AEF-2F32-46B6-9E5A-40F9282334F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17252AEF-2F32-46B6-9E5A-40F9282334F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17252AEF-2F32-46B6-9E5A-40F9282334F7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{17252AEF-2F32-46B6-9E5A-40F9282334F7}.Debug|x64.Build.0 = Debug|Any CPU
+		{17252AEF-2F32-46B6-9E5A-40F9282334F7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{17252AEF-2F32-46B6-9E5A-40F9282334F7}.Debug|x86.Build.0 = Debug|Any CPU
+		{17252AEF-2F32-46B6-9E5A-40F9282334F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17252AEF-2F32-46B6-9E5A-40F9282334F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17252AEF-2F32-46B6-9E5A-40F9282334F7}.Release|x64.ActiveCfg = Release|Any CPU
+		{17252AEF-2F32-46B6-9E5A-40F9282334F7}.Release|x64.Build.0 = Release|Any CPU
+		{17252AEF-2F32-46B6-9E5A-40F9282334F7}.Release|x86.ActiveCfg = Release|Any CPU
+		{17252AEF-2F32-46B6-9E5A-40F9282334F7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
