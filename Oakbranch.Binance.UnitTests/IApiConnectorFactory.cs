@@ -2,7 +2,7 @@
 
 namespace Oakbranch.Binance.UnitTests
 {
-    public interface IApiConnectorFactory
+    public interface IApiConnectorFactory : IDisposable
     {
         IApiConnector Create();
     }
