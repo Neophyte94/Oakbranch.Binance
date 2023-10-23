@@ -56,14 +56,10 @@ namespace Oakbranch.Binance.UnitTests
         [OneTimeTearDown]
         public void TearDownGlobal()
         {
-            if (m_ConnectorFactory is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
+            m_ConnectorFactory.Dispose();
         }
 
         // Unit tests.
-
         [Test]
         public void IsLimitMetricsMapRegistered_ReturnsTrue_WhenPassedRegistered()
         {
