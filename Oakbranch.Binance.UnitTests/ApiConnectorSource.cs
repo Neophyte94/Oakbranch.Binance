@@ -48,19 +48,9 @@ namespace Oakbranch.Binance.UnitTests
 
         public static IEnumerable<IApiConnectorFactory> CreateAllWithKeyContainer()
         {
-            string containerPath = KeyContainerPath;
-
-            string? apiKey = null;
-            string? secretKey = null;
-
-            using (FileStream fs = new FileStream(containerPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            if (!TryReadApiKeysFromContainer(out string apiKey, out string? secretKey))
             {
-                using (CancellationTokenSource cts = new CancellationTokenSource(5000))
-                {
-                    (string, string?) keys = ReadApiKeysAsync(fs, cts.Token).Result;
-                    apiKey = keys.Item1;
-                    secretKey = keys.Item2;
-                }
+                throw new Exception("Unable to read API keys from the file container.");
             }
 
             return CreateAll(apiKey, secretKey);
@@ -70,11 +60,45 @@ namespace Oakbranch.Binance.UnitTests
         {
             if (String.IsNullOrEmpty(apiKey))
                 throw new ArgumentNullException(nameof(apiKey));
+
+            IApiConnectorFactory builtInConnectorFactory = CreateBuiltIn(apiKey, secretKey);
+            return new List<IApiConnectorFactory> { builtInConnectorFactory, };
+        }
+
+        public static IApiConnectorFactory CreateBuiltIn(string apiKey, string? secretKey)
+        {
+            if (String.IsNullOrEmpty(apiKey))
+                throw new ArgumentNullException(nameof(apiKey));
             if (String.IsNullOrEmpty(secretKey))
                 secretKey = null;
 
-            BuiltInConnectorFactory builtInConnectorFactory = new BuiltInConnectorFactory(apiKey, secretKey);
-            return new List<IApiConnectorFactory> { builtInConnectorFactory, };
+            return new BuiltInConnectorFactory(apiKey, secretKey);
+        }
+
+        public static bool TryReadApiKeysFromContainer(out string apiKey, out string? secretKey)
+        {
+            string containerPath = KeyContainerPath;
+
+            try
+            {
+                using (FileStream fs = new FileStream(containerPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    using (CancellationTokenSource cts = new CancellationTokenSource(5000))
+                    {
+                        (string, string?) keys = ReadApiKeysAsync(fs, cts.Token).Result;
+                        apiKey = keys.Item1;
+                        secretKey = keys.Item2;
+                        return true;
+                    }
+                }
+            }
+            catch (Exception exc)
+            {
+                Console.WriteLine(exc);
+                apiKey = null!;
+                secretKey = null;
+                return false;
+            }
         }
 
         private static async Task<(string, string?)> ReadApiKeysAsync(Stream inputStream, CancellationToken ct)
