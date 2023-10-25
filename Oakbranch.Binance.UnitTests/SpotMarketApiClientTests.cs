@@ -17,6 +17,12 @@ namespace Oakbranch.Binance.UnitTests
 
         #endregion
 
+        #region Static methods
+
+        private static readonly TimeSpan TimeErrorTolerance = new TimeSpan(TimeSpan.TicksPerHour);
+
+        #endregion
+
         #region Instance members
 
         private readonly SpotMarketApiClient m_Client;
@@ -93,15 +99,61 @@ namespace Oakbranch.Binance.UnitTests
 
         // Test methods.
         [Test, Retry(DefaultTestRetryLimit)]
-        public async Task CheckServerTime_ReturnsValidTime_WhenExecuted()
+        public async Task CheckServerTime_ReturnsValidTime_WhenDefaultParams()
         {
-            // Act.
+            // Arrange.
             DateTime result;
+
+            // Act.
             using IDeferredQuery<DateTime> query = m_Client.PrepareCheckServerTime();
             result = await query.ExecuteAsync(CancellationToken.None);
 
             // Assert.
-            Assert.That(result, Is.EqualTo(DateTime.UtcNow).Within(new TimeSpan(TimeSpan.TicksPerDay)));
+            Assert.That(result, Is.EqualTo(DateTime.UtcNow).Within(TimeErrorTolerance));
+        }
+
+        [Test, Retry(DefaultTestRetryLimit)]
+        public async Task GetExchangeInfo_ReturnsValidInstance_WhenDefaultParams()
+        {
+            // Arrange.
+            SpotExchangeInfo result;
+
+            // Act.
+            using IDeferredQuery<SpotExchangeInfo> query = m_Client.PrepareGetExchangeInfo();
+            result = await query.ExecuteAsync(CancellationToken.None);
+
+            // Assert.
+            Assert.That(result, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.Symbols, Is.Not.Null.And.Count.GreaterThan(0));
+                Assert.That(result.ServerTime, Is.EqualTo(DateTime.UtcNow).Within(TimeErrorTolerance));
+                Assert.That(result.Timezone, Is.Not.Null);
+            });
+            LogObject(result);
+        }
+
+        [Retry(DefaultTestRetryLimit)]
+        [TestCase("BTCUSDT")]
+        [TestCase("btcusdt", "eThUsDt")]
+        public async Task GetExchangeInfo_ReturnsExactNumberOfSymbols_WhenExactSymbolsSpecified(params string[] symbols)
+        {
+            // Arrange.
+            SpotExchangeInfo result;
+
+            // Act.
+            using IDeferredQuery<SpotExchangeInfo> query = m_Client.PrepareGetExchangeInfo(symbols);
+            result = await query.ExecuteAsync(CancellationToken.None);
+
+            // Assert.
+            Assert.That(result, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.Symbols, Is.Not.Null.And.Count.EqualTo(symbols.Length));
+                Assert.That(result.ServerTime, Is.EqualTo(DateTime.UtcNow).Within(TimeErrorTolerance));
+                Assert.That(result.Timezone, Is.Not.Null);
+            });
+            LogObject(result);
         }
 
         #endregion
