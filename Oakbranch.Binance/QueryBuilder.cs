@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Text;
 
 namespace Oakbranch.Binance
@@ -59,9 +61,41 @@ namespace Oakbranch.Binance
             m_Container.Append("=[");
             for (int i = 0; i != values.Length; ++i)
             {
-                if (i != 0) m_Container.Append(',');
+                if (i != 0) { m_Container.Append(','); }
                 m_Container.Append('"');
                 m_Container.Append(values[i]);
+                m_Container.Append('"');
+            }
+            m_Container.Append(']');
+        }
+
+        /// <summary>
+        /// Adds a parameter with the specified name and collection of string values to the query string.
+        /// </summary>
+        /// <param name="name">The name of the parameter.</param>
+        /// <param name="values">The collection of values of the parameter.</param>
+        /// <exception cref="ArgumentNullException"/>
+        public void AddParameter(string name, IEnumerable<string> values)
+        {
+            if (String.IsNullOrWhiteSpace(name))
+                throw new ArgumentNullException(nameof(name));
+            if (values == null)
+                throw new ArgumentNullException(nameof(values));
+
+            if (m_Container.Length != 0)
+                m_Container.Append('&');
+
+            m_Container.Append(name);
+            m_Container.Append("=[");
+
+            bool isFirst = true;
+            foreach (string val in values)
+            {
+                if (isFirst) { isFirst = false; }
+                else { m_Container.Append(','); }
+
+                m_Container.Append('"');
+                m_Container.Append(val);
                 m_Container.Append('"');
             }
             m_Container.Append(']');
