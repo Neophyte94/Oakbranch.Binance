@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -228,12 +229,12 @@ namespace Oakbranch.Binance.Spot
                 if (symbols.Length == 1)
                 {
                     qs = new QueryBuilder(21);
-                    qs.AddParameter("symbol", symbols[0]);
+                    qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbols[0]));
                 }
                 else
                 {
                     qs = new QueryBuilder(11 + 11 * symbols.Length);
-                    qs.AddParameter("symbols", symbols);
+                    qs.AddParameter("symbols", symbols.Select(CommonUtility.NormalizeSymbol));
                 }
             }
 
@@ -718,9 +719,9 @@ namespace Oakbranch.Binance.Spot
             };
 
             QueryBuilder qs = new QueryBuilder(56);
-            qs.AddParameter("symbol", symbol);
+            qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
             if (limit != null)
-                qs.AddParameter("limit", CommonUtility.Clamp(limit.Value, 1, 1000));
+                qs.AddParameter("limit", Math.Clamp(limit.Value, 1, 1000));
             if (fromId != null)
                 qs.AddParameter("fromId", fromId.Value);
 
@@ -864,7 +865,7 @@ namespace Oakbranch.Binance.Spot
             };
 
             QueryBuilder qs = new QueryBuilder(75);
-            qs.AddParameter("symbol", symbol);
+            qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
             if (startTime != null)
                 qs.AddParameter("startTime", CommonUtility.ConvertToApiTime(startTime.Value));
             if (endTime != null)
@@ -919,7 +920,7 @@ namespace Oakbranch.Binance.Spot
             };
 
             QueryBuilder qs = new QueryBuilder(112);
-            qs.AddParameter("symbol", symbol);
+            qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
             qs.AddParameter("fromId", fromId);
             if (limit != null)
                 qs.AddParameter("limit", limit.Value);
@@ -1050,7 +1051,8 @@ namespace Oakbranch.Binance.Spot
         /// <para>If not specified, the default value <see cref="DefaultKlinesQueryLimit"/> (500) is used.</para>
         /// <param name="startTime">Time to fetch data from (inclusive).</param>
         /// <param name="endTime">Time to fetch data prior to (inclusive).</param>
-        public IDeferredQuery<List<Candlestick>> PrepareGetCandlestickData(string symbol, KlineInterval interval,
+        public IDeferredQuery<List<Candlestick>> PrepareGetCandlestickData(
+            string symbol, KlineInterval interval,
             int? limit = null, DateTime? startTime = null, DateTime? endTime = null)
         {
             ThrowIfNotRunning();
@@ -1067,7 +1069,7 @@ namespace Oakbranch.Binance.Spot
             };
 
             QueryBuilder qs = new QueryBuilder(109);
-            qs.AddParameter("symbol", symbol);
+            qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
             qs.AddParameter("interval", Format(interval));
             if (limit != null)
                 qs.AddParameter("limit", limit.Value);
@@ -1195,12 +1197,12 @@ namespace Oakbranch.Binance.Spot
                 if (symbols.Length == 1)
                 {
                     qs = new QueryBuilder(8 + symbols[0].Length);
-                    qs.AddParameter("symbol", symbols);
+                    qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbols[0]));
                 }
                 else
                 {
                     qs = new QueryBuilder(11 + 11 * symbols.Length);
-                    qs.AddParameter("symbols", symbols);
+                    qs.AddParameter("symbols", symbols.Select(CommonUtility.NormalizeSymbol));
                 }
             }
 

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Text.Json;
-using Oakbranch.Common.Logging;
-using Oakbranch.Binance.RateLimits;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Threading;
+using Oakbranch.Common.Logging;
+using Oakbranch.Binance.RateLimits;
 
 namespace Oakbranch.Binance.Savings
 {
@@ -263,7 +263,7 @@ namespace Oakbranch.Binance.Savings
             if (asset != null)
             {
                 qs = new QueryBuilder(133);
-                qs.AddParameter("asset", asset);
+                qs.AddParameter("asset", CommonUtility.NormalizeSymbol(asset));
             }
 
             return new DeferredQuery<List<FlexibleProductPosition>>(
@@ -278,7 +278,8 @@ namespace Oakbranch.Binance.Savings
         /// <summary>
         /// Gets active subscriptions on flexible savings products, either on all assets or only the specified one, asynchronously.
         /// </summary>
-        public Task<List<FlexibleProductPosition>> GetFlexibleProductPositionsAsync(string asset = null, CancellationToken ct = default)
+        public Task<List<FlexibleProductPosition>> GetFlexibleProductPositionsAsync(
+            string asset = null, CancellationToken ct = default)
         {
             using (IDeferredQuery<List<FlexibleProductPosition>> query = PrepareGetFlexibleProductPositions(asset))
             {
@@ -493,7 +494,7 @@ namespace Oakbranch.Binance.Savings
             qs.AddParameter("lendingType", Format(type));
             if (asset != null)
             {
-                qs.AddParameter("asset", asset);
+                qs.AddParameter("asset", CommonUtility.NormalizeSymbol(asset));
             }
             if (startTime != null)
             {

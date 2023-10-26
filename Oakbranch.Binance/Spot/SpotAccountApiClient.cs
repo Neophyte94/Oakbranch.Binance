@@ -801,7 +801,7 @@ namespace Oakbranch.Binance.Spot
             };
 
             QueryBuilder qs = new QueryBuilder(327);
-            qs.AddParameter("symbol", symbol);
+            qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
             qs.AddParameter("side", Format(side));
             qs.AddParameter("type", Format(type));
             if (tif != null)
@@ -1234,7 +1234,7 @@ namespace Oakbranch.Binance.Spot
             };
 
             QueryBuilder qs = new QueryBuilder(235);
-            qs.AddParameter("symbol", symbol);
+            qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
             if (orderId != null)
             {
                 qs.AddParameter("orderId", orderId.Value);
@@ -1277,7 +1277,7 @@ namespace Oakbranch.Binance.Spot
             };
 
             QueryBuilder qs = new QueryBuilder(138);
-            qs.AddParameter("symbol", symbol);
+            qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
 
             return new DeferredQuery<List<SpotOrder>>(
                 query: new QueryParams(HttpMethod.DELETE, RESTEndpoint.Url, DeleteAllOpenOrdersEndpoint, qs, true),
@@ -1342,7 +1342,7 @@ namespace Oakbranch.Binance.Spot
             };
 
             QueryBuilder qs = new QueryBuilder(195);
-            qs.AddParameter("symbol", symbol);
+            qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
             if (orderId != null)
             {
                 qs.AddParameter("orderId", orderId.Value);
@@ -1474,7 +1474,7 @@ namespace Oakbranch.Binance.Spot
             };
 
             QueryBuilder qs = new QueryBuilder(178);
-            qs.AddParameter("symbol", symbol);
+            qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
             if (fromId != null)
             {
                 qs.AddParameter("orderId", fromId.Value);
@@ -1551,7 +1551,7 @@ namespace Oakbranch.Binance.Spot
             };
 
             QueryBuilder qs = new QueryBuilder(137);
-            qs.AddParameter("symbol", symbol);
+            qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
 
             return new DeferredQuery<List<SpotOrder>>(
                 query: new QueryParams(HttpMethod.GET, RESTEndpoint.Url, GetAllOpenOrdersEndpoint, qs, true),
@@ -1587,7 +1587,8 @@ namespace Oakbranch.Binance.Spot
         /// the period between them must not be longer than <see cref="AccountTradesMaxTimeRange"/> (24 hours).</para></param>
         /// <param name="fromId">The trade ID to fetch data from (inclusive). Cannot be used in combination with <paramref name="limit"/>.</param>
         /// <param name="limit">A maximum number of trades to fetch. The default value is 500, the maximum value is 1000.</param>
-        public IDeferredQuery<List<SpotTrade>> PrepareGetAccountTrades(string symbol, long? orderId = null,
+        public IDeferredQuery<List<SpotTrade>> PrepareGetAccountTrades(
+            string symbol, long? orderId = null,
             DateTime? startTime = null, DateTime? endTime = null, long? fromId = null, int? limit = null)
         {
             ThrowIfNotRunning();
@@ -1600,7 +1601,7 @@ namespace Oakbranch.Binance.Spot
             };
 
             QueryBuilder qs = new QueryBuilder(176);
-            qs.AddParameter("symbol", symbol);
+            qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
             if (orderId != null)
             {
                 qs.AddParameter("orderId", orderId.Value);
@@ -1627,7 +1628,7 @@ namespace Oakbranch.Binance.Spot
             }
             if (limit != null)
             {
-                qs.AddParameter("limit", CommonUtility.Clamp(limit.Value, 1, 1000));
+                qs.AddParameter("limit", Math.Clamp(limit.Value, 1, 1000));
             }
 
             return new DeferredQuery<List<SpotTrade>>(

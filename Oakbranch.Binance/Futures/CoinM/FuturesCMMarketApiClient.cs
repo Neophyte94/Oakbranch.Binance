@@ -520,7 +520,7 @@ namespace Oakbranch.Binance.Futures.CoinM
             };
 
             QueryBuilder qs = new QueryBuilder(56);
-            qs.AddParameter("symbol", symbol);
+            qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
             if (limit != null)
                 qs.AddParameter("limit", limit.Value);
             if (fromId != null)
@@ -538,7 +538,8 @@ namespace Oakbranch.Binance.Futures.CoinM
         /// <summary>
         /// Gets older market trades.
         /// </summary>
-        public Task<List<Trade>> GetOldTradesAsync(string symbol, int? limit = null, long? fromId = null, CancellationToken ct = default)
+        public Task<List<Trade>> GetOldTradesAsync(
+            string symbol, int? limit = null, long? fromId = null, CancellationToken ct = default)
         {
             using (IDeferredQuery<List<Trade>> query = PrepareGetOldTrades(symbol, limit, fromId))
             {
@@ -691,7 +692,8 @@ namespace Oakbranch.Binance.Futures.CoinM
             }
         }
 
-        private IDeferredQuery<List<AggregateTrade>> PrepareGetAggregateTrades(string symbol,
+        private IDeferredQuery<List<AggregateTrade>> PrepareGetAggregateTrades(
+            string symbol,
             long? fromId = null, DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
         {
             ThrowIfNotRunning();
@@ -708,7 +710,7 @@ namespace Oakbranch.Binance.Futures.CoinM
             };
 
             QueryBuilder qs = new QueryBuilder(112);
-            qs.AddParameter("symbol", symbol);
+            qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
 
             if (fromId != null) qs.AddParameter("fromId", fromId.Value);
             if (startTime != null)
@@ -716,7 +718,7 @@ namespace Oakbranch.Binance.Futures.CoinM
             if (endTime != null)
                 qs.AddParameter("endTime", CommonUtility.ConvertToApiTime(endTime.Value));
             if (limit != null)
-                qs.AddParameter("limit", CommonUtility.Clamp(limit.Value, 1, 1000));
+                qs.AddParameter("limit", Math.Clamp(limit.Value, 1, 1000));
 
             return new DeferredQuery<List<AggregateTrade>>(
                 query: new QueryParams(HttpMethod.GET, RESTEndpoint.Url, GetAggregateTradesEndpoint, qs, false),
@@ -826,7 +828,8 @@ namespace Oakbranch.Binance.Futures.CoinM
         /// <para>The maximum value is <see cref="MaxKlinesQueryLimit"/> (1500).</para>
         /// <para>If not specified, the default value <see cref="DefaultKlinesQueryLimit"/> (500) is used.</para>
         /// </param>
-        public IDeferredQuery<List<Candlestick>> PrepareGetSymbolPriceKlines(string symbol, KlineInterval interval,
+        public IDeferredQuery<List<Candlestick>> PrepareGetSymbolPriceKlines(
+            string symbol, KlineInterval interval,
             DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
         {
             ThrowIfNotRunning();
@@ -838,7 +841,7 @@ namespace Oakbranch.Binance.Futures.CoinM
                 throw new ArgumentOutOfRangeException(nameof(limit));
 
             QueryBuilder qs = new QueryBuilder(109);
-            qs.AddParameter("symbol", symbol);
+            qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
             qs.AddParameter("interval", FuturesUtility.Format(interval));
             if (limit != null)
                 qs.AddParameter("limit", limit.Value);
@@ -901,7 +904,7 @@ namespace Oakbranch.Binance.Futures.CoinM
                 throw new ArgumentOutOfRangeException(nameof(limit));
 
             QueryBuilder qs = new QueryBuilder(109);
-            qs.AddParameter("pair", pair);
+            qs.AddParameter("pair", CommonUtility.NormalizeSymbol(pair));
             qs.AddParameter("contractType", FuturesUtility.Format(contractType));
             qs.AddParameter("interval", FuturesUtility.Format(interval));
             if (limit != null)
@@ -957,7 +960,8 @@ namespace Oakbranch.Binance.Futures.CoinM
         /// <para>The maximum value is <see cref="MaxKlinesQueryLimit"/> (1500).</para>
         /// <para>If not specified, the default value <see cref="DefaultKlinesQueryLimit"/> (500) is used.</para>
         /// </param>
-        public IDeferredQuery<List<Candlestick>> PrepareGetIndexPriceKlines(string pair, KlineInterval interval,
+        public IDeferredQuery<List<Candlestick>> PrepareGetIndexPriceKlines(
+            string pair, KlineInterval interval,
             DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
         {
             ThrowIfNotRunning();
@@ -974,7 +978,7 @@ namespace Oakbranch.Binance.Futures.CoinM
                 throw new ArgumentOutOfRangeException(nameof(limit));
 
             QueryBuilder qs = new QueryBuilder(109);
-            qs.AddParameter("pair", pair);
+            qs.AddParameter("pair", CommonUtility.NormalizeSymbol(pair));
             qs.AddParameter("interval", FuturesUtility.Format(interval));
             if (limit != null)
                 qs.AddParameter("limit", limit.Value);
@@ -998,7 +1002,8 @@ namespace Oakbranch.Binance.Futures.CoinM
         /// <para>Note: the query weight depends on the value of <paramref name="limit"/>.
         /// The most weight-efficient value is 499 items per query.</para>
         /// </summary>
-        public Task<List<Candlestick>> GetIndexPriceKlinesAsync(string pair, KlineInterval interval,
+        public Task<List<Candlestick>> GetIndexPriceKlinesAsync(
+            string pair, KlineInterval interval,
             DateTime? startTime = null, DateTime? endTime = null, int? limit = null, CancellationToken ct = default)
         {
             using (IDeferredQuery<List<Candlestick>> query =
@@ -1023,7 +1028,8 @@ namespace Oakbranch.Binance.Futures.CoinM
         /// <para>The maximum value is <see cref="MaxKlinesQueryLimit"/> (1500).</para>
         /// <para>If not specified, the default value <see cref="DefaultKlinesQueryLimit"/> (500) is used.</para>
         /// </param>
-        public IDeferredQuery<List<Candlestick>> PrepareGetMarkPriceKlines(string symbol, KlineInterval interval,
+        public IDeferredQuery<List<Candlestick>> PrepareGetMarkPriceKlines(
+            string symbol, KlineInterval interval,
             DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
         {
             ThrowIfNotRunning();
@@ -1035,7 +1041,7 @@ namespace Oakbranch.Binance.Futures.CoinM
                 throw new ArgumentOutOfRangeException(nameof(limit));
 
             QueryBuilder qs = new QueryBuilder(109);
-            qs.AddParameter("symbol", symbol);
+            qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
             qs.AddParameter("interval", FuturesUtility.Format(interval));
             if (limit != null)
                 qs.AddParameter("limit", limit.Value);
@@ -1059,7 +1065,8 @@ namespace Oakbranch.Binance.Futures.CoinM
         /// <para>Note: the query weight depends on the value of <paramref name="limit"/>.
         /// The most weight-efficient value is 499 items per query.</para>
         /// </summary>
-        public Task<List<Candlestick>> GetMarkPriceKlinesAsync(string symbol, KlineInterval interval,
+        public Task<List<Candlestick>> GetMarkPriceKlinesAsync(
+            string symbol, KlineInterval interval,
             DateTime? startTime = null, DateTime? endTime = null, int? limit = null, CancellationToken ct = default)
         {
             using (IDeferredQuery<List<Candlestick>> query =
@@ -1084,7 +1091,8 @@ namespace Oakbranch.Binance.Futures.CoinM
         /// <para>The maximum value is <see cref="MaxKlinesQueryLimit"/> (1500).</para>
         /// <para>If not specified, the default value <see cref="DefaultKlinesQueryLimit"/> (500) is used.</para>
         /// </param>
-        public IDeferredQuery<List<Candlestick>> PrepareGetPremiumIndexKlines(string symbol, KlineInterval interval,
+        public IDeferredQuery<List<Candlestick>> PrepareGetPremiumIndexKlines(
+            string symbol, KlineInterval interval,
             DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
         {
             ThrowIfNotRunning();
@@ -1096,7 +1104,7 @@ namespace Oakbranch.Binance.Futures.CoinM
                 throw new ArgumentOutOfRangeException(nameof(limit));
 
             QueryBuilder qs = new QueryBuilder(109);
-            qs.AddParameter("symbol", symbol);
+            qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
             qs.AddParameter("interval", FuturesUtility.Format(interval));
             if (limit != null)
                 qs.AddParameter("limit", limit.Value);
@@ -1120,7 +1128,8 @@ namespace Oakbranch.Binance.Futures.CoinM
         /// <para>Note: the query weight depends on the value of <paramref name="limit"/>.
         /// The most weight-efficient value is 499 items per query.</para>
         /// </summary>
-        public Task<List<Candlestick>> GetPremiumIndexKlinesAsync(string symbol, KlineInterval interval,
+        public Task<List<Candlestick>> GetPremiumIndexKlinesAsync(
+            string symbol, KlineInterval interval,
             DateTime? startTime = null, DateTime? endTime = null, int? limit = null, CancellationToken ct = default)
         {
             using (IDeferredQuery<List<Candlestick>> query =
@@ -1177,7 +1186,7 @@ namespace Oakbranch.Binance.Futures.CoinM
             };
 
             QueryBuilder qs = new QueryBuilder(15);
-            qs.AddParameter("pair", pair);
+            qs.AddParameter("pair", CommonUtility.NormalizeSymbol(pair));
 
             return new DeferredQuery<List<PremiumInfo>>(
                 query: new QueryParams(HttpMethod.GET, RESTEndpoint.Url, GetPremiumInfoEndpoint, qs, false),
@@ -1229,7 +1238,7 @@ namespace Oakbranch.Binance.Futures.CoinM
             };
 
             QueryBuilder qs = new QueryBuilder(34);
-            qs.AddParameter("symbol", symbol);
+            qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
 
             return new DeferredQuery<PremiumInfo>(
                 query: new QueryParams(HttpMethod.GET, RESTEndpoint.Url, GetPremiumInfoEndpoint, qs, false),
@@ -1390,7 +1399,7 @@ namespace Oakbranch.Binance.Futures.CoinM
             };
 
             QueryBuilder qs = new QueryBuilder(74);
-            qs.AddParameter("symbol", symbol);
+            qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
             if (startTime != null)
                 qs.AddParameter("startTime", CommonUtility.ConvertToApiTime(startTime.Value));
             if (endTime != null)
@@ -1410,8 +1419,9 @@ namespace Oakbranch.Binance.Futures.CoinM
         /// <summary>
         /// Gets the funding rate history for the specified perpetual contract asynchronously.
         /// </summary>
-        public Task<List<FundingRate>> GetFundingRateHistoryAsync(string symbol = null,
-            DateTime? startTime = null, DateTime? endTime = null, int? limit = null, CancellationToken ct = default)
+        public Task<List<FundingRate>> GetFundingRateHistoryAsync(
+            string symbol = null, DateTime? startTime = null, DateTime? endTime = null, int? limit = null,
+            CancellationToken ct = default)
         {
             using (IDeferredQuery<List<FundingRate>> query = PrepareGetFundingRateHistory(symbol, startTime, endTime, limit))
             {
@@ -1500,7 +1510,7 @@ namespace Oakbranch.Binance.Futures.CoinM
             };
 
             QueryBuilder qs = new QueryBuilder(23);
-            qs.AddParameter("symbol", symbol);
+            qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
 
             return new DeferredQuery<OpenInterest>(
                 query: new QueryParams(HttpMethod.GET, RESTEndpoint.Url, GetCurrentOpenInterestEndpoint, qs, false),
@@ -1601,7 +1611,7 @@ namespace Oakbranch.Binance.Futures.CoinM
                 throw new ArgumentOutOfRangeException(nameof(limit));
 
             QueryBuilder qs = new QueryBuilder(110);
-            qs.AddParameter("pair", pair);
+            qs.AddParameter("pair", CommonUtility.NormalizeSymbol(pair));
             qs.AddParameter("contractType", contractType == null ? "ALL" : FuturesUtility.Format(contractType.Value));
             qs.AddParameter("period", FuturesUtility.Format(interval));
             if (startTime != null)
@@ -1717,7 +1727,8 @@ namespace Oakbranch.Binance.Futures.CoinM
         /// <para>The maximum value is <see cref="MaxMarketStatsQueryLimit"/> (500).</para>
         /// <para>If not specified, the default value <see cref="DefaultMarketStatsQueryLimit"/> (30) is used.</para>
         /// </param>
-        public IDeferredQuery<List<LongShortRatio>> PrepareGetTopAccountLongShortRatio(string pair, StatsInterval interval,
+        public IDeferredQuery<List<LongShortRatio>> PrepareGetTopAccountLongShortRatio(
+            string pair, StatsInterval interval,
             DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
         {
             ThrowIfDisposed();
@@ -1729,7 +1740,7 @@ namespace Oakbranch.Binance.Futures.CoinM
                 throw new ArgumentOutOfRangeException(nameof(limit));
 
             QueryBuilder qs = new QueryBuilder(83);
-            qs.AddParameter("pair", pair);
+            qs.AddParameter("pair", CommonUtility.NormalizeSymbol(pair));
             qs.AddParameter("period", FuturesUtility.Format(interval));
             if (startTime != null)
                 qs.AddParameter("startTime", CommonUtility.ConvertToApiTime(startTime.Value));
@@ -1750,7 +1761,8 @@ namespace Oakbranch.Binance.Futures.CoinM
         /// Gets the history of the long/short ratio of top trader accounts, asynchronously.
         /// <para>Note: only the data of the latest 30 days is available.</para>
         /// </summary>
-        public Task<List<LongShortRatio>> GetTopAccountLongShortRatioAsync(string pair, StatsInterval interval,
+        public Task<List<LongShortRatio>> GetTopAccountLongShortRatioAsync(
+            string pair, StatsInterval interval,
             DateTime? startTime = null, DateTime? endTime = null, int? limit = null, CancellationToken ct = default)
         {
             using (IDeferredQuery<List<LongShortRatio>> query =
@@ -1773,7 +1785,8 @@ namespace Oakbranch.Binance.Futures.CoinM
         /// <para>The maximum value is <see cref="MaxMarketStatsQueryLimit"/> (500).</para>
         /// <para>If not specified, the default value <see cref="DefaultMarketStatsQueryLimit"/> (30) is used.</para>
         /// </param>
-        public IDeferredQuery<List<LongShortRatio>> PrepareGetTopPositionLongShortRatio(string pair, StatsInterval interval,
+        public IDeferredQuery<List<LongShortRatio>> PrepareGetTopPositionLongShortRatio(
+            string pair, StatsInterval interval,
             DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
         {
             ThrowIfDisposed();
@@ -1785,7 +1798,7 @@ namespace Oakbranch.Binance.Futures.CoinM
                 throw new ArgumentOutOfRangeException(nameof(limit));
 
             QueryBuilder qs = new QueryBuilder(83);
-            qs.AddParameter("pair", pair);
+            qs.AddParameter("pair", CommonUtility.NormalizeSymbol(pair));
             qs.AddParameter("period", FuturesUtility.Format(interval));
             if (startTime != null)
                 qs.AddParameter("startTime", CommonUtility.ConvertToApiTime(startTime.Value));
@@ -1806,7 +1819,8 @@ namespace Oakbranch.Binance.Futures.CoinM
         /// Gets the history of the long/short ratio of top trader positions, asynchronously.
         /// <para>Note: only the data of the latest 30 days is available.</para>
         /// </summary>
-        public Task<List<LongShortRatio>> GetTopPositionLongShortRatioAsync(string pair, StatsInterval interval,
+        public Task<List<LongShortRatio>> GetTopPositionLongShortRatioAsync(
+            string pair, StatsInterval interval,
             DateTime? startTime = null, DateTime? endTime = null, int? limit = null, CancellationToken ct = default)
         {
             using (IDeferredQuery<List<LongShortRatio>> query =
@@ -1829,7 +1843,8 @@ namespace Oakbranch.Binance.Futures.CoinM
         /// <para>The maximum value is <see cref="MaxMarketStatsQueryLimit"/> (500).</para>
         /// <para>If not specified, the default value <see cref="DefaultMarketStatsQueryLimit"/> (30) is used.</para>
         /// </param>
-        public IDeferredQuery<List<LongShortRatio>> PrepareGetAllAccountLongShortRatio(string pair, StatsInterval interval,
+        public IDeferredQuery<List<LongShortRatio>> PrepareGetAllAccountLongShortRatio(
+            string pair, StatsInterval interval,
             DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
         {
             ThrowIfDisposed();
@@ -1841,7 +1856,7 @@ namespace Oakbranch.Binance.Futures.CoinM
                 throw new ArgumentOutOfRangeException(nameof(limit));
 
             QueryBuilder qs = new QueryBuilder(83);
-            qs.AddParameter("pair", pair);
+            qs.AddParameter("pair", CommonUtility.NormalizeSymbol(pair));
             qs.AddParameter("period", FuturesUtility.Format(interval));
             if (startTime != null)
                 qs.AddParameter("startTime", CommonUtility.ConvertToApiTime(startTime.Value));
@@ -1862,7 +1877,8 @@ namespace Oakbranch.Binance.Futures.CoinM
         /// Gets the global history of the long/short ratio of accounts asynchronously.
         /// <para>Note: only the data of the latest 30 days is available.</para>
         /// </summary>
-        public Task<List<LongShortRatio>> PrepareGetAllAccountLongShortRatio(string pair, StatsInterval interval,
+        public Task<List<LongShortRatio>> GetAllAccountLongShortRatioAsync(
+            string pair, StatsInterval interval,
             DateTime? startTime = null, DateTime? endTime = null, int? limit = null, CancellationToken ct = default)
         {
             using (IDeferredQuery<List<LongShortRatio>> query =
@@ -1904,7 +1920,7 @@ namespace Oakbranch.Binance.Futures.CoinM
                 throw new ArgumentOutOfRangeException(nameof(limit));
 
             QueryBuilder qs = new QueryBuilder(110);
-            qs.AddParameter("pair", pair);
+            qs.AddParameter("pair", CommonUtility.NormalizeSymbol(pair));
             qs.AddParameter("contractType", contractType == null ? "ALL" : FuturesUtility.Format(contractType.Value));
             qs.AddParameter("period", FuturesUtility.Format(interval));
             if (startTime != null)

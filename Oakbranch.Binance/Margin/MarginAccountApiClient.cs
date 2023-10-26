@@ -599,7 +599,7 @@ namespace Oakbranch.Binance.Margin
         /// </summary>
         /// <param name="symbols">
         /// Isolated margin symbols to get account info for (maximum 5 symbols).
-        /// <para>If the value is <c>Null</c> then info on all pairs will be returned.</para>
+        /// <para>Use <see langword="null"/> to get info on all pairs.</para>
         /// </param>
         public IDeferredQuery<IsolatedAccountsInfo> PrepareGetIsolatedAccountsInfo(params string[] symbols)
         {
@@ -609,10 +609,13 @@ namespace Oakbranch.Binance.Margin
             {
                 for (int i = 0; i != symbols.Length; ++i)
                 {
-                    if (String.IsNullOrWhiteSpace(symbols[i]))
+                    string smb = symbols[i];
+                    if (String.IsNullOrWhiteSpace(smb))
                     {
-                        throw new ArgumentException($"The specified symbols array contains a null or empty string at the index {i}.");
+                        throw new ArgumentException(
+                            $"The specified symbols array contains a null or empty string at the index {i}.");
                     }
+                    symbols[i] = CommonUtility.NormalizeSymbol(smb);
                 }
             }
 
@@ -632,7 +635,7 @@ namespace Oakbranch.Binance.Margin
             else
             {
                 qs = new QueryBuilder(173);
-                qs.AddParameter("symbols", String.Join(",", symbols));
+                qs.AddParameter("symbols", symbols);
             }
 
             return new DeferredQuery<IsolatedAccountsInfo>(
@@ -940,7 +943,7 @@ namespace Oakbranch.Binance.Margin
 
             QueryBuilder qs = new QueryBuilder(261);
             if (!String.IsNullOrWhiteSpace(crossAsset))
-                qs.AddParameter("asset", crossAsset);
+                qs.AddParameter("asset", CommonUtility.NormalizeSymbol(crossAsset));
             if (direction != null)
                 qs.AddParameter("type", Format(direction.Value));
             if (startTime != null)
@@ -1168,9 +1171,9 @@ namespace Oakbranch.Binance.Margin
             };
 
             QueryBuilder qs = new QueryBuilder(279);
-            qs.AddParameter("symbol", isolatedSymbol);
+            qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(isolatedSymbol));
             if (!String.IsNullOrWhiteSpace(asset))
-                qs.AddParameter("asset", asset);
+                qs.AddParameter("asset", CommonUtility.NormalizeSymbol(asset));
             if (direction != null)
             {
                 if (direction.Value == TransferDirection.RollIn)
@@ -1394,11 +1397,11 @@ namespace Oakbranch.Binance.Margin
             };
 
             QueryBuilder qs = new QueryBuilder(187);
-            qs.AddParameter("asset", asset);
+            qs.AddParameter("asset", CommonUtility.NormalizeSymbol(asset));
             if (isIsolated)
             {
                 qs.AddParameter("isIsolated", true);
-                qs.AddParameter("symbol", symbol);
+                qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
             }
             else
             {
@@ -1461,11 +1464,11 @@ namespace Oakbranch.Binance.Margin
             };
 
             QueryBuilder qs = new QueryBuilder(187);
-            qs.AddParameter("asset", asset);
+            qs.AddParameter("asset", CommonUtility.NormalizeSymbol(asset));
             if (isIsolated)
             {
                 qs.AddParameter("isIsolated", true);
-                qs.AddParameter("symbol", symbol);
+                qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
             }
             else
             {
@@ -1525,10 +1528,10 @@ namespace Oakbranch.Binance.Margin
             };
 
             QueryBuilder qs = new QueryBuilder(198);
-            qs.AddParameter("asset", asset);
+            qs.AddParameter("asset", CommonUtility.NormalizeSymbol(asset));
             qs.AddParameter("txId", transactionId);
             if (isolatedSymbol != null)
-                qs.AddParameter("isolatedSymbol", isolatedSymbol);
+                qs.AddParameter("isolatedSymbol", CommonUtility.NormalizeSymbol(isolatedSymbol));
             if (isArchived != null)
                 qs.AddParameter("archived", isArchived.Value);
 
@@ -1617,9 +1620,9 @@ namespace Oakbranch.Binance.Margin
             };
 
             QueryBuilder qs = new QueryBuilder(241);
-            qs.AddParameter("asset", asset);
+            qs.AddParameter("asset", CommonUtility.NormalizeSymbol(asset));
             if (isolatedSymbol != null)
-                qs.AddParameter("isolatedSymbol", isolatedSymbol);
+                qs.AddParameter("isolatedSymbol", CommonUtility.NormalizeSymbol(isolatedSymbol));
             if (startTime != null)
                 qs.AddParameter("startTime", CommonUtility.ConvertToApiTime(startTime.Value));
             if (endTime != null)
@@ -1824,10 +1827,10 @@ namespace Oakbranch.Binance.Margin
             };
 
             QueryBuilder qs = new QueryBuilder(198);
-            qs.AddParameter("asset", asset);
+            qs.AddParameter("asset", CommonUtility.NormalizeSymbol(asset));
             qs.AddParameter("txId", transactionId);
             if (isolatedSymbol != null)
-                qs.AddParameter("isolatedSymbol", isolatedSymbol);
+                qs.AddParameter("isolatedSymbol", CommonUtility.NormalizeSymbol(isolatedSymbol));
             if (isArchived != null)
                 qs.AddParameter("archived", isArchived.Value);
 
@@ -1916,9 +1919,9 @@ namespace Oakbranch.Binance.Margin
             };
 
             QueryBuilder qs = new QueryBuilder(241);
-            qs.AddParameter("asset", asset);
+            qs.AddParameter("asset", CommonUtility.NormalizeSymbol(asset));
             if (isolatedSymbol != null)
-                qs.AddParameter("isolatedSymbol", isolatedSymbol);
+                qs.AddParameter("isolatedSymbol", CommonUtility.NormalizeSymbol(isolatedSymbol));
             if (startTime != null)
                 qs.AddParameter("startTime", CommonUtility.ConvertToApiTime(startTime.Value));
             if (endTime != null)
@@ -2155,9 +2158,9 @@ namespace Oakbranch.Binance.Margin
             };
 
             QueryBuilder qs = new QueryBuilder(158);
-            qs.AddParameter("asset", asset);
+            qs.AddParameter("asset", CommonUtility.NormalizeSymbol(asset));
             if (isolatedSymbol != null)
-                qs.AddParameter("isolatedSymbol", isolatedSymbol);
+                qs.AddParameter("isolatedSymbol", CommonUtility.NormalizeSymbol(isolatedSymbol));
 
             return new DeferredQuery<BorrowLimitInfo>(
                 query: new QueryParams(HttpMethod.GET, RESTEndpoint.Url, relEndpoint, qs, true),
@@ -2640,7 +2643,7 @@ namespace Oakbranch.Binance.Margin
             };
 
             QueryBuilder qs = new QueryBuilder(374);
-            qs.AddParameter("symbol", symbol);
+            qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
             qs.AddParameter("isIsolated", isIsolated);
             qs.AddParameter("side", Format(side));
             qs.AddParameter("type", Format(type));
@@ -3058,7 +3061,7 @@ namespace Oakbranch.Binance.Margin
             };
 
             QueryBuilder qs = new QueryBuilder(195);
-            qs.AddParameter("symbol", symbol);
+            qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
             qs.AddParameter("isIsolated", isIsolated);
             if (orderId != null)
             {
@@ -3102,7 +3105,7 @@ namespace Oakbranch.Binance.Margin
             };
 
             QueryBuilder qs = new QueryBuilder(155);
-            qs.AddParameter("symbol", symbol);
+            qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
             qs.AddParameter("isIsolated", isIsolated);
 
             return new DeferredQuery<List<MarginOrder>>(
@@ -3170,7 +3173,7 @@ namespace Oakbranch.Binance.Margin
             };
 
             QueryBuilder qs = new QueryBuilder(195);
-            qs.AddParameter("symbol", symbol);
+            qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
             qs.AddParameter("isIsolated", isIsolated);
             if (orderId != null)
             {
@@ -3227,7 +3230,7 @@ namespace Oakbranch.Binance.Margin
             };
 
             QueryBuilder qs = new QueryBuilder(193);
-            qs.AddParameter("symbol", symbol);
+            qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
             qs.AddParameter("isIsolated", isIsolated);
             if (fromId != null)
             {
@@ -3302,7 +3305,7 @@ namespace Oakbranch.Binance.Margin
             };
 
             QueryBuilder qs = new QueryBuilder(137);
-            if (symbol != null) qs.AddParameter("symbol", symbol);
+            if (symbol != null) qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
             qs.AddParameter("isIsolated", isIsolated);
 
             return new DeferredQuery<List<MarginOrder>>(
@@ -3414,7 +3417,7 @@ namespace Oakbranch.Binance.Margin
             };
 
             QueryBuilder qs = new QueryBuilder(193);
-            qs.AddParameter("symbol", symbol);
+            qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
             qs.AddParameter("isIsolated", isIsolated);
             if (orderId != null)
             {
@@ -3610,7 +3613,7 @@ namespace Oakbranch.Binance.Margin
             qs.AddParameter("isIsolated", isIsolated);
             if (symbol != null)
             {
-                qs.AddParameter("symbol", symbol);
+                qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
             }
 
             return new DeferredQuery<List<RateLimiter>>(
