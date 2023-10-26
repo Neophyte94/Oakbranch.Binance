@@ -156,6 +156,41 @@ namespace Oakbranch.Binance.UnitTests
             LogObject(result);
         }
 
+        [Test, Retry(DefaultTestRetryLimit)]
+        public async Task GetOldTrades_ReturnsDefaultCount_WhenOnlySymbolSpecified()
+        {
+            // Arrange.
+            string symbol = "BTCUSDT";
+            List<Trade> result;
+
+            // Act;
+            using IDeferredQuery<List<Trade>> query = m_Client.PrepareGetOldTrades(symbol);
+            result = await query.ExecuteAsync(CancellationToken.None);
+
+            // Assert.
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result, Has.Count.EqualTo(SpotMarketApiClient.DefaultTradesQueryLimit));
+        }
+
+        [Retry(DefaultTestRetryLimit)]
+        [TestCase(1)]
+        [TestCase(SpotMarketApiClient.MaxTradesQueryLimit - 1)]
+        [TestCase(SpotMarketApiClient.MaxTradesQueryLimit)]
+        public async Task GetOldTrades_ReturnsExactCount_WhenSymbolAndLimitSpecified(int limit)
+        {
+            // Arrange.
+            string symbol = "BTCUSDT";
+            List<Trade> result;
+
+            // Act;
+            using IDeferredQuery<List<Trade>> query = m_Client.PrepareGetOldTrades(symbol, limit: limit);
+            result = await query.ExecuteAsync(CancellationToken.None);
+
+            // Assert.
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result, Has.Count.EqualTo(limit));
+        }
+
         #endregion
     }
 }
