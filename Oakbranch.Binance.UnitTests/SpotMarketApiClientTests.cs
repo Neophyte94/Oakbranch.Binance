@@ -170,6 +170,7 @@ namespace Oakbranch.Binance.UnitTests
             // Assert.
             Assert.That(result, Is.Not.Null);
             Assert.That(result, Has.Count.EqualTo(SpotMarketApiClient.DefaultTradesQueryLimit));
+            LogCollection(result, 10);
         }
 
         [Retry(DefaultTestRetryLimit)]
@@ -189,6 +190,19 @@ namespace Oakbranch.Binance.UnitTests
             // Assert.
             Assert.That(result, Is.Not.Null);
             Assert.That(result, Has.Count.EqualTo(limit));
+            LogCollection(result, 10);
+        }
+
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase(" ")]
+        public void GetOldTrades_ThrowsArgumentNullException_WhenEmptySymbolSpecified(string symbol)
+        {
+            // Arrange.
+            TestDelegate td = new TestDelegate(() => m_Client.PrepareGetOldTrades(symbol));
+
+            // Act & Assert.
+            Assert.That(td, Throws.ArgumentNullException);
         }
 
         #endregion
