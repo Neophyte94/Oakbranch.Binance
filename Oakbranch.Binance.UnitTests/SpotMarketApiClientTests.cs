@@ -10,6 +10,7 @@ namespace Oakbranch.Binance.UnitTests
     {
         #region Constants
 
+        private const string DefaultSymbol = "BTCUSDT";
         private const int GlobalSetUpTimeout = 10000; // in ms.
         private const int GlobalSetUpRetryLimit = 3;
         public const int DefaultTestTimeout = 10000; // in ms.
@@ -17,9 +18,25 @@ namespace Oakbranch.Binance.UnitTests
 
         #endregion
 
-        #region Static methods
+        #region Static members
 
         private static readonly TimeSpan TimeErrorTolerance = new TimeSpan(TimeSpan.TicksPerHour);
+
+        private static object[] HistoricalPeriodCases
+        {
+            get
+            {
+                DateTime now = DateTime.UtcNow;
+                return new object[]
+                {
+                    new object?[] { now.AddDays(-1.0), null },
+                    new object?[] { now.AddDays(-1.0).AddHours(-1.0), now.AddDays(-1.0) },
+                    new object?[] { null, now.AddDays(-1.0) },
+                    new object?[] { now.AddYears(-1), null },
+                    new object?[] { now.AddDays(-1.0).AddSeconds(-1.0), now.AddDays(-1.0) }
+                };
+            }
+        }
 
         #endregion
 
@@ -62,7 +79,7 @@ namespace Oakbranch.Binance.UnitTests
 
         #region Instance methods
 
-        // Initialization and finalization methods.
+        // Initialization and finalization.
         [OneTimeSetUp]
         public async Task SetUpGlobalAsync()
         {
@@ -97,7 +114,7 @@ namespace Oakbranch.Binance.UnitTests
             }
         }
 
-        // Test methods.
+        // Check server time tests.
         [Test, Retry(DefaultTestRetryLimit)]
         public async Task CheckServerTime_ReturnsValidTime_WhenDefaultParams()
         {
@@ -106,12 +123,13 @@ namespace Oakbranch.Binance.UnitTests
 
             // Act.
             using IDeferredQuery<DateTime> query = m_Client.PrepareCheckServerTime();
-            result = await query.ExecuteAsync(CancellationToken.None);
+            result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
 
             // Assert.
             Assert.That(result, Is.EqualTo(DateTime.UtcNow).Within(TimeErrorTolerance));
         }
 
+        // Get exchange info tests.
         [Test, Retry(DefaultTestRetryLimit)]
         public async Task GetExchangeInfo_ReturnsValidInstance_WhenDefaultParams()
         {
@@ -120,7 +138,7 @@ namespace Oakbranch.Binance.UnitTests
 
             // Act.
             using IDeferredQuery<SpotExchangeInfo> query = m_Client.PrepareGetExchangeInfo();
-            result = await query.ExecuteAsync(CancellationToken.None);
+            result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
 
             // Assert.
             Assert.That(result, Is.Not.Null);
@@ -143,7 +161,7 @@ namespace Oakbranch.Binance.UnitTests
 
             // Act.
             using IDeferredQuery<SpotExchangeInfo> query = m_Client.PrepareGetExchangeInfo(symbols);
-            result = await query.ExecuteAsync(CancellationToken.None);
+            result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
 
             // Assert.
             Assert.That(result, Is.Not.Null);
@@ -156,16 +174,16 @@ namespace Oakbranch.Binance.UnitTests
             LogObject(result);
         }
 
+        // Get old trades tests.
         [Test, Retry(DefaultTestRetryLimit)]
         public async Task GetOldTrades_ReturnsDefaultCount_WhenOnlySymbolSpecified()
         {
             // Arrange.
-            string symbol = "BTCUSDT";
             List<Trade> result;
 
             // Act;
-            using IDeferredQuery<List<Trade>> query = m_Client.PrepareGetOldTrades(symbol);
-            result = await query.ExecuteAsync(CancellationToken.None);
+            using IDeferredQuery<List<Trade>> query = m_Client.PrepareGetOldTrades(DefaultSymbol);
+            result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
 
             // Assert.
             Assert.That(result, Is.Not.Null);
@@ -180,12 +198,11 @@ namespace Oakbranch.Binance.UnitTests
         public async Task GetOldTrades_ReturnsExactCount_WhenSymbolAndLimitSpecified(int limit)
         {
             // Arrange.
-            string symbol = "BTCUSDT";
             List<Trade> result;
 
             // Act;
-            using IDeferredQuery<List<Trade>> query = m_Client.PrepareGetOldTrades(symbol, limit: limit);
-            result = await query.ExecuteAsync(CancellationToken.None);
+            using IDeferredQuery<List<Trade>> query = m_Client.PrepareGetOldTrades(DefaultSymbol, limit: limit);
+            result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
 
             // Assert.
             Assert.That(result, Is.Not.Null);
@@ -203,6 +220,34 @@ namespace Oakbranch.Binance.UnitTests
 
             // Act & Assert.
             Assert.That(td, Throws.ArgumentNullException);
+        }
+
+        // Get aggregate trades tests.
+        [TestCaseSource(nameof(HistoricalPeriodCases)), Retry(DefaultTestRetryLimit)]
+        public async Task GetAggregateTrades_ReturnsItemsWithinPeriod_WhenPeriodSpecified(DateTime? from, DateTime? to)
+        {
+            // Arrange.
+            List<AggregateTrade> result;
+
+            // Act.
+            using IDeferredQuery<List<AggregateTrade>> query = m_Client.PrepareGetAggregateTrades(
+                symbol: DefaultSymbol,
+                startTime: from,
+                endTime: to,
+                limit: null);
+            result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+            // Assert.
+            Assert.That(result, Is.Not.Null);
+            if (from != null)
+            {
+                Assert.That(result, Has.All.Matches((AggregateTrade at) => at.Timestamp >= from.Value));
+            }
+            if (to != null)
+            {
+                Assert.That(result, Has.All.Matches((AggregateTrade at) => at.Timestamp <= to.Value));
+            }
+            LogCollection(result, 10);
         }
 
         #endregion
