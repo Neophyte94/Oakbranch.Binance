@@ -1,4 +1,5 @@
 ﻿using System;
+using NUnit.Framework.Internal;
 using Oakbranch.Common.Logging;
 using Oakbranch.Binance.RateLimits;
 using Oakbranch.Binance.Spot;
@@ -20,20 +21,31 @@ namespace Oakbranch.Binance.UnitTests
 
         #region Static members
 
+        private static readonly DateTime ReferenceDateTime = new DateTime(2023, 11, 01);
         private static readonly TimeSpan TimeErrorTolerance = new TimeSpan(TimeSpan.TicksPerHour);
 
-        private static object[] HistoricalPeriodCases
+        public static object[] CorrectAggrTradePeriodCases
         {
             get
             {
-                DateTime now = DateTime.UtcNow;
                 return new object[]
                 {
-                    new object?[] { now.AddDays(-1.0), null },
-                    new object?[] { now.AddDays(-1.0).AddHours(-1.0), now.AddDays(-1.0) },
-                    new object?[] { null, now.AddDays(-1.0) },
-                    new object?[] { now.AddYears(-1), null },
-                    new object?[] { now.AddDays(-1.0).AddSeconds(-1.0), now.AddDays(-1.0) }
+                    new object?[] { ReferenceDateTime.AddHours(-1.0), null },
+                    new object?[] { ReferenceDateTime.AddDays(-1.0).AddHours(-1.0), ReferenceDateTime.AddDays(-1.0) },
+                    new object?[] { null, ReferenceDateTime.AddDays(-1.0) },
+                    new object?[] { ReferenceDateTime.AddYears(-1), null },
+                    new object?[] { ReferenceDateTime.AddHours(-1.0).AddSeconds(-1.0), ReferenceDateTime.AddHours(-1.0) }
+                };
+            }
+        }
+        public static object[] InvalidAggrTradePeriodCases
+        {
+            get
+            {
+                return new object[]
+                {
+                    new object?[] { ReferenceDateTime, ReferenceDateTime.AddMilliseconds(-1.0), },
+                    new object?[] { ReferenceDateTime.AddHours(-1.0), ReferenceDateTime.AddHours(-2.0), },
                 };
             }
         }
@@ -148,7 +160,11 @@ namespace Oakbranch.Binance.UnitTests
                 Assert.That(result.ServerTime, Is.EqualTo(DateTime.UtcNow).Within(TimeErrorTolerance));
                 Assert.That(result.Timezone, Is.Not.Null);
             });
-            LogObject(result);
+
+            if (AreQueryResultsLogged)
+            {
+                LogObject(result);
+            }
         }
 
         [Retry(DefaultTestRetryLimit)]
@@ -171,7 +187,11 @@ namespace Oakbranch.Binance.UnitTests
                 Assert.That(result.ServerTime, Is.EqualTo(DateTime.UtcNow).Within(TimeErrorTolerance));
                 Assert.That(result.Timezone, Is.Not.Null);
             });
-            LogObject(result);
+
+            if (AreQueryResultsLogged)
+            {
+                LogObject(result);
+            }
         }
 
         // Get old trades tests.
@@ -188,7 +208,11 @@ namespace Oakbranch.Binance.UnitTests
             // Assert.
             Assert.That(result, Is.Not.Null);
             Assert.That(result, Has.Count.EqualTo(SpotMarketApiClient.DefaultTradesQueryLimit));
-            LogCollection(result, 10);
+
+            if (AreQueryResultsLogged)
+            {
+                LogCollection(result, 10);
+            }
         }
 
         [Retry(DefaultTestRetryLimit)]
@@ -207,7 +231,11 @@ namespace Oakbranch.Binance.UnitTests
             // Assert.
             Assert.That(result, Is.Not.Null);
             Assert.That(result, Has.Count.EqualTo(limit));
-            LogCollection(result, 10);
+
+            if (AreQueryResultsLogged)
+            {
+                LogCollection(result, 10);
+            }
         }
 
         [TestCase(null)]
@@ -223,7 +251,7 @@ namespace Oakbranch.Binance.UnitTests
         }
 
         // Get aggregate trades tests.
-        [TestCaseSource(nameof(HistoricalPeriodCases)), Retry(DefaultTestRetryLimit)]
+        [TestCaseSource(nameof(CorrectAggrTradePeriodCases)), Retry(DefaultTestRetryLimit)]
         public async Task GetAggregateTrades_ReturnsItemsWithinPeriod_WhenPeriodSpecified(DateTime? from, DateTime? to)
         {
             // Arrange.
@@ -247,7 +275,40 @@ namespace Oakbranch.Binance.UnitTests
             {
                 Assert.That(result, Has.All.Matches((AggregateTrade at) => at.Timestamp <= to.Value));
             }
-            LogCollection(result, 10);
+
+            if (AreQueryResultsLogged)
+            {
+                LogCollection(result, 10);
+            }
+        }
+
+        [TestCaseSource(nameof(InvalidAggrTradePeriodCases))]
+        public void GetAggregateTrades_ThrowsArgumentException_WhenInvalidPeriodSpecified(DateTime from, DateTime to)
+        {
+            // Arrange.
+            TestDelegate td = new TestDelegate(() =>
+                m_Client.PrepareGetAggregateTrades(
+                    symbol: DefaultSymbol,
+                    startTime: from,
+                    endTime: to));
+
+            // Act & Assert.
+            Assert.That(td, Throws.ArgumentException);
+        }
+
+        [TestCase(0)]
+        [TestCase(-1)]
+        [TestCase(SpotMarketApiClient.MaxTradesQueryLimit + 1)]
+        public void GetAggregateTrades_ThrowsArgumentOutOfRangeException_WhenInvalidLimitSpecified(int limit)
+        {
+            // Arrange.
+            TestDelegate td = new TestDelegate(() =>
+                m_Client.PrepareGetAggregateTrades(
+                    symbol: DefaultSymbol,
+                    limit: limit));
+
+            // Act & Assert.
+            Assert.That(td, Throws.Exception.AssignableFrom<ArgumentOutOfRangeException>());
         }
 
         #endregion
