@@ -8,6 +8,7 @@ using Oakbranch.Common.Logging;
 using Oakbranch.Binance.RateLimits;
 using Oakbranch.Binance.Filters.Symbol;
 using Oakbranch.Binance.Filters.Exchange;
+using Oakbranch.Binance.Exceptions;
 
 namespace Oakbranch.Binance.Spot
 {
@@ -22,7 +23,7 @@ namespace Oakbranch.Binance.Spot
         /// </summary>
         public const int ExpectedSymbolsCount = 2500;
 
-        // Contraints.
+        // Constraints.
         /// <summary>
         /// The maximum number of items that can be fetched in a single trades query.
         /// </summary>
@@ -149,7 +150,8 @@ namespace Oakbranch.Binance.Spot
         /// <summary>
         /// Creates a deferred query to get the current server time.
         /// </summary>
-        /// <returns></returns>
+        /// <exception cref="ClientNotInitializedException"/>
+        /// <exception cref="ObjectDisposedException"/>
         public IDeferredQuery<DateTime> PrepareCheckServerTime()
         {
             ThrowIfNotRunning();
@@ -170,6 +172,10 @@ namespace Oakbranch.Binance.Spot
         /// <summary>
         /// Gets the current server time.
         /// </summary>
+        /// <exception cref="ClientNotInitializedException"/>
+        /// <exception cref="ObjectDisposedException"/>
+        /// <exception cref="QueryException"/>
+        /// <exception cref="OperationCanceledException"/>
         public Task<DateTime> CheckServerTimeAsync(CancellationToken ct)
         {
             using (IDeferredQuery<DateTime> query = PrepareCheckServerTime())
@@ -201,18 +207,23 @@ namespace Oakbranch.Binance.Spot
         /// <summary>
         /// Creates a deferred query for information on the spot exchange, including all existing symbols.
         /// </summary>
+        /// <exception cref="ClientNotInitializedException"/>
+        /// <exception cref="ObjectDisposedException"/>
         public IDeferredQuery<SpotExchangeInfo> PrepareGetExchangeInfo() => PrepareGetExchangeInfo(null);
 
         /// <summary>
         /// Creates a deferred query for information on the spot exchange, limiting to the specified symbols.
         /// </summary>
+        /// <exception cref="ArgumentException"/>
+        /// <exception cref="ClientNotInitializedException"/>
+        /// <exception cref="ObjectDisposedException"/>
         public IDeferredQuery<SpotExchangeInfo> PrepareGetExchangeInfo(params string[] symbols)
         {
             ThrowIfNotRunning();
 
             QueryWeight[] weights = new QueryWeight[]
             {
-                new QueryWeight(GetWeightDimensionId(RateLimitType.IP), 10),
+                new QueryWeight(GetWeightDimensionId(RateLimitType.IP), 20),
             };
 
             QueryBuilder qs = null;
@@ -250,6 +261,11 @@ namespace Oakbranch.Binance.Spot
         /// <summary>
         /// Gets information on the spot exchange, limiting to the specified symbols, asynchronously.
         /// </summary>
+        /// <exception cref="ArgumentException"/>
+        /// <exception cref="ClientNotInitializedException"/>
+        /// <exception cref="ObjectDisposedException"/>
+        /// <exception cref="QueryException"/>
+        /// <exception cref="OperationCanceledException"/>
         public Task<SpotExchangeInfo> GetExchangeInfoAsync(string[] symbols = null, CancellationToken ct = default)
         {
             using (IDeferredQuery<SpotExchangeInfo> query = PrepareGetExchangeInfo(symbols))
@@ -523,6 +539,8 @@ namespace Oakbranch.Binance.Spot
         /// <para>The products info includes traded assets' full names and circulating supply (where applicable).</para>
         /// <para>The query does not consume any limits because it's transfered through a public non-API endpoint.</para>
         /// </summary>
+        /// <exception cref="ClientNotInitializedException"/>
+        /// <exception cref="ObjectDisposedException"/>
         public IDeferredQuery<Dictionary<string, Product>> PrepareGetProductsInfo()
         {
             ThrowIfNotRunning();
@@ -537,6 +555,10 @@ namespace Oakbranch.Binance.Spot
         /// <summary>
         /// Requests products information, including traded assets' full names and circulating supply (where applicable).
         /// </summary>
+        /// <exception cref="ClientNotInitializedException"/>
+        /// <exception cref="ObjectDisposedException"/>
+        /// <exception cref="QueryException"/>
+        /// <exception cref="OperationCanceledException"/>
         public Task<Dictionary<string, Product>> GetProductsInfoAsync(CancellationToken ct = default)
         {
             using (IDeferredQuery<Dictionary<string, Product>> query = PrepareGetProductsInfo())
@@ -706,6 +728,9 @@ namespace Oakbranch.Binance.Spot
         /// <param name="symbol">A symbol to get trades for.</param>
         /// <param name="limit">A maximum number of trades to fetch. The maximum value is 1000. The default value is 500.</param>
         /// <param name="fromId">The ID of a trade to fetch from. If not specified, the recent trades are fetched.</param>
+        /// <exception cref="ArgumentNullException"/>
+        /// <exception cref="ClientNotInitializedException"/>
+        /// <exception cref="ObjectDisposedException"/>
         public IDeferredQuery<List<Trade>> PrepareGetOldTrades(
             string symbol, int? limit = null, long? fromId = null)
         {
@@ -715,7 +740,7 @@ namespace Oakbranch.Binance.Spot
 
             QueryWeight[] weights = new QueryWeight[]
             {
-                new QueryWeight(GetWeightDimensionId(RateLimitType.IP), 5),
+                new QueryWeight(GetWeightDimensionId(RateLimitType.IP), 10),
             };
 
             QueryBuilder qs = new QueryBuilder(56);
@@ -737,9 +762,11 @@ namespace Oakbranch.Binance.Spot
         /// <summary>
         /// Gets older market trades asynchronously.
         /// </summary>
-        /// <param name="symbol">A symbol to get trades for.</param>
-        /// <param name="limit">A maximum number of trades to fetch. The maximum value is 1000. The default value is 500.</param>
-        /// <param name="fromId">The ID of a trade to fetch from. If not specified, the recent trades are fetched.</param>
+        /// <exception cref="ArgumentNullException"/>
+        /// <exception cref="ClientNotInitializedException"/>
+        /// <exception cref="ObjectDisposedException"/>
+        /// <exception cref="QueryException"/>
+        /// <exception cref="OperationCanceledException"/>
         public Task<List<Trade>> GetOldTradesAsync(string symbol,
             int? limit = null, long? fromId = null, CancellationToken ct = default)
         {
@@ -844,10 +871,13 @@ namespace Oakbranch.Binance.Spot
         /// <para>The maximum value is <see cref="MaxTradesQueryLimit"/> (1000).</para>
         /// <para>If not specified, the default value <see cref="DefaultTradesQueryLimit"/> (500) is used.</para>
         /// </param>
-        /// <param name="startTime">Time to fetch aggregate trades from (inclusive).
-        /// If <paramref name="endTime"/> is specified too, an interval between these values must be less than an hour.</param>
-        /// <param name="endTime">Time to fetch aggregate trades until (inclusive).
-        /// If <paramref name="startTime"/> is specified too, an interval between these values must be less than an hour.</param>
+        /// <param name="startTime">Time to fetch aggregate trades from (inclusive).</param>
+        /// <param name="endTime">Time to fetch aggregate trades until (inclusive)..</param>
+        /// <exception cref="ArgumentNullException"/>
+        /// <exception cref="ArgumentException"/>
+        /// <exception cref="ArgumentOutOfRangeException"/>
+        /// <exception cref="ClientNotInitializedException"/>
+        /// <exception cref="ObjectDisposedException"/>
         public IDeferredQuery<List<AggregateTrade>> PrepareGetAggregateTrades(
             string symbol, DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
         {
@@ -861,7 +891,7 @@ namespace Oakbranch.Binance.Spot
 
             QueryWeight[] weights = new QueryWeight[]
             {
-                new QueryWeight(GetWeightDimensionId(RateLimitType.IP), 1),
+                new QueryWeight(GetWeightDimensionId(RateLimitType.IP), 2),
             };
 
             QueryBuilder qs = new QueryBuilder(75);
@@ -885,6 +915,13 @@ namespace Oakbranch.Binance.Spot
         /// <summary>
         /// Gets compressed, aggregate trades for the specified time period, asynchronously.
         /// </summary>
+        /// <exception cref="ArgumentNullException"/>
+        /// <exception cref="ArgumentException"/>
+        /// <exception cref="ArgumentOutOfRangeException"/>
+        /// <exception cref="ClientNotInitializedException"/>
+        /// <exception cref="ObjectDisposedException"/>
+        /// <exception cref="QueryException"/>
+        /// <exception cref="OperationCanceledException"/>
         public Task<List<AggregateTrade>> GetAggregateTradesAsync(string symbol,
             DateTime? startTime = null, DateTime? endTime = null, int? limit = null, CancellationToken ct = default)
         {
@@ -905,6 +942,10 @@ namespace Oakbranch.Binance.Spot
         /// <para>If not specified, the default value <see cref="DefaultTradesQueryLimit"/> (500) is used.</para>
         /// </param>
         /// <param name="fromId">The ID of a trade to fetch from (inclusive).</param>
+        /// <exception cref="ArgumentNullException"/>
+        /// <exception cref="ArgumentOutOfRangeException"/>
+        /// <exception cref="ClientNotInitializedException"/>
+        /// <exception cref="ObjectDisposedException"/>
         public IDeferredQuery<List<AggregateTrade>> PrepareGetAggregateTrades(
             string symbol, long fromId, int? limit = null)
         {
@@ -937,6 +978,12 @@ namespace Oakbranch.Binance.Spot
         /// <summary>
         /// Gets compressed, aggregate trades starting from the specified trade, asynchronously.
         /// </summary>
+        /// <exception cref="ArgumentNullException"/>
+        /// <exception cref="ArgumentOutOfRangeException"/>
+        /// <exception cref="ClientNotInitializedException"/>
+        /// <exception cref="ObjectDisposedException"/>
+        /// <exception cref="QueryException"/>
+        /// <exception cref="OperationCanceledException"/>
         public Task<List<AggregateTrade>> GetAggregateTradesAsync(
             string symbol, long fromId, int? limit = null, CancellationToken ct = default)
         {
@@ -1048,9 +1095,14 @@ namespace Oakbranch.Binance.Spot
         /// <param name="limit">
         /// The maximum number of candlesticks to fetch.
         /// <para>The maximum value is <see cref="MaxKlinesQueryLimit"/> (1000).</para>
-        /// <para>If not specified, the default value <see cref="DefaultKlinesQueryLimit"/> (500) is used.</para>
+        /// <para>If not specified, the default value <see cref="DefaultKlinesQueryLimit"/> (500) is used.</para></param>
         /// <param name="startTime">Time to fetch data from (inclusive).</param>
         /// <param name="endTime">Time to fetch data prior to (inclusive).</param>
+        /// <exception cref="ArgumentNullException"/>
+        /// <exception cref="ArgumentOutOfRangeException"/>
+        /// <exception cref="ArgumentException"/>
+        /// <exception cref="ClientNotInitializedException"/>
+        /// <exception cref="ObjectDisposedException"/>
         public IDeferredQuery<List<Candlestick>> PrepareGetCandlestickData(
             string symbol, KlineInterval interval,
             int? limit = null, DateTime? startTime = null, DateTime? endTime = null)
@@ -1065,7 +1117,7 @@ namespace Oakbranch.Binance.Spot
 
             QueryWeight[] weights = new QueryWeight[]
             {
-                new QueryWeight(GetWeightDimensionId(RateLimitType.IP), 1),
+                new QueryWeight(GetWeightDimensionId(RateLimitType.IP), 2),
             };
 
             QueryBuilder qs = new QueryBuilder(109);
@@ -1091,6 +1143,13 @@ namespace Oakbranch.Binance.Spot
         /// Gets kline/candlestick bars for the specified symbol asynchronously.
         /// <para>Klines are uniquely identified by their open time.</para>
         /// </summary>
+        /// <exception cref="ArgumentNullException"/>
+        /// <exception cref="ArgumentOutOfRangeException"/>
+        /// <exception cref="ArgumentException"/>
+        /// <exception cref="ClientNotInitializedException"/>
+        /// <exception cref="ObjectDisposedException"/>
+        /// <exception cref="QueryException"/>
+        /// <exception cref="OperationCanceledException"/>
         public Task<List<Candlestick>> GetCandlestickDataAsync(string symbol, KlineInterval interval,
             int? limit = null, DateTime? startTime = null, DateTime? endTime = null, CancellationToken ct = default)
         {
@@ -1175,12 +1234,15 @@ namespace Oakbranch.Binance.Spot
         /// Prepares a query for the specified symbols' latest prices.
         /// </summary>
         /// <param name="symbols">The symbols to get latest prices for, or null to get prices for all symbols.</param>
+        /// <exception cref="ArgumentException"/>
+        /// <exception cref="ClientNotInitializedException"/>
+        /// <exception cref="ObjectDisposedException"/>
         public IDeferredQuery<List<PriceTick>> PrepareGetSymbolPriceTicker(params string[] symbols)
         {
             ThrowIfNotRunning();
             QueryWeight[] weights = new QueryWeight[]
             {
-                new QueryWeight(GetWeightDimensionId(RateLimitType.IP), symbols != null && symbols.Length == 1 ? 1u : 2u),
+                new QueryWeight(GetWeightDimensionId(RateLimitType.IP), symbols != null && symbols.Length == 1 ? 2u : 4u),
             };
 
             QueryBuilder qs = null;
@@ -1218,6 +1280,11 @@ namespace Oakbranch.Binance.Spot
         /// <summary>
         /// Gets latest prices for the specified symbols asynchronously.
         /// </summary>
+        /// <exception cref="ArgumentException"/>
+        /// <exception cref="ClientNotInitializedException"/>
+        /// <exception cref="ObjectDisposedException"/>
+        /// <exception cref="QueryException"/>
+        /// <exception cref="OperationCanceledException"/>
         public Task<List<PriceTick>> GetSymbolPriceTickerAsync(CancellationToken ct, params string[] symbols)
         {
             using (IDeferredQuery<List<PriceTick>> query = PrepareGetSymbolPriceTicker(symbols))
