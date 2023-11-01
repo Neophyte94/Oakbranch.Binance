@@ -207,10 +207,12 @@ namespace Oakbranch.Binance.RateLimits
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("The current rate limits usage:");
+
             foreach (LimitCounter counter in m_IdToLimitDict.Values)
             {
-                sb.AppendLine($"{counter.Name}: {counter.Usage}");
+                sb.AppendLine($"{counter.Name}: {counter.Usage} / {counter.Limit}");
             }
+
             logger.Log(LogLevel.Debug, "API rate limits", sb.ToString());
         }
 #endif
