@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Threading;
 using Oakbranch.Common.Logging;
 using Oakbranch.Binance.Exceptions;
 using Oakbranch.Binance.RateLimits;
-using System.Text;
 
 namespace Oakbranch.Binance
 {
+    /// <summary>
+    /// Provides base functionality for high-level client classes built upon specific Binance API areas.
+    /// <para>Implements the <see cref="IDisposable"/> interface.</para>
+    /// </summary>
     public abstract class ApiClientBase : IDisposable
     {
         #region Constants
@@ -22,6 +24,9 @@ namespace Oakbranch.Binance
         #region Instance members
 
         private IApiConnector m_Connector;
+        /// <summary>
+        /// Gets the API connector used by the client for accessing low-level functions. 
+        /// </summary>
         public IApiConnector Connector
         {
             get
@@ -32,21 +37,40 @@ namespace Oakbranch.Binance
         }
 
         private IRateLimitsRegistry m_LimitsRegistry;
+        /// <summary>
+        /// Gets the rate limits registry used by the client for checking and updating API rate limits.
+        /// </summary>
         public IRateLimitsRegistry LimitsRegistry => m_LimitsRegistry;
 
         private ILogger m_Logger;
         private Task m_InitializationTask;
 
+        /// <summary>
+        /// Gets a string used for specifying the logging context of logs posted by this client.
+        /// </summary>
         protected virtual string LogContextName => LogContextNameDefault;
 
         private ClientState m_State;
+        /// <summary>
+        /// Gets a value indicating whether the client has been initialized and not disposed yet.
+        /// </summary>
         public bool IsInitialized => m_State == ClientState.Running;
+        /// <summary>
+        /// Gets a value indicating whether the client has been disposed.
+        /// </summary>
         public bool IsDisposed => m_State == ClientState.Disposed;
 
         #endregion
 
         #region Instance constructors
 
+        /// <summary>
+        /// Creates an instance of the <see cref="ApiClientBase"/> class with the provided components.
+        /// </summary>
+        /// <param name="connector">The API connector to use for accessing low-level web functions.</param>
+        /// <param name="limitsRegistry">The rate limits registry to use for checking and updating API rate limits.</param>
+        /// <param name="logger">The logger to use for posting log messages.</param>
+        /// <exception cref="ArgumentNullException"/>
         internal ApiClientBase(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger logger = null)
         {
             m_Connector = connector ?? throw new ArgumentNullException(nameof(connector));
@@ -58,6 +82,12 @@ namespace Oakbranch.Binance
 
         #region Static methods
 
+        /// <summary>
+        /// Generates a deterministic identifier for a query weight dimension with the given parameters.
+        /// </summary>
+        /// <param name="discriminativeEndpoint">The endpoint that the query weight dimension is applied to.</param>
+        /// <param name="limitType">Th limit type associated with the query weight dimension.</param>
+        /// <returns></returns>
         protected static int GenerateWeightDimensionId(string discriminativeEndpoint, RateLimitType limitType)
         {
             return unchecked(
@@ -65,11 +95,23 @@ namespace Oakbranch.Binance
                 + 307 * (int)limitType);
         }
 
+        /// <summary>
+        /// Generates a deterministic identifier for a API rate limit with the given parameters.
+        /// </summary>
+        /// <param name="dimensionId">The query weight dimension associated with the API rate limit.</param>
+        /// <param name="resetInterval">The time interval that the API rate limit is applied to.</param>
+        /// <returns></returns>
         protected static int GenerateRateLimitId(int dimensionId, TimeSpan resetInterval)
         {
             return unchecked(3105 * dimensionId - 9494 * (int)resetInterval.Ticks);
         }
 
+        /// <summary>
+        /// Converts the given time unit into its laconic string representation.
+        /// </summary>
+        /// <param name="unit">The time interval unit to format.</param>
+        /// <returns>The string representation of the specified time unit.</returns>
+        /// <exception cref="ArgumentException"/>
         protected static string Format(Interval unit)
         {
             switch (unit)
@@ -131,11 +173,25 @@ namespace Oakbranch.Binance
             }
         }
 
+        /// <summary>
+        /// Converts the given response format error into a corresponding query exception.
+        /// </summary>
+        /// <param name="exception">The exception representing the response format error.</param>
+        /// <returns>
+        /// An instance of the <see cref="QueryException"/> class containing information about the response format error.
+        /// </returns>
         protected static QueryException GenerateQueryException(JsonException exception)
         {
             return new QueryException(FailureReason.UnknownResponseFormat, exception.Message);
         }
 
+        /// <summary>
+        /// Converts the given API-specific error into a corresponding query exception.
+        /// </summary>
+        /// <param name="error">The information about the API error.</param>
+        /// <returns>
+        /// An instance of the <see cref="QueryException"/> class containing information about the API-specific error.
+        /// </returns>
         protected static QueryException GenerateQueryException(in ApiErrorInfo error)
         {
             switch (error.Code)
@@ -166,6 +222,13 @@ namespace Oakbranch.Binance
         #region Instance methods
 
         // Initialization.
+        /// <summary>
+        /// Prepares the client for creating and sending queries, asynchronously.
+        /// <para>An exact initialization procedure depends on a specific implementation of the client,
+        /// but it typically includes validating API credentials and setting / updating API rate limits.</para>
+        /// </summary>
+        /// <param name="ct">The cancellation token for the operation.</param>
+        /// <returns>A task representing the initialization operation.</returns>
         public Task InitializeAsync(CancellationToken ct)
         {
             ThrowIfDisposed();
@@ -207,6 +270,13 @@ namespace Oakbranch.Binance
                 m_State = ClientState.Running;
         }
 
+        /// <summary>
+        /// When implemented in a derived class, performs actions required for the client
+        /// for being able to create &amp; send queries in its API area.
+        /// <para>The initialization typically includes validating API credentials and setting / updating API rate limits.</para>
+        /// </summary>
+        /// <param name="ct">The cancellation token for the operation.</param>
+        /// <returns>A task representing the initialization operation within a derived class.</returns>
         protected abstract Task InitializeProtectedAsync(CancellationToken ct);
 
         /// <summary>
@@ -215,6 +285,7 @@ namespace Oakbranch.Binance
         /// <para>For a failed response, tries to parse its content and include the error message in the exception.</para>
         /// </summary>
         /// <param name="initQueryResponse">The response to the initialization query.</param>
+        /// <exception cref="Exception"/>
         protected void EnsureSuccessfulInitResponse(Response initQueryResponse)
         {
             if (!initQueryResponse.IsSuccessful)
@@ -240,6 +311,12 @@ namespace Oakbranch.Binance
         }
 
         // Rate limiters.
+        /// <summary>
+        /// Parses a single rate limiter from the current position in the given JSON reader.
+        /// </summary>
+        /// <param name="reader">The JSON reader to parse from.</param>
+        /// <returns>An instance of the <see cref="RateLimiter"/> struct parsed from JSON.</returns>
+        /// <exception cref="JsonException"/>
         protected RateLimiter ParseRateLimiter(ref Utf8JsonReader reader)
         {
             ParseUtility.ValidateObjectStartToken(ref reader);
@@ -373,6 +450,19 @@ namespace Oakbranch.Binance
         }
 
         // Query execution.
+        /// <summary>
+        /// Executes a web query asynchronously with the specified parameters, handling API rate limits and parsing the response.
+        /// </summary>
+        /// <typeparam name="T">The type of the parsed response.</typeparam>
+        /// <param name="queryParams">The parameters defining the query.</param>
+        /// <param name="weights">The rate limit weights associated with the query.</param>
+        /// <param name="parseFunction">The function to use for parsing the response.</param>
+        /// <param name="parseArgs">Additional arguments to pass into the parse function.</param>
+        /// <param name="headersToLimitsMap">The HTTP headers map to use for updating the rate limits usage.</param>
+        /// <param name="ct">The cancellation token for the operation.</param>
+        /// <returns>A task representing the execution of the web query. Its result is the parsed web response.</returns>
+        /// <exception cref="ArgumentNullException"/>
+        /// <exception cref="QueryException"/>
         internal async Task<T> ExecuteQueryAsync<T>(
             QueryParams queryParams, IReadOnlyList<QueryWeight> weights,
             ParseResponseHandler<T> parseFunction, object parseArgs,
@@ -444,22 +534,45 @@ namespace Oakbranch.Binance
         }
 
         // Miscellaneous.
+        /// <summary>
+        /// Checks whether the given log severity level is enabled in the client's logger.
+        /// </summary>
+        /// <param name="level">The log severity level to check.</param>
+        /// <returns><see langword="true"/> if the client's logger accepts messages with the specified log severity level;
+        /// otherwise, <see langword="false"/>.</returns>
         protected bool IsLogLevelEnabled(LogLevel level)
         {
             return m_Logger != null && m_Logger.IsLevelEnabled(level);
         }
 
+        /// <summary>
+        /// Pushes a message into the client's logger at the specified log level,
+        /// using <see cref="LogContextName"/> as the logging context.
+        /// </summary>
+        /// <param name="level">The log severity level of the message.</param>
+        /// <param name="message">The message to be logged.</param>
         protected void PostLogMessage(LogLevel level, string message)
         {
             m_Logger?.Log(level, LogContextName, message);
         }
 
+        /// <summary>
+        /// Throws <see cref="ObjectDisposedException"/> if <see cref="IsDisposed"/> is <see langword="true"/>.
+        /// </summary>
+        /// <exception cref="ObjectDisposedException"/>
         protected void ThrowIfDisposed()
         {
             if (m_State == ClientState.Disposed)
                 throw new ObjectDisposedException(GetType().Name);
         }
 
+        /// <summary>
+        /// Throws an exception if the client is either not initialized or disposed.
+        /// <para>The exact type of the exception thrown depends on the values of <see cref="IsInitialized"/> and <see cref="IsDisposed"/>.</para>
+        /// </summary>
+        /// <exception cref="ClientNotInitializedException"/>
+        /// <exception cref="ObjectDisposedException"/>
+        /// <exception cref="Exception"/>
         protected void ThrowIfNotRunning()
         {
             if (m_State != ClientState.Running)
@@ -476,6 +589,7 @@ namespace Oakbranch.Binance
             }
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             Dispose(true);
