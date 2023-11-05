@@ -25,9 +25,9 @@ namespace Oakbranch.Binance
         }
 
         private ExecuteQueryHandler<T> m_ExecuteHandler;
-        private IReadOnlyDictionary<string, int> m_HeadersToLimitsMap;
+        private IReadOnlyDictionary<string, int>? m_HeadersToLimitsMap;
         private ParseResponseHandler<T> m_ParseHandler;
-        private object m_ParseArgs;
+        private object? m_ParseArgs;
         private bool m_IsDisposed;
 
         #endregion
@@ -38,16 +38,16 @@ namespace Oakbranch.Binance
             QueryParams query,
             ExecuteQueryHandler<T> executeHandler,
             ParseResponseHandler<T> parseHandler,
-            object parseArgs = null,
-            IList<QueryWeight> weights = null,
-            IReadOnlyDictionary<string, int> headersToLimitsMap = null)
+            object? parseArgs = null,
+            IList<QueryWeight>? weights = null,
+            IReadOnlyDictionary<string, int>? headersToLimitsMap = null)
         {
             if (query.IsUndefined)
                 throw new ArgumentNullException(nameof(query), $"The specified query parameters are empty.");
             m_ExecuteHandler = executeHandler ?? throw new ArgumentNullException(nameof(executeHandler));
             m_ParseHandler = parseHandler ?? throw new ArgumentNullException(nameof(parseHandler));
             m_Params = query;
-            m_Weights = new ReadOnlyCollection<QueryWeight>(weights ?? new QueryWeight[0]);
+            m_Weights = new ReadOnlyCollection<QueryWeight>(weights ?? Array.Empty<QueryWeight>());
             m_ParseArgs = parseArgs;
             m_HeadersToLimitsMap = headersToLimitsMap;
         }
@@ -62,12 +62,6 @@ namespace Oakbranch.Binance
             return m_ExecuteHandler(m_Params, m_Weights, m_ParseHandler, m_ParseArgs, m_HeadersToLimitsMap, ct);
         }
 
-        private void ThrowIfDisposed()
-        {
-            if (m_IsDisposed)
-                throw new ObjectDisposedException(GetType().Name);
-        }
-
         public override string ToString()
         {
             string text = $"Deferred query ({typeof(T).Name}): ";
@@ -80,17 +74,45 @@ namespace Oakbranch.Binance
             return text;
         }
 
+        private void ThrowIfDisposed()
+        {
+            if (m_IsDisposed)
+                throw new ObjectDisposedException(GetType().Name);
+        }
+
         public void Dispose()
         {
-            if (m_IsDisposed) return;
-            m_IsDisposed = true;
+            if (m_IsDisposed)
+            {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+        }
 
-            m_ExecuteHandler = null;
-            m_ParseHandler = null;
-            m_ParseArgs = null;
-            m_HeadersToLimitsMap = null;
-            m_Params = default;
-            m_Weights = null;
+        private void Dispose(bool releaseManaged)
+        {
+            m_IsDisposed = true;
+            if (releaseManaged)
+            {
+                m_ExecuteHandler = null!;
+                m_ParseHandler = null!;
+                m_ParseArgs = null;
+                m_HeadersToLimitsMap = null;
+                m_Params = default;
+                m_Weights = null!;
+            }
+        }
+
+        #endregion
+
+        #region Destructor
+
+        ~DeferredQuery()
+        {
+            if (!m_IsDisposed)
+            {
+                Dispose(false);
+            }
         }
 
         #endregion

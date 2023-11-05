@@ -42,8 +42,8 @@ namespace Oakbranch.Binance
         /// </summary>
         public IRateLimitsRegistry LimitsRegistry => m_LimitsRegistry;
 
-        private ILogger m_Logger;
-        private Task m_InitializationTask;
+        private ILogger? m_Logger;
+        private Task? m_InitializationTask;
 
         /// <summary>
         /// Gets a string used for specifying the logging context of logs posted by this client.
@@ -71,7 +71,7 @@ namespace Oakbranch.Binance
         /// <param name="limitsRegistry">The rate limits registry to use for checking and updating API rate limits.</param>
         /// <param name="logger">The logger to use for posting log messages.</param>
         /// <exception cref="ArgumentNullException"/>
-        internal ApiClientBase(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger logger = null)
+        internal ApiClientBase(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger? logger = null)
         {
             m_Connector = connector ?? throw new ArgumentNullException(nameof(connector));
             m_LimitsRegistry = limitsRegistry ?? throw new ArgumentNullException(nameof(limitsRegistry));
@@ -149,7 +149,7 @@ namespace Oakbranch.Binance
                 case "ORDERS":
                     return RateLimitType.UID;
                 default:
-                    throw new NotImplementedException($"An unknown rate limit type was encountered: \"{s}\".");
+                    throw new JsonException($"An unknown rate limit type was encountered: \"{s}\".");
             }
         }
 
@@ -233,8 +233,11 @@ namespace Oakbranch.Binance
         {
             ThrowIfDisposed();
 
-            Task t = m_InitializationTask;
-            if (t != null) return t;
+            Task? t = m_InitializationTask;
+            if (t != null)
+            {
+                return t;
+            }
 
             t = m_InitializationTask = InitializePrivateAsync(ct);
             Task.Run(async () =>
@@ -258,7 +261,7 @@ namespace Oakbranch.Binance
                     if (m_InitializationTask == t)
                         m_InitializationTask = null;
                 }
-            });
+            }, ct);
 
             return t;
         }
@@ -292,7 +295,7 @@ namespace Oakbranch.Binance
             {
                 if (initQueryResponse.Content == null)
                 {
-                    throw new Exception($"The initialization query failed for an unknown reason.");
+                    throw new Exception("The initialization query failed for an unknown reason.");
                 }
 
                 ApiErrorInfo? errorInfo = null;
@@ -330,24 +333,25 @@ namespace Oakbranch.Binance
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                ParseUtility.ValidatePropertyNameToken(ref reader);
-                string propName = reader.GetString();
+                string propName = ParseUtility.ReadPropertyName(ref reader);
 
                 if (!reader.Read())
+                {
                     throw ParseUtility.GenerateNoPropertyValueException(propName);
+                }
                 switch (propName)
                 {
                     case "rateLimitType":
                         if (reader.TokenType != JsonTokenType.String)
                             throw ParseUtility.GenerateInvalidValueTypeException(propName, JsonTokenType.String, reader.TokenType);
-                        limitType = ParseRateLimitType(reader.GetString());
+                        limitType = ParseRateLimitType(ParseUtility.ReadNonEmptyString(ref reader, propName));
                         validator.RegisterProperty(0);
                         break;
 
                     case "interval":
                         if (reader.TokenType != JsonTokenType.String)
                             throw ParseUtility.GenerateInvalidValueTypeException(propName, JsonTokenType.String, reader.TokenType);
-                        interval = ParseInterval(reader.GetString());
+                        interval = ParseInterval(ParseUtility.ReadNonEmptyString(ref reader, propName));
                         validator.RegisterProperty(1);
                         break;
 
@@ -614,9 +618,9 @@ namespace Oakbranch.Binance
 
             if (releaseManaged)
             {
-                m_LimitsRegistry = null;
+                m_LimitsRegistry = null!;
+                m_Connector = null!;
                 m_Logger = null;
-                m_Connector = null;
             }
         }
 

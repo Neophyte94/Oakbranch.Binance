@@ -11,6 +11,6 @@ namespace Oakbranch.Binance.Exceptions
     {
         public QueryNotSupportedException() : base() { }
 
-        public QueryNotSupportedException(string message) : base(message) { }
+        public QueryNotSupportedException(string? message) : base(message) { }
     }
 }

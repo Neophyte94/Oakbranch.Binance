@@ -5,9 +5,9 @@ namespace Oakbranch.Binance
     public readonly struct ApiErrorInfo
     {
         public readonly int Code;
-        public readonly string Message;
+        public readonly string? Message;
 
-        public ApiErrorInfo(int code, string message)
+        public ApiErrorInfo(int code, string? message)
         {
             Code = code;
             Message = message;

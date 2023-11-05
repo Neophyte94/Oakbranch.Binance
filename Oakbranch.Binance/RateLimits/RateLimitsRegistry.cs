@@ -16,8 +16,8 @@ namespace Oakbranch.Binance.RateLimits
         {
             public readonly LimitCounter Current;
 
-            private LimitNode m_Next;
-            public LimitNode Next
+            private LimitNode? m_Next;
+            public LimitNode? Next
             {
                 get
                 {
@@ -34,6 +34,7 @@ namespace Oakbranch.Binance.RateLimits
                         if (value.Next == this)
                             throw new ArgumentException("The next node of the specified next node points to the current node.");
                     }
+
                     m_Next = value;
                 }
             }
@@ -59,7 +60,7 @@ namespace Oakbranch.Binance.RateLimits
         {
             get
             {
-                if (m_IdToLimitDict.TryGetValue(id, out LimitCounter limit))
+                if (m_IdToLimitDict.TryGetValue(id, out LimitCounter? limit))
                 {
                     return new RateLimitInfo(limit.DimensionId, limit.ResetInterval, limit.Limit, limit.Usage, limit.Name);
                 }
@@ -106,7 +107,7 @@ namespace Oakbranch.Binance.RateLimits
                     limitParams.Usage, limitParams.Name);
 
                 m_IdToLimitDict.Add(id, limit);
-                if (m_DimensionToLimitsDict.TryGetValue(limit.DimensionId, out LimitNode node))
+                if (m_DimensionToLimitsDict.TryGetValue(limit.DimensionId, out LimitNode? node))
                 {
                     while (node.Next != null)
                     {
@@ -131,7 +132,7 @@ namespace Oakbranch.Binance.RateLimits
 
         public void ModifyLimit(int id, uint newLimit)
         {
-            if (m_IdToLimitDict.TryGetValue(id, out LimitCounter limit))
+            if (m_IdToLimitDict.TryGetValue(id, out LimitCounter? limit))
             {
                 limit.Limit = newLimit;
             }
@@ -147,7 +148,7 @@ namespace Oakbranch.Binance.RateLimits
             for (int wIdx = 0; wIdx != wCount;)
             {
                 QueryWeight w = weights[wIdx++];
-                if (m_DimensionToLimitsDict.TryGetValue(w.DimensionId, out LimitNode node))
+                if (m_DimensionToLimitsDict.TryGetValue(w.DimensionId, out LimitNode? node))
                 {
                     while (node != null)
                     {
@@ -161,7 +162,8 @@ namespace Oakbranch.Binance.RateLimits
                 }
                 else
                 {
-                    throw new KeyNotFoundException($"No limit has been registered that targets a weight dimension {w.DimensionId}.");
+                    throw new KeyNotFoundException(
+                        $"No limit has been registered that targets a weight dimension {w.DimensionId}.");
                 }
             }
 
@@ -175,7 +177,7 @@ namespace Oakbranch.Binance.RateLimits
             for (int wIdx = 0; wIdx != wCount;)
             {
                 QueryWeight w = weights[wIdx++];
-                if (m_DimensionToLimitsDict.TryGetValue(w.DimensionId, out LimitNode node))
+                if (m_DimensionToLimitsDict.TryGetValue(w.DimensionId, out LimitNode? node))
                 {
                     while (node != null)
                     {
@@ -185,14 +187,15 @@ namespace Oakbranch.Binance.RateLimits
                 }
                 else
                 {
-                    throw new KeyNotFoundException($"No limit has been registered that targets a weight dimension {w.DimensionId}.");
+                    throw new KeyNotFoundException(
+                        $"No limit has been registered that targets a weight dimension {w.DimensionId}.");
                 }
             }
         }
 
         public void UpdateUsage(int id, uint usage, DateTime timestamp)
         {
-            if (m_IdToLimitDict.TryGetValue(id, out LimitCounter limit))
+            if (m_IdToLimitDict.TryGetValue(id, out LimitCounter? limit))
             {
                 limit.SetUsage(usage, timestamp);
             }

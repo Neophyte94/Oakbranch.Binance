@@ -37,7 +37,7 @@ namespace Oakbranch.Binance
         /// </summary>
         /// <param name="symbol">The exchange symbol to be normalized.</param>
         /// <returns>The exchange symbol adapted to the format accepted by the exchange API.</returns>
-        public static string NormalizeSymbol(string symbol)
+        public static string? NormalizeSymbol(string? symbol)
         {
             return symbol?.ToUpperInvariant();
         }
@@ -69,7 +69,7 @@ namespace Oakbranch.Binance
         /// </summary>
         /// <param name="content">The byte array content to be decode.</param>
         /// <returns>A string representing the decoded content, or the HEX representation of the byte content.</returns>
-        public static string DecodeByteContent(byte[] content)
+        public static string? DecodeByteContent(byte[]? content)
         {
             if (content == null || content.Length == 0)
             {

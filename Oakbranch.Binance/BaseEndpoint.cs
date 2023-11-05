@@ -18,14 +18,14 @@ namespace Oakbranch.Binance
 
         #region Instance constructors
 
-        public BaseEndpoint(NetworkType type, string url, string description)
+        public BaseEndpoint(NetworkType type, string url, string? description)
         {
             if (String.IsNullOrWhiteSpace(url))
                 throw new ArgumentNullException(nameof(url));
             if (!url.StartsWith("https://"))
                 throw new ArgumentException($"The specified URL \"{url}\" is invalid.");
             if (String.IsNullOrWhiteSpace(description))
-                description = null;
+                description = String.Empty;
 
             Type = type;
             Url = url;
@@ -41,7 +41,7 @@ namespace Oakbranch.Binance
             return this == other;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is BaseEndpoint other)
             {
@@ -55,10 +55,7 @@ namespace Oakbranch.Binance
 
         public override int GetHashCode()
         {
-            int hashCode = 1596940251;
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Url);
-            hashCode = hashCode * -1521134295 + Type.GetHashCode();
-            return hashCode;
+            return HashCode.Combine(Url, Type);
         }
 
         public override string ToString()

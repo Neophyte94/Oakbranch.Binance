@@ -19,8 +19,9 @@ namespace Oakbranch.Binance
         #region Instance constructors
 
         /// <summary>
-        /// Creates an instance representing a successful response.
+        /// Creates an instance of the <see cref="Response"/> class representing a successful response.
         /// </summary>
+        /// <exception cref="ArgumentNullException"/>
         public Response(byte[] content, List<KeyValuePair<string, string>> limitsUsage)
         {
             Content = content ?? throw new ArgumentNullException(nameof(content));
@@ -29,7 +30,7 @@ namespace Oakbranch.Binance
         }
 
         /// <summary>
-        /// Creates an instance representing a failed response.
+        /// Creates an instance of the <see cref="Response"/> class representing a failed response.
         /// </summary>
         /// <param name="errorContent"></param>
         public Response(byte[] errorContent)

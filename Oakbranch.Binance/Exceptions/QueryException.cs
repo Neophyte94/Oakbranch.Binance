@@ -8,36 +8,43 @@ namespace Oakbranch.Binance.Exceptions
     /// </summary>
     public class QueryException : Exception
     {
-        private readonly FailureReason m_Reason;
-        public FailureReason Reason => m_Reason;
+        #region Instance members
 
-        public override String Message
+        public FailureReason Reason { get; }
+
+        public override string Message
         {
             get
             {
                 string s = base.Message;
                 if (InnerException != null)
                 {
-                    s += ": " + InnerException.Message;
+                    return s + ": " + InnerException.Message;
                 }
                 else
                 {
-                    s += "(" + m_Reason + ")";
+                    return s + "(" + Reason + ")";
                 }
-                return s;
             }
         }
 
-        public QueryException(FailureReason reason) : this(reason, null) { }
+        #endregion
 
-        public QueryException(FailureReason reason, string message) : base(message)
+        #region Instance constructors
+
+        public QueryException(FailureReason reason) : this(reason, null)
+        { }
+
+        public QueryException(FailureReason reason, string? message) : base(message)
         {
-            m_Reason = reason;
+            Reason = reason;
         }
 
-        public QueryException(string message, Exception innerException) : base(message, innerException)
+        public QueryException(string? message, Exception innerException) : base(message, innerException)
         {
-            m_Reason = FailureReason.Other;
+            Reason = FailureReason.Other;
         }
+
+        #endregion
     }
 }

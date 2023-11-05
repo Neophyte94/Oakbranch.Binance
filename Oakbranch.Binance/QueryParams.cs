@@ -12,7 +12,7 @@ namespace Oakbranch.Binance
         public readonly HttpMethod Method;
         public readonly string BaseEndpoint;
         public readonly string RelativeEndpoint;
-        public readonly QueryBuilder QueryString;
+        public readonly QueryBuilder? QueryString;
         public readonly bool IsSecured;
 
         public bool IsUndefined => BaseEndpoint == null;
@@ -22,8 +22,11 @@ namespace Oakbranch.Binance
         #region Instance constructors
 
         public QueryParams(
-            HttpMethod method, string baseEndpoint, string relativeEndpoint,
-            QueryBuilder queryString = null, bool isSecured = false)
+            HttpMethod method,
+            string baseEndpoint,
+            string relativeEndpoint,
+            QueryBuilder? queryString = null,
+            bool isSecured = false)
         {
             if (String.IsNullOrWhiteSpace(baseEndpoint))
                 throw new ArgumentNullException(nameof(baseEndpoint));

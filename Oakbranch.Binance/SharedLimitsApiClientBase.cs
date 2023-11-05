@@ -47,7 +47,10 @@ namespace Oakbranch.Binance
         /// <param name="discriminativeEndpoint">The identifying endpoint for all the rate limits used by the client's endpoints.</param>
         /// <param name="logger">The logger to use for posting runtime information (optional).</param>
         public SharedLimitsApiClientBase(
-            IApiConnector connector, IRateLimitsRegistry limitsRegistry, string discriminativeEndpoint, ILogger logger = null) :
+            IApiConnector connector,
+            IRateLimitsRegistry limitsRegistry,
+            string discriminativeEndpoint,
+            ILogger? logger = null) :
             base(connector, limitsRegistry, logger)
         {
             if (String.IsNullOrWhiteSpace(discriminativeEndpoint))

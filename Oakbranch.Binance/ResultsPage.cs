@@ -23,9 +23,6 @@ namespace Oakbranch.Binance
             }
         }
 
-        public ResultsPage(int capacity) : base(capacity)
-        {
-
-        }
+        public ResultsPage(int capacity) : base(capacity) { }
     }
 }
