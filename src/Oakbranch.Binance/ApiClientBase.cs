@@ -333,25 +333,22 @@ namespace Oakbranch.Binance
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                string propName = ParseUtility.ReadNonEmptyPropertyName(ref reader);
+                string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
 
                 if (!reader.Read())
                 {
                     throw ParseUtility.GenerateNoPropertyValueException(propName);
                 }
+
                 switch (propName)
                 {
                     case "rateLimitType":
-                        if (reader.TokenType != JsonTokenType.String)
-                            throw ParseUtility.GenerateInvalidValueTypeException(propName, JsonTokenType.String, reader.TokenType);
-                        limitType = ParseRateLimitType(ParseUtility.ReadNonEmptyString(ref reader, propName));
+                        limitType = ParseRateLimitType(ParseUtility.GetNonEmptyString(ref reader, propName));
                         validator.RegisterProperty(0);
                         break;
 
                     case "interval":
-                        if (reader.TokenType != JsonTokenType.String)
-                            throw ParseUtility.GenerateInvalidValueTypeException(propName, JsonTokenType.String, reader.TokenType);
-                        interval = ParseInterval(ParseUtility.ReadNonEmptyString(ref reader, propName));
+                        interval = ParseInterval(ParseUtility.GetNonEmptyString(ref reader, propName));
                         validator.RegisterProperty(1);
                         break;
 

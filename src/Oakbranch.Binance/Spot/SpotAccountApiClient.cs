@@ -212,7 +212,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
 
         while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
         {
-            string propName = ParseUtility.ReadNonEmptyPropertyName(ref reader);
+            string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
 
             if (!reader.Read())
             {
@@ -1804,7 +1804,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
 
         while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
         {
-            string propName = ParseUtility.ReadNonEmptyPropertyName(ref reader);
+            string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
 
             if (!reader.Read())
                 throw new JsonException($"A value of the property \"{propName}\" was expected but the end of the data was reached.");
@@ -1840,19 +1840,19 @@ public class SpotAccountApiClient : ApiV3ClientBase
                     if (cumQuoteQt >= 0.0m) order.CummulativeQuoteQuantity = cumQuoteQt;
                     break;
                 case "status":
-                    order.Status = ParseUtility.ParseOrderStatus(ParseUtility.ReadNonEmptyString(ref reader, propName));
+                    order.Status = ParseUtility.ParseOrderStatus(ParseUtility.GetNonEmptyString(ref reader, propName));
                     validator.RegisterProperty(2);
                     break;
                 case "timeInForce":
-                    order.TimeInForce = ParseTimeInForce(ParseUtility.ReadNonEmptyString(ref reader, propName));
+                    order.TimeInForce = ParseTimeInForce(ParseUtility.GetNonEmptyString(ref reader, propName));
                     validator.RegisterProperty(3);
                     break;
                 case "type":
-                    order.Type = ParseOrderType(ParseUtility.ReadNonEmptyString(ref reader, propName));
+                    order.Type = ParseOrderType(ParseUtility.GetNonEmptyString(ref reader, propName));
                     validator.RegisterProperty(4);
                     break;
                 case "side":
-                    order.Side = ParseUtility.ParseOrderSide(ParseUtility.ReadNonEmptyString(ref reader, propName));
+                    order.Side = ParseUtility.ParseOrderSide(ParseUtility.GetNonEmptyString(ref reader, propName));
                     validator.RegisterProperty(5);
                     break;
                 case "stopPrice":
