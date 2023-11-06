@@ -296,7 +296,7 @@ namespace Oakbranch.Binance
             int? statusCode = null;
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                ParseUtility.ValidatePropertyNameToken(ref reader);
+                ParseUtility.EnsurePropertyNameToken(ref reader);
                 string propName = reader.GetString();
 
                 if (!reader.Read())

@@ -116,14 +116,14 @@ namespace Oakbranch.Binance
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                ParseUtility.ValidatePropertyNameToken(ref reader);
+                ParseUtility.EnsurePropertyNameToken(ref reader);
                 string propName = reader.GetString();
                 if (!reader.Read())
                     throw new JsonException($"A value of the property \"{propName}\" was expected but \"{reader.TokenType}\" encountered.");
                 switch (propName)
                 {
                     case "rateLimits":
-                        ParseUtility.ValidateArrayStartToken(ref reader);
+                        ParseUtility.EnsureArrayStartToken(ref reader);
                         List<RateLimiter> limiters = new List<RateLimiter>(6);
                         while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                         {

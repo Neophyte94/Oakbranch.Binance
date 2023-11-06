@@ -452,7 +452,7 @@ namespace Oakbranch.Binance.Margin
             // Parse the properties.
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                ParseUtility.ValidatePropertyNameToken(ref reader);
+                ParseUtility.EnsurePropertyNameToken(ref reader);
                 string propName = reader.GetString();
 
                 if (!reader.Read())
@@ -521,7 +521,7 @@ namespace Oakbranch.Binance.Margin
 
         private List<CrossAsset> ParseCrossAssetList(ref Utf8JsonReader reader, int expectedCount)
         {
-            ParseUtility.ValidateArrayStartToken(ref reader);
+            ParseUtility.EnsureArrayStartToken(ref reader);
             List<CrossAsset> resultList = new List<CrossAsset>(expectedCount);
 
             string asset = null;
@@ -530,11 +530,11 @@ namespace Oakbranch.Binance.Margin
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                ParseUtility.ValidateObjectStartToken(ref reader);
+                ParseUtility.EnsureObjectStartToken(ref reader);
 
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                 {
-                    ParseUtility.ValidatePropertyNameToken(ref reader);
+                    ParseUtility.EnsurePropertyNameToken(ref reader);
                     string propName = reader.GetString();
 
                     if (!reader.Read())
@@ -668,7 +668,7 @@ namespace Oakbranch.Binance.Margin
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                ParseUtility.ValidatePropertyNameToken(ref reader);
+                ParseUtility.EnsurePropertyNameToken(ref reader);
                 string propName = reader.GetString();
 
                 if (!reader.Read())
@@ -710,20 +710,20 @@ namespace Oakbranch.Binance.Margin
 
         private List<IsolatedSymbolAccInfo> ParseIsolatedSymbolAccList(ref Utf8JsonReader reader, int expectedCount)
         {
-            ParseUtility.ValidateArrayStartToken(ref reader);
+            ParseUtility.EnsureArrayStartToken(ref reader);
             List<IsolatedSymbolAccInfo> resultList = new List<IsolatedSymbolAccInfo>(expectedCount);
             ParseSchemaValidator validator = new ParseSchemaValidator(11);
 
             // Parse each isolated symbol account object.
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                ParseUtility.ValidateObjectStartToken(ref reader);
+                ParseUtility.EnsureObjectStartToken(ref reader);
                 IsolatedSymbolAccInfo info = new IsolatedSymbolAccInfo();
 
                 // Parse all the properties of the isolated symbol account object.
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                 {
-                    ParseUtility.ValidatePropertyNameToken(ref reader);
+                    ParseUtility.EnsurePropertyNameToken(ref reader);
                     string propName = reader.GetString();
 
                     if (!reader.Read())
@@ -816,7 +816,7 @@ namespace Oakbranch.Binance.Margin
 
         private IsolatedAsset ParseIsolatedAsset(ref Utf8JsonReader reader)
         {
-            ParseUtility.ValidateObjectStartToken(ref reader);
+            ParseUtility.EnsureObjectStartToken(ref reader);
             string asset = null;
             bool isBorrowEnabled = default, isRepayEnabled = default;
             decimal borrowed = 0.0m, free = 0.0m, interest = 0.0m, locked = 0.0m;
@@ -826,7 +826,7 @@ namespace Oakbranch.Binance.Margin
             // Parse all the properties.
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                ParseUtility.ValidatePropertyNameToken(ref reader);
+                ParseUtility.EnsurePropertyNameToken(ref reader);
                 string propName = reader.GetString();
 
                 if (!reader.Read())
@@ -993,7 +993,7 @@ namespace Oakbranch.Binance.Margin
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                ParseUtility.ValidatePropertyNameToken(ref reader);
+                ParseUtility.EnsurePropertyNameToken(ref reader);
                 string outerPropName = reader.GetString();
 
                 if (!reader.Read())
@@ -1002,7 +1002,7 @@ namespace Oakbranch.Binance.Margin
                 switch (outerPropName)
                 {
                     case "rows":
-                        ParseUtility.ValidateArrayStartToken(ref reader);
+                        ParseUtility.EnsureArrayStartToken(ref reader);
 
                         // Prepare the buffer variables and the schema validator.
                         string asset = null;
@@ -1016,11 +1016,11 @@ namespace Oakbranch.Binance.Margin
                         // Parse each transaction in the array.
                         while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                         {
-                            ParseUtility.ValidateObjectStartToken(ref reader);
+                            ParseUtility.EnsureObjectStartToken(ref reader);
 
                             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                             {
-                                ParseUtility.ValidatePropertyNameToken(ref reader);
+                                ParseUtility.EnsurePropertyNameToken(ref reader);
                                 string propName = reader.GetString();
 
                                 if (!reader.Read())
@@ -1230,7 +1230,7 @@ namespace Oakbranch.Binance.Margin
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                ParseUtility.ValidatePropertyNameToken(ref reader);
+                ParseUtility.EnsurePropertyNameToken(ref reader);
                 string outerPropName = reader.GetString();
 
                 if (!reader.Read())
@@ -1239,7 +1239,7 @@ namespace Oakbranch.Binance.Margin
                 switch (outerPropName)
                 {
                     case "rows":
-                        ParseUtility.ValidateArrayStartToken(ref reader);
+                        ParseUtility.EnsureArrayStartToken(ref reader);
 
                         // Prepare the buffer variables and the schema validator.
                         string asset = null;
@@ -1253,11 +1253,11 @@ namespace Oakbranch.Binance.Margin
                         // Parse each transaction in the array.
                         while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                         {
-                            ParseUtility.ValidateObjectStartToken(ref reader);
+                            ParseUtility.EnsureObjectStartToken(ref reader);
 
                             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                             {
-                                ParseUtility.ValidatePropertyNameToken(ref reader);
+                                ParseUtility.EnsurePropertyNameToken(ref reader);
                                 string propName = reader.GetString();
 
                                 if (!reader.Read())
@@ -1670,7 +1670,7 @@ namespace Oakbranch.Binance.Margin
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                ParseUtility.ValidatePropertyNameToken(ref reader);
+                ParseUtility.EnsurePropertyNameToken(ref reader);
                 string outerPropName = reader.GetString();
 
                 if (!reader.Read())
@@ -1681,7 +1681,7 @@ namespace Oakbranch.Binance.Margin
                     case "rows":
                         while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                         {
-                            ParseUtility.ValidateObjectStartToken(ref reader);
+                            ParseUtility.EnsureObjectStartToken(ref reader);
 
                             string symbol = null, asset = null;
                             long id = 0;
@@ -1692,7 +1692,7 @@ namespace Oakbranch.Binance.Margin
 
                             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                             {
-                                ParseUtility.ValidatePropertyNameToken(ref reader);
+                                ParseUtility.EnsurePropertyNameToken(ref reader);
                                 string propName = reader.GetString();
 
                                 if (!reader.Read())
@@ -1969,7 +1969,7 @@ namespace Oakbranch.Binance.Margin
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                ParseUtility.ValidatePropertyNameToken(ref reader);
+                ParseUtility.EnsurePropertyNameToken(ref reader);
                 string outerPropName = reader.GetString();
 
                 if (!reader.Read())
@@ -1980,7 +1980,7 @@ namespace Oakbranch.Binance.Margin
                     case "rows":
                         while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                         {
-                            ParseUtility.ValidateObjectStartToken(ref reader);
+                            ParseUtility.EnsureObjectStartToken(ref reader);
 
                             string symbol = null, asset = null;
                             long id = 0;
@@ -1991,7 +1991,7 @@ namespace Oakbranch.Binance.Margin
 
                             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                             {
-                                ParseUtility.ValidatePropertyNameToken(ref reader);
+                                ParseUtility.EnsurePropertyNameToken(ref reader);
                                 string propName = reader.GetString();
 
                                 if (!reader.Read())
@@ -2180,7 +2180,7 @@ namespace Oakbranch.Binance.Margin
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                ParseUtility.ValidatePropertyNameToken(ref reader);
+                ParseUtility.EnsurePropertyNameToken(ref reader);
                 string propName = reader.GetString();
 
                 if (!reader.Read())
@@ -3458,7 +3458,7 @@ namespace Oakbranch.Binance.Margin
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                ParseUtility.ValidateObjectStartToken(ref reader);
+                ParseUtility.EnsureObjectStartToken(ref reader);
                 MarginTrade trade = default;
                 ParseSchemaValidator validator = new ParseSchemaValidator(12);
 
@@ -3652,7 +3652,7 @@ namespace Oakbranch.Binance.Margin
             // Parse each margin pair.
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                ParseUtility.ValidateObjectStartToken(ref reader);
+                ParseUtility.EnsureObjectStartToken(ref reader);
                 int objDepth = reader.CurrentDepth;
 
                 try
@@ -3692,14 +3692,14 @@ namespace Oakbranch.Binance.Margin
 
         private MarginPair ParseTradingPair(ref Utf8JsonReader reader, bool isIsolated)
         {
-            ParseUtility.ValidateObjectStartToken(ref reader);
+            ParseUtility.EnsureObjectStartToken(ref reader);
 
             MarginPair pair = default;
             ParseSchemaValidator validator = new ParseSchemaValidator(4);
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                ParseUtility.ValidatePropertyNameToken(ref reader);
+                ParseUtility.EnsurePropertyNameToken(ref reader);
                 string propName = reader.GetString();
 
                 if (!reader.Read())
@@ -3791,7 +3791,7 @@ namespace Oakbranch.Binance.Margin
             long? id = null;
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                ParseUtility.ValidatePropertyNameToken(ref reader);
+                ParseUtility.EnsurePropertyNameToken(ref reader);
                 string propName = reader.GetString();
 
                 if (!reader.Read())
@@ -3839,14 +3839,14 @@ namespace Oakbranch.Binance.Margin
 
         private MarginOrder ParseOrder(ref Utf8JsonReader reader)
         {
-            ParseUtility.ValidateObjectStartToken(ref reader);
+            ParseUtility.EnsureObjectStartToken(ref reader);
 
             MarginOrder order = new MarginOrder();
             ParseSchemaValidator validator = new ParseSchemaValidator(8);
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                ParseUtility.ValidatePropertyNameToken(ref reader);
+                ParseUtility.EnsurePropertyNameToken(ref reader);
                 string propName = reader.GetString();
 
                 if (!reader.Read())

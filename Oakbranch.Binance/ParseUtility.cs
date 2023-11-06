@@ -25,7 +25,7 @@ namespace Oakbranch.Binance
                 throw new JsonException($"An object start was expected but encountered \"{reader.TokenType}\".");
         }
 
-        public static void ValidateObjectStartToken(ref Utf8JsonReader reader)
+        public static void EnsureObjectStartToken(ref Utf8JsonReader reader)
         {
             if (reader.TokenType != JsonTokenType.StartObject)
                 throw new JsonException($"An object start was expected but encountered \"{reader.TokenType}\".");
@@ -37,7 +37,7 @@ namespace Oakbranch.Binance
                 throw new JsonException($"An object end was expected but encountered \"{reader.TokenType}\".");
         }
 
-        public static void ValidateArrayStartToken(ref Utf8JsonReader reader)
+        public static void EnsureArrayStartToken(ref Utf8JsonReader reader)
         {
             if (reader.TokenType != JsonTokenType.StartArray)
                 throw new JsonException($"An array's start was expected but encountered \"{reader.TokenType}\".");
@@ -64,7 +64,7 @@ namespace Oakbranch.Binance
         /// <exception cref="JsonException">
         /// Thrown when the read token is not a property name, or its value is either <see langword="null"/> or empty.
         /// </exception>
-        public static string ReadPropertyName(ref Utf8JsonReader reader)
+        public static string ReadNonEmptyPropertyName (ref Utf8JsonReader reader)
         {
             if (!reader.Read() || reader.TokenType != JsonTokenType.PropertyName)
             {
@@ -99,7 +99,7 @@ namespace Oakbranch.Binance
             }
         }
 
-        public static void ValidatePropertyNameToken(ref Utf8JsonReader reader)
+        public static void EnsurePropertyNameToken(ref Utf8JsonReader reader)
         {
             if (reader.TokenType != JsonTokenType.PropertyName)
                 throw new JsonException($"A propertie's name was expected but \"{reader.TokenType}\" encountered.");
@@ -116,7 +116,10 @@ namespace Oakbranch.Binance
             return value;
         }
 
-        public static void ValidatePropertyValueToken(ref Utf8JsonReader reader, JsonTokenType requiredToken, string propName)
+        public static void EnsurePropertyValueToken(
+            ref Utf8JsonReader reader,
+            JsonTokenType requiredToken,
+            string propName)
         {
             if (!reader.Read() || reader.TokenType != requiredToken)
                 throw GenerateInvalidValueTypeException(propName, requiredToken, reader.TokenType);
@@ -296,7 +299,7 @@ namespace Oakbranch.Binance
 
         public static List<OrderPartialFill> ParseOrderPartialFills(ref Utf8JsonReader reader)
         {
-            ParseUtility.ValidateArrayStartToken(ref reader);
+            ParseUtility.EnsureArrayStartToken(ref reader);
             List<OrderPartialFill> resultsList = new List<OrderPartialFill>(8);
 
             ParseSchemaValidator validator = new ParseSchemaValidator(5);
@@ -306,12 +309,12 @@ namespace Oakbranch.Binance
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                ParseUtility.ValidateObjectStartToken(ref reader);
+                ParseUtility.EnsureObjectStartToken(ref reader);
 
                 // Parse partial fill properties.
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                 {
-                    string propName = ReadPropertyName(ref reader);
+                    string propName = ReadNonEmptyPropertyName(ref reader);
 
                     if (!reader.Read())
                     {
@@ -372,11 +375,11 @@ namespace Oakbranch.Binance
         // Exchange filters.
         public static ExchangeFilter ParseExchangeFilter(ref Utf8JsonReader reader)
         {
-            ValidateObjectStartToken(ref reader);
+            EnsureObjectStartToken(ref reader);
 
             const string propName = "filterType";
             ReadExactPropertyName(ref reader, propName);
-            ValidatePropertyValueToken(ref reader, JsonTokenType.String, propName);
+            EnsurePropertyValueToken(ref reader, JsonTokenType.String, propName);
             string? type = reader.GetString();
 
             return type switch
@@ -393,7 +396,7 @@ namespace Oakbranch.Binance
 
             const string propName = "maxNumOrders";
             ReadExactPropertyName(ref reader, propName);
-            ValidatePropertyValueToken(ref reader, JsonTokenType.Number, propName);
+            EnsurePropertyValueToken(ref reader, JsonTokenType.Number, propName);
             result.Limit = reader.GetUInt32();
 
             ReadObjectEnd(ref reader);
@@ -407,7 +410,7 @@ namespace Oakbranch.Binance
 
             const string propName = "maxNumAlgoOrders";
             ReadExactPropertyName(ref reader, propName);
-            ValidatePropertyValueToken(ref reader, JsonTokenType.Number, propName);
+            EnsurePropertyValueToken(ref reader, JsonTokenType.Number, propName);
             result.Limit = reader.GetUInt32();
 
             ReadObjectEnd(ref reader);
@@ -418,14 +421,14 @@ namespace Oakbranch.Binance
         // Symbol filters.
         public static SymbolFilter ParseSymbolFilter(ref Utf8JsonReader reader)
         {
-            ValidateObjectStartToken(ref reader);
+            EnsureObjectStartToken(ref reader);
 
             List<KeyValuePair<string, object?>> objectProps = new List<KeyValuePair<string, object?>>(5);
             string? type = null;
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                string propName = ReadPropertyName(ref reader);
+                string propName = ReadNonEmptyPropertyName(ref reader);
 
                 if (!reader.Read())
                     throw GenerateNoPropertyValueException(propName);

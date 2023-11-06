@@ -322,7 +322,7 @@ namespace Oakbranch.Binance
         /// <exception cref="JsonException"/>
         protected RateLimiter ParseRateLimiter(ref Utf8JsonReader reader)
         {
-            ParseUtility.ValidateObjectStartToken(ref reader);
+            ParseUtility.EnsureObjectStartToken(ref reader);
 
             ParseSchemaValidator validator = new ParseSchemaValidator(4);
             RateLimitType limitType = default;
@@ -333,7 +333,7 @@ namespace Oakbranch.Binance
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                string propName = ParseUtility.ReadPropertyName(ref reader);
+                string propName = ParseUtility.ReadNonEmptyPropertyName(ref reader);
 
                 if (!reader.Read())
                 {

@@ -146,7 +146,7 @@ namespace Oakbranch.Binance.Futures.CoinM
 
             ParseUtility.ReadObjectStart(ref reader);
 
-            string propName = ParseUtility.ReadPropertyName(ref reader);
+            string propName = ParseUtility.ReadNonEmptyPropertyName(ref reader);
             if (propName != "serverTime")
                 throw new JsonException($"The server time property was expected but \"{propName}\" encountered.");
 
@@ -201,7 +201,7 @@ namespace Oakbranch.Binance.Futures.CoinM
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                ParseUtility.ValidatePropertyNameToken(ref reader);
+                ParseUtility.EnsurePropertyNameToken(ref reader);
                 string propName = reader.GetString();
 
                 if (!reader.Read())
@@ -219,7 +219,7 @@ namespace Oakbranch.Binance.Futures.CoinM
                         validator.RegisterProperty(1);
                         break;
                     case "rateLimits":
-                        ParseUtility.ValidateArrayStartToken(ref reader);
+                        ParseUtility.EnsureArrayStartToken(ref reader);
                         List<RateLimiter> limits = new List<RateLimiter>(6);
                         while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                         {
@@ -229,11 +229,11 @@ namespace Oakbranch.Binance.Futures.CoinM
                         validator.RegisterProperty(2);
                         break;
                     case "exchangeFilters":
-                        ParseUtility.ValidateArrayStartToken(ref reader);
+                        ParseUtility.EnsureArrayStartToken(ref reader);
                         List<ExchangeFilter> filtersList = new List<ExchangeFilter>(4);
                         while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                         {
-                            ParseUtility.ValidateObjectStartToken(ref reader);
+                            ParseUtility.EnsureObjectStartToken(ref reader);
                             int objectDepth = reader.CurrentDepth;
                             try
                             {
@@ -284,14 +284,14 @@ namespace Oakbranch.Binance.Futures.CoinM
 
         private List<SymbolInfo> ParseSymbolInfoList(ref Utf8JsonReader reader)
         {
-            ParseUtility.ValidateArrayStartToken(ref reader);
+            ParseUtility.EnsureArrayStartToken(ref reader);
 
             List<SymbolInfo> resultList = new List<SymbolInfo>(ExpectedSymbolsCount);
             ParseSchemaValidator validator = new ParseSchemaValidator(21);
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                ParseUtility.ValidateObjectStartToken(ref reader);
+                ParseUtility.EnsureObjectStartToken(ref reader);
                 int objectDepth = reader.CurrentDepth;
                 SymbolInfo symbol = new SymbolInfo();
 
@@ -299,7 +299,7 @@ namespace Oakbranch.Binance.Futures.CoinM
                 {
                     while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                     {
-                        ParseUtility.ValidatePropertyNameToken(ref reader);
+                        ParseUtility.EnsurePropertyNameToken(ref reader);
                         string propName = reader.GetString();
 
                         if (!reader.Read())
@@ -366,7 +366,7 @@ namespace Oakbranch.Binance.Futures.CoinM
                                 symbol.UnderlyingType = reader.GetString();
                                 break;
                             case "underlyingSubType":
-                                ParseUtility.ValidateArrayStartToken(ref reader);
+                                ParseUtility.EnsureArrayStartToken(ref reader);
                                 List<string> subtypes = new List<string>();
                                 while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                                 {
@@ -379,11 +379,11 @@ namespace Oakbranch.Binance.Futures.CoinM
                                 validator.RegisterProperty(14);
                                 break;
                             case "filters":
-                                ParseUtility.ValidateArrayStartToken(ref reader);
+                                ParseUtility.EnsureArrayStartToken(ref reader);
                                 List<SymbolFilter> filtersList = new List<SymbolFilter>(10);
                                 while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                                 {
-                                    ParseUtility.ValidateObjectStartToken(ref reader);
+                                    ParseUtility.EnsureObjectStartToken(ref reader);
                                     int filterDepth = reader.CurrentDepth;
                                     try
                                     {
@@ -399,7 +399,7 @@ namespace Oakbranch.Binance.Futures.CoinM
                                 validator.RegisterProperty(15);
                                 break;
                             case "orderTypes":
-                                ParseUtility.ValidateArrayStartToken(ref reader);
+                                ParseUtility.EnsureArrayStartToken(ref reader);
                                 List<OrderType> orderTypesList = new List<OrderType>(8);
                                 while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                                 {
@@ -409,7 +409,7 @@ namespace Oakbranch.Binance.Futures.CoinM
                                 validator.RegisterProperty(16);
                                 break;
                             case "timeInForce":
-                                ParseUtility.ValidateArrayStartToken(ref reader);
+                                ParseUtility.EnsureArrayStartToken(ref reader);
                                 List<TimeInForce> tifList = new List<TimeInForce>(4);
                                 while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                                 {
@@ -562,7 +562,7 @@ namespace Oakbranch.Binance.Futures.CoinM
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                ParseUtility.ValidateObjectStartToken(ref reader);
+                ParseUtility.EnsureObjectStartToken(ref reader);
 
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                 {
@@ -744,7 +744,7 @@ namespace Oakbranch.Binance.Futures.CoinM
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                ParseUtility.ValidateObjectStartToken(ref reader);
+                ParseUtility.EnsureObjectStartToken(ref reader);
 
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                 {
@@ -1275,7 +1275,7 @@ namespace Oakbranch.Binance.Futures.CoinM
 
         private PremiumInfo ParsePremiumInfo(ref Utf8JsonReader reader, ref ParseSchemaValidator validator)
         {
-            ParseUtility.ValidateObjectStartToken(ref reader);
+            ParseUtility.EnsureObjectStartToken(ref reader);
 
             if (validator == null)
             {
@@ -1443,7 +1443,7 @@ namespace Oakbranch.Binance.Futures.CoinM
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                ParseUtility.ValidateObjectStartToken(ref reader);
+                ParseUtility.EnsureObjectStartToken(ref reader);
 
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                 {
@@ -1656,7 +1656,7 @@ namespace Oakbranch.Binance.Futures.CoinM
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                ParseUtility.ValidateObjectStartToken(ref reader);
+                ParseUtility.EnsureObjectStartToken(ref reader);
 
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                 {
@@ -1966,7 +1966,7 @@ namespace Oakbranch.Binance.Futures.CoinM
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                ParseUtility.ValidateObjectStartToken(ref reader);
+                ParseUtility.EnsureObjectStartToken(ref reader);
 
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                 {
@@ -2065,7 +2065,7 @@ namespace Oakbranch.Binance.Futures.CoinM
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                ParseUtility.ValidateArrayStartToken(ref reader);
+                ParseUtility.EnsureArrayStartToken(ref reader);
 
                 if (!reader.Read() || reader.TokenType != JsonTokenType.Number)
                     throw new JsonException($"A candlestick open time value was expected but \"{reader.TokenType}\" encountered.");
@@ -2136,7 +2136,7 @@ namespace Oakbranch.Binance.Futures.CoinM
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                ParseUtility.ValidateArrayStartToken(ref reader);
+                ParseUtility.EnsureArrayStartToken(ref reader);
 
                 if (!reader.Read() || reader.TokenType != JsonTokenType.Number)
                     throw new JsonException($"A candlestick open time value was expected but \"{reader.TokenType}\" encountered.");
@@ -2201,7 +2201,7 @@ namespace Oakbranch.Binance.Futures.CoinM
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                ParseUtility.ValidateObjectStartToken(ref reader);
+                ParseUtility.EnsureObjectStartToken(ref reader);
 
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                 {

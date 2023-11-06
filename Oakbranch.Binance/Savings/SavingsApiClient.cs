@@ -177,7 +177,7 @@ namespace Oakbranch.Binance.Savings
 
         private List<AggregateSavingsPosition> ParseAggrSavingsPositionList(ref Utf8JsonReader reader)
         {
-            ParseUtility.ValidateArrayStartToken(ref reader);
+            ParseUtility.EnsureArrayStartToken(ref reader);
             List<AggregateSavingsPosition> resultList = new List<AggregateSavingsPosition>(32);
 
             string asset = null;
@@ -187,11 +187,11 @@ namespace Oakbranch.Binance.Savings
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                ParseUtility.ValidateObjectStartToken(ref reader);
+                ParseUtility.EnsureObjectStartToken(ref reader);
 
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                 {
-                    ParseUtility.ValidatePropertyNameToken(ref reader);
+                    ParseUtility.EnsurePropertyNameToken(ref reader);
                     string propName = reader.GetString();
 
                     if (!reader.Read())
@@ -297,7 +297,7 @@ namespace Oakbranch.Binance.Savings
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                ParseUtility.ValidateObjectStartToken(ref reader);
+                ParseUtility.EnsureObjectStartToken(ref reader);
 
                 FlexibleProductPosition pos = default;
                 ParseSchemaValidator validator = new ParseSchemaValidator(13);
@@ -305,7 +305,7 @@ namespace Oakbranch.Binance.Savings
 
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                 {
-                    ParseUtility.ValidatePropertyNameToken(ref reader);
+                    ParseUtility.EnsurePropertyNameToken(ref reader);
                     string propName = reader.GetString();
 
                     if (!reader.Read())
@@ -414,12 +414,12 @@ namespace Oakbranch.Binance.Savings
 
         private List<InterestRateTier> ParseInterestRateTiers(ref Utf8JsonReader reader)
         {
-            ParseUtility.ValidateObjectStartToken(ref reader);
+            ParseUtility.EnsureObjectStartToken(ref reader);
             List<InterestRateTier> result = new List<InterestRateTier>(3);
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                ParseUtility.ValidatePropertyNameToken(ref reader);
+                ParseUtility.EnsurePropertyNameToken(ref reader);
 
                 string tierName = reader.GetString();
                 if (!reader.Read())
@@ -545,7 +545,7 @@ namespace Oakbranch.Binance.Savings
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                ParseUtility.ValidateObjectStartToken(ref reader);
+                ParseUtility.EnsureObjectStartToken(ref reader);
 
                 string asset = null, productName = null;
                 decimal interest = 0.0m;
@@ -555,7 +555,7 @@ namespace Oakbranch.Binance.Savings
 
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                 {
-                    ParseUtility.ValidatePropertyNameToken(ref reader);
+                    ParseUtility.EnsurePropertyNameToken(ref reader);
                     string propName = reader.GetString();
 
                     if (!reader.Read())
