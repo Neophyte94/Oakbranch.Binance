@@ -8,6 +8,6 @@
     <PackageReference Include="System.Text.Json" Version="7.0.3" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Oakbranch.Common\Oakbranch.Common\Oakbranch.Common.csproj" />
+    <ProjectReference Include="..\..\..\Oakbranch.Common\Oakbranch.Common\Oakbranch.Common.csproj" />
   </ItemGroup>
 </Project>
