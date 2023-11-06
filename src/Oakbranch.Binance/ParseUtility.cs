@@ -22,37 +22,49 @@ namespace Oakbranch.Binance
         public static void ReadObjectStart(ref Utf8JsonReader reader)
         {
             if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
+            {
                 throw new JsonException($"An object start was expected but encountered \"{reader.TokenType}\".");
+            }
         }
 
         public static void EnsureObjectStartToken(ref Utf8JsonReader reader)
         {
             if (reader.TokenType != JsonTokenType.StartObject)
+            {
                 throw new JsonException($"An object start was expected but encountered \"{reader.TokenType}\".");
+            }
         }
 
         public static void ReadObjectEnd(ref Utf8JsonReader reader)
         {
             if (!reader.Read() || reader.TokenType != JsonTokenType.EndObject)
+            {
                 throw new JsonException($"An object end was expected but encountered \"{reader.TokenType}\".");
-        }
-
-        public static void EnsureArrayStartToken(ref Utf8JsonReader reader)
-        {
-            if (reader.TokenType != JsonTokenType.StartArray)
-                throw new JsonException($"An array's start was expected but encountered \"{reader.TokenType}\".");
+            }
         }
 
         public static void ReadArrayStart(ref Utf8JsonReader reader)
         {
             if (!reader.Read() || reader.TokenType != JsonTokenType.StartArray)
+            {
                 throw new JsonException($"An array's start was expected but encountered \"{reader.TokenType}\".");
+            }
+        }
+
+        public static void EnsureArrayStartToken(ref Utf8JsonReader reader)
+        {
+            if (reader.TokenType != JsonTokenType.StartArray)
+            {
+                throw new JsonException($"An array's start was expected but encountered \"{reader.TokenType}\".");
+            }
         }
 
         public static void ReadArrayEnd(ref Utf8JsonReader reader)
         {
             if (!reader.Read() || reader.TokenType != JsonTokenType.EndArray)
+            {
                 throw new JsonException($"An array's end was expected but encountered \"{reader.TokenType}\".");
+            }
         }
 
         /// <summary>
@@ -64,9 +76,27 @@ namespace Oakbranch.Binance
         /// <exception cref="JsonException">
         /// Thrown when the read token is not a property name, or its value is either <see langword="null"/> or empty.
         /// </exception>
-        public static string ReadNonEmptyPropertyName (ref Utf8JsonReader reader)
+        public static string ReadNonEmptyPropertyName(ref Utf8JsonReader reader)
         {
-            if (!reader.Read() || reader.TokenType != JsonTokenType.PropertyName)
+            if (!reader.Read())
+            {
+                throw new JsonException($"A property's name was expected but \"{reader.TokenType}\" encountered.");
+            }
+
+            return GetNonEmptyPropertyName(ref reader);
+        }
+
+        /// <summary>
+        /// Reads the current JSON token from the given JSON reader as a property name,
+        /// validating its type, and ensuring that it is neither <see langword="null"/> nor empty.
+        /// </summary>
+        /// <returns>The property name read.</returns>
+        /// <exception cref="JsonException">
+        /// Thrown when the current token is not a property name, or its value is either <see langword="null"/> or empty.
+        /// </exception>
+        public static string GetNonEmptyPropertyName(ref Utf8JsonReader reader)
+        {
+            if (reader.TokenType != JsonTokenType.PropertyName)
             {
                 throw new JsonException($"A property's name was expected but \"{reader.TokenType}\" encountered.");
             }
@@ -74,7 +104,7 @@ namespace Oakbranch.Binance
             string? propName = reader.GetString();
             if (String.IsNullOrEmpty(propName))
             {
-                throw new JsonException("Null property name was encountered.");
+                throw new JsonException("Null or empty property name was encountered.");
             }
 
             return propName;
@@ -102,11 +132,43 @@ namespace Oakbranch.Binance
         public static void EnsurePropertyNameToken(ref Utf8JsonReader reader)
         {
             if (reader.TokenType != JsonTokenType.PropertyName)
+            {
                 throw new JsonException($"A propertie's name was expected but \"{reader.TokenType}\" encountered.");
+            }
         }
 
+        /// <summary>
+        /// Validates the current JSON token to be of the given type.
+        /// </summary>
+        /// <exception cref="JsonException"/>
+        public static void EnsurePropertyValueToken(
+            ref Utf8JsonReader reader,
+            JsonTokenType requiredToken,
+            string propName)
+        {
+            if (reader.TokenType != requiredToken)
+            {
+                throw GenerateInvalidValueTypeException(propName, requiredToken, reader.TokenType);
+            }
+        }
+
+        /// <summary>
+        /// Reads the current JSON token from the given JSON reader as a string value,
+        /// validating its type, and ensuring that it is neither <see langword="null"/> nor empty.
+        /// </summary>
+        /// <param name="reader">The JSON reader to get the current value from.</param>
+        /// <returns>The property name read.</returns>
+        /// <exception cref="JsonException">
+        /// Thrown when the current token is not a string, or its value is either <see langword="null"/> or empty.
+        /// </exception>
         public static string ReadNonEmptyString(ref Utf8JsonReader reader, string propName)
         {
+            if (!reader.Read())
+            {
+                throw GenerateNoPropertyValueException(propName);
+            }
+            EnsurePropertyValueToken(ref reader, JsonTokenType.String, propName);
+
             string? value = reader.GetString();
             if (String.IsNullOrEmpty(value))
             {
@@ -116,13 +178,26 @@ namespace Oakbranch.Binance
             return value;
         }
 
-        public static void EnsurePropertyValueToken(
-            ref Utf8JsonReader reader,
-            JsonTokenType requiredToken,
-            string propName)
+        /// <summary>
+        /// Reads the current JSON token from the given JSON reader as a string value,
+        /// validating its type, and ensuring that it is neither <see langword="null"/> nor empty.
+        /// </summary>
+        /// <param name="reader">The JSON reader to get the current value from.</param>
+        /// <returns>The property name read.</returns>
+        /// <exception cref="JsonException">
+        /// Thrown when the current token is not a string, or its value is either <see langword="null"/> or empty.
+        /// </exception>
+        public static string GetNonEmptyString(ref Utf8JsonReader reader, string propName)
         {
-            if (!reader.Read() || reader.TokenType != requiredToken)
-                throw GenerateInvalidValueTypeException(propName, requiredToken, reader.TokenType);
+            EnsurePropertyValueToken(ref reader, JsonTokenType.String, propName);
+
+            string? value = reader.GetString();
+            if (String.IsNullOrEmpty(value))
+            {
+                throw new JsonException($"The read value of the property \"{propName}\" is either null or empty.");
+            }
+
+            return value;
         }
 
         /// <summary>
@@ -184,14 +259,16 @@ namespace Oakbranch.Binance
         }
 
         // Exceptions.
-        public static JsonException GenerateUnknownPropertyException(string propName)
+        public static JsonException GenerateMissingPropertyException(string objName, string propName)
         {
-            return new JsonException($"An unknown property was encountered: \"{propName}\".");
+            return new JsonException($"The {propName} property of the {objName} object is missing in the response.");
         }
 
         public static JsonException GenerateNoPropertyValueException(string propName)
         {
-            return new JsonException($"A value of the property \"{propName}\" was expected but the end of the data was reached.");
+            return new JsonException(
+                $"A value of the property \"{propName}\" was expected," +
+                $"but the end of the data was reached.");
         }
 
         public static JsonException GenerateInvalidValueTypeException(
@@ -203,9 +280,9 @@ namespace Oakbranch.Binance
                 $"The {propName} value of the type \"{expectedType}\" was expected but \"{actualType}\" encountered.");
         }
 
-        public static JsonException GenerateMissingPropertyException(string objName, string propName)
+        public static JsonException GenerateUnknownPropertyException(string propName)
         {
-            return new JsonException($"The {propName} property of the {objName} object is missing in the response.");
+            return new JsonException($"An unknown property was encountered: \"{propName}\".");
         }
 
         // Shared data structures.
@@ -299,7 +376,7 @@ namespace Oakbranch.Binance
 
         public static List<OrderPartialFill> ParseOrderPartialFills(ref Utf8JsonReader reader)
         {
-            ParseUtility.EnsureArrayStartToken(ref reader);
+            EnsureArrayStartToken(ref reader);
             List<OrderPartialFill> resultsList = new List<OrderPartialFill>(8);
 
             ParseSchemaValidator validator = new ParseSchemaValidator(5);
@@ -309,12 +386,12 @@ namespace Oakbranch.Binance
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                ParseUtility.EnsureObjectStartToken(ref reader);
+                EnsureObjectStartToken(ref reader);
 
                 // Parse partial fill properties.
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                 {
-                    string propName = ReadNonEmptyPropertyName(ref reader);
+                    string propName = GetNonEmptyPropertyName(ref reader);
 
                     if (!reader.Read())
                     {
@@ -324,15 +401,15 @@ namespace Oakbranch.Binance
                     switch (propName)
                     {
                         case "price":
-                            ParseUtility.ParseDecimal(propName, reader.GetString(), out price);
+                            ParseDecimal(propName, reader.GetString(), out price);
                             validator.RegisterProperty(0);
                             break;
                         case "qty":
-                            ParseUtility.ParseDecimal(propName, reader.GetString(), out qty);
+                            ParseDecimal(propName, reader.GetString(), out qty);
                             validator.RegisterProperty(1);
                             break;
                         case "commission":
-                            ParseUtility.ParseDecimal(propName, reader.GetString(), out comm);
+                            ParseDecimal(propName, reader.GetString(), out comm);
                             validator.RegisterProperty(2);
                             break;
                         case "commissionAsset":
@@ -344,7 +421,7 @@ namespace Oakbranch.Binance
                             validator.RegisterProperty(4);
                             break;
                         default:
-                            throw ParseUtility.GenerateUnknownPropertyException(propName);
+                            throw GenerateUnknownPropertyException(propName);
                     }
                 }
 
@@ -355,12 +432,12 @@ namespace Oakbranch.Binance
                     int missingPropNum = validator.GetMissingPropertyNumber();
                     throw missingPropNum switch
                     {
-                        0 => ParseUtility.GenerateMissingPropertyException(objName, "price"),
-                        1 => ParseUtility.GenerateMissingPropertyException(objName, "quantity"),
-                        2 => ParseUtility.GenerateMissingPropertyException(objName, "commission"),
-                        3 => ParseUtility.GenerateMissingPropertyException(objName, "commission asset"),
-                        4 => ParseUtility.GenerateMissingPropertyException(objName, "trade ID"),
-                        _ => ParseUtility.GenerateMissingPropertyException(objName, $"unknown ({missingPropNum})"),
+                        0 => GenerateMissingPropertyException(objName, "price"),
+                        1 => GenerateMissingPropertyException(objName, "quantity"),
+                        2 => GenerateMissingPropertyException(objName, "commission"),
+                        3 => GenerateMissingPropertyException(objName, "commission asset"),
+                        4 => GenerateMissingPropertyException(objName, "trade ID"),
+                        _ => GenerateMissingPropertyException(objName, $"unknown ({missingPropNum})"),
                     };
                 }
 
@@ -379,8 +456,7 @@ namespace Oakbranch.Binance
 
             const string propName = "filterType";
             ReadExactPropertyName(ref reader, propName);
-            EnsurePropertyValueToken(ref reader, JsonTokenType.String, propName);
-            string? type = reader.GetString();
+            string? type = ReadNonEmptyString(ref reader, propName);
 
             return type switch
             {
@@ -396,6 +472,11 @@ namespace Oakbranch.Binance
 
             const string propName = "maxNumOrders";
             ReadExactPropertyName(ref reader, propName);
+
+            if (!reader.Read())
+            {
+                throw GenerateNoPropertyValueException(propName);
+            }
             EnsurePropertyValueToken(ref reader, JsonTokenType.Number, propName);
             result.Limit = reader.GetUInt32();
 
@@ -410,6 +491,11 @@ namespace Oakbranch.Binance
 
             const string propName = "maxNumAlgoOrders";
             ReadExactPropertyName(ref reader, propName);
+
+            if (!reader.Read())
+            {
+                throw GenerateNoPropertyValueException(propName);
+            }
             EnsurePropertyValueToken(ref reader, JsonTokenType.Number, propName);
             result.Limit = reader.GetUInt32();
 
@@ -428,7 +514,7 @@ namespace Oakbranch.Binance
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                string propName = ReadNonEmptyPropertyName(ref reader);
+                string propName = GetNonEmptyPropertyName(ref reader);
 
                 if (!reader.Read())
                     throw GenerateNoPropertyValueException(propName);
