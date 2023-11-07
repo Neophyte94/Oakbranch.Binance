@@ -167,15 +167,8 @@ namespace Oakbranch.Binance
             {
                 throw GenerateNoPropertyValueException(propName);
             }
-            EnsurePropertyValueToken(ref reader, JsonTokenType.String, propName);
 
-            string? value = reader.GetString();
-            if (String.IsNullOrEmpty(value))
-            {
-                throw new JsonException($"The read value of the property \"{propName}\" is either null or empty.");
-            }
-
-            return value;
+            return GetNonEmptyString(ref reader, propName);
         }
 
         /// <summary>
