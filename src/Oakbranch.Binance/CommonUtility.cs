@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -37,6 +38,7 @@ namespace Oakbranch.Binance
         /// </summary>
         /// <param name="symbol">The exchange symbol to be normalized.</param>
         /// <returns>The exchange symbol adapted to the format accepted by the exchange API.</returns>
+        [return: NotNullIfNotNull(nameof(symbol))]
         public static string? NormalizeSymbol(string? symbol)
         {
             return symbol?.ToUpperInvariant();

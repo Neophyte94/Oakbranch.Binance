@@ -465,9 +465,12 @@ namespace Oakbranch.Binance
         /// <exception cref="ArgumentNullException"/>
         /// <exception cref="QueryException"/>
         internal async Task<T> ExecuteQueryAsync<T>(
-            QueryParams queryParams, IReadOnlyList<QueryWeight> weights,
-            ParseResponseHandler<T> parseFunction, object parseArgs,
-            IReadOnlyDictionary<string, int> headersToLimitsMap, CancellationToken ct)
+            QueryParams queryParams,
+            IReadOnlyList<QueryWeight> weights,
+            ParseResponseHandler<T> parseFunction,
+            object? parseArgs,
+            IReadOnlyDictionary<string, int>? headersToLimitsMap,
+            CancellationToken ct)
         {
             if (queryParams.IsUndefined)
                 throw new ArgumentNullException(nameof(queryParams));

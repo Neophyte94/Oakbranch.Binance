@@ -76,12 +76,15 @@ namespace Oakbranch.Binance
         #region Instance methods
 
         /// <summary>
-        /// When implemented, determines a name of the HTTP header that (presumably) contains
-        /// info on the corresponding rate limit usage.
+        /// When implemented, determines the name of the HTTP header
+        /// in which to search for usage value of the corresponding rate limit.
         /// </summary>
         /// <param name="limit">The specification of the limit to get header name for.</param>
-        /// <returns>The name of the HTTP header containing info on the corresponding rate limit usage.</returns>
-        protected abstract string GetRateLimitHeaderName(RateLimiter limit);
+        /// <returns>
+        /// The name of the HTTP header which should contain info on the limit usage,
+        /// or <see langword="null"/> if the such header should not exist.
+        /// </returns>
+        protected abstract string? GetRateLimitHeaderName(RateLimiter limit);
 
         protected void RegisterOrUpdateRateLimits(IList<RateLimiter> limits)
         {
@@ -111,9 +114,11 @@ namespace Oakbranch.Binance
                     LimitsRegistry.ModifyLimit(limitId, limit.Limit);
                 }
 
-                string headerName = GetRateLimitHeaderName(limit);
+                string? headerName = GetRateLimitHeaderName(limit);
                 if (headerName != null)
+                {
                     headersLimitsMap.Add(headerName, limitId);
+                }
             }
 
             // Update the dictionary of the HTTP headers and the corresponding rate limits.

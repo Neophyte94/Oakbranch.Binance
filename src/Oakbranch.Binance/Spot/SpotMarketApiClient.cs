@@ -65,11 +65,9 @@ namespace Oakbranch.Binance.Spot
 
         #region Instance constructors
 
-        public SpotMarketApiClient(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger logger = null) :
-            base(connector, limitsRegistry, logger)
-        {
-            
-        }
+        public SpotMarketApiClient(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger? logger = null)
+            : base(connector, limitsRegistry, logger)
+        { }
 
         #endregion
 
@@ -184,7 +182,7 @@ namespace Oakbranch.Binance.Spot
             }
         }
 
-        private DateTime ParseServerTimeResponse(byte[] data, object parseArgs)
+        private DateTime ParseServerTimeResponse(byte[] data, object? parseArgs = null)
         {
             Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
 
@@ -217,7 +215,7 @@ namespace Oakbranch.Binance.Spot
         /// <exception cref="ArgumentException"/>
         /// <exception cref="ClientNotInitializedException"/>
         /// <exception cref="ObjectDisposedException"/>
-        public IDeferredQuery<SpotExchangeInfo> PrepareGetExchangeInfo(params string[] symbols)
+        public IDeferredQuery<SpotExchangeInfo> PrepareGetExchangeInfo(params string[]? symbols)
         {
             ThrowIfNotRunning();
 
@@ -226,7 +224,7 @@ namespace Oakbranch.Binance.Spot
                 new QueryWeight(GetWeightDimensionId(RateLimitType.IP), 20),
             };
 
-            QueryBuilder qs = null;
+            QueryBuilder? qs = null;
             if (symbols != null && symbols.Length != 0)
             {
                 int emptyIdx = CommonUtility.IndexOfEmpty(symbols);
@@ -245,7 +243,7 @@ namespace Oakbranch.Binance.Spot
                 else
                 {
                     qs = new QueryBuilder(11 + 11 * symbols.Length);
-                    qs.AddParameter("symbols", symbols.Select(CommonUtility.NormalizeSymbol));
+                    qs.AddParameter("symbols", symbols.Select<string, string>(CommonUtility.NormalizeSymbol));
                 }
             }
 
@@ -266,7 +264,7 @@ namespace Oakbranch.Binance.Spot
         /// <exception cref="ObjectDisposedException"/>
         /// <exception cref="QueryException"/>
         /// <exception cref="OperationCanceledException"/>
-        public Task<SpotExchangeInfo> GetExchangeInfoAsync(string[] symbols = null, CancellationToken ct = default)
+        public Task<SpotExchangeInfo> GetExchangeInfoAsync(string[]? symbols = null, CancellationToken ct = default)
         {
             using (IDeferredQuery<SpotExchangeInfo> query = PrepareGetExchangeInfo(symbols))
             {
@@ -274,7 +272,7 @@ namespace Oakbranch.Binance.Spot
             }
         }
 
-        private SpotExchangeInfo ParseExchangeInfoResponse(byte[] data, object parsingArgs)
+        private SpotExchangeInfo ParseExchangeInfoResponse(byte[] data, object? parsingArgs)
         {
             int expectedCount = parsingArgs is int ? (int)parsingArgs : ExpectedSymbolsCount;
 
@@ -285,8 +283,7 @@ namespace Oakbranch.Binance.Spot
             ParseSchemaValidator validator = new ParseSchemaValidator(4);
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                ParseUtility.EnsurePropertyNameToken(ref reader);
-                string propName = reader.GetString();
+                string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
 
                 if (!reader.Read())
                     throw ParseUtility.GenerateNoPropertyValueException(propName);
@@ -294,7 +291,7 @@ namespace Oakbranch.Binance.Spot
                 switch (propName)
                 {
                     case "timezone":
-                        string timezone = reader.GetString();
+                        string timezone = ParseUtility.GetNonEmptyString(ref reader, propName);
                         ei.Timezone = TimeZoneInfo.FindSystemTimeZoneById(timezone);
                         validator.RegisterProperty(0);
                         break;
@@ -376,23 +373,22 @@ namespace Oakbranch.Binance.Spot
             ParseSchemaValidator validator = new ParseSchemaValidator(8);
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                ParseUtility.EnsurePropertyNameToken(ref reader);
-                string propName = reader.GetString();
+                string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
 
                 if (!reader.Read())
                     throw new JsonException($"A value of the property \"{propName}\" was expected but \"{reader.TokenType}\" encountered.");
                 switch (propName)
                 {
                     case "symbol":
-                        symbol.Symbol = reader.GetString();
+                        symbol.Symbol = ParseUtility.GetNonEmptyString(ref reader, propName);
                         validator.RegisterProperty(0);
                         break;
                     case "status":
-                        symbol.Status = ParseSymbolStatus(reader.GetString());
+                        symbol.Status = ParseSymbolStatus(ParseUtility.GetNonEmptyString(ref reader, propName));
                         validator.RegisterProperty(1);
                         break;
                     case "baseAsset":
-                        symbol.BaseAsset = reader.GetString();
+                        symbol.BaseAsset = ParseUtility.GetNonEmptyString(ref reader, propName);
                         validator.RegisterProperty(2);
                         break;
                     case "baseAssetPrecision":
@@ -400,7 +396,7 @@ namespace Oakbranch.Binance.Spot
                         validator.RegisterProperty(3);
                         break;
                     case "quoteAsset":
-                        symbol.QuoteAsset = reader.GetString();
+                        symbol.QuoteAsset = ParseUtility.GetNonEmptyString(ref reader, propName);
                         validator.RegisterProperty(4);
                         break;
                     case "quoteAssetPrecision":
@@ -418,7 +414,8 @@ namespace Oakbranch.Binance.Spot
                         List<OrderType> orderTypesList = new List<OrderType>(8);
                         while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                         {
-                            orderTypesList.Add(SpotUtility.ParseOrderType(reader.GetString()));
+                            orderTypesList.Add(SpotUtility.ParseOrderType(
+                                ParseUtility.GetNonEmptyString(ref reader, propName)));
                         }
                         symbol.OrderTypes = orderTypesList;
                         validator.RegisterProperty(6);
@@ -465,7 +462,8 @@ namespace Oakbranch.Binance.Spot
                         validator.RegisterProperty(7);
                         break;
                     case "defaultSelfTradePreventionMode":
-                        symbol.DefaultSTPMode = SpotUtility.ParseSelfTradePreventionMode(reader.GetString());
+                        symbol.DefaultSTPMode = SpotUtility.ParseSelfTradePreventionMode(
+                            ParseUtility.GetNonEmptyString(ref reader, propName));
                         break;
                     case "allowedSelfTradePreventionModes":
                         int arrayDepth = reader.CurrentDepth;
@@ -501,18 +499,18 @@ namespace Oakbranch.Binance.Spot
             {
                 const string objName = "symbol info";
                 int missingPropNum = validator.GetMissingPropertyNumber();
-                switch (missingPropNum)
+                throw missingPropNum switch
                 {
-                    case 0: throw ParseUtility.GenerateMissingPropertyException(objName, "symbol");
-                    case 1: throw ParseUtility.GenerateMissingPropertyException(objName, "status");
-                    case 2: throw ParseUtility.GenerateMissingPropertyException(objName, "base asset");
-                    case 3: throw ParseUtility.GenerateMissingPropertyException(objName, "base asset precision");
-                    case 4: throw ParseUtility.GenerateMissingPropertyException(objName, "quote asset");
-                    case 5: throw ParseUtility.GenerateMissingPropertyException(objName, "quote asset precision");
-                    case 6: throw ParseUtility.GenerateMissingPropertyException(objName, "order types");
-                    case 7: throw ParseUtility.GenerateMissingPropertyException(objName, "filters");
-                    default: throw ParseUtility.GenerateMissingPropertyException(objName, $"unknown ({missingPropNum})");
-                }
+                    0 => ParseUtility.GenerateMissingPropertyException(objName, "symbol"),
+                    1 => ParseUtility.GenerateMissingPropertyException(objName, "status"),
+                    2 => ParseUtility.GenerateMissingPropertyException(objName, "base asset"),
+                    3 => ParseUtility.GenerateMissingPropertyException(objName, "base asset precision"),
+                    4 => ParseUtility.GenerateMissingPropertyException(objName, "quote asset"),
+                    5 => ParseUtility.GenerateMissingPropertyException(objName, "quote asset precision"),
+                    6 => ParseUtility.GenerateMissingPropertyException(objName, "order types"),
+                    7 => ParseUtility.GenerateMissingPropertyException(objName, "filters"),
+                    _ => ParseUtility.GenerateMissingPropertyException(objName, $"unknown ({missingPropNum})"),
+                };
             }
 
             // Return the result.
@@ -527,7 +525,8 @@ namespace Oakbranch.Binance.Spot
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                resultList.Add(SpotUtility.ParseSelfTradePreventionMode(reader.GetString()));
+                resultList.Add(SpotUtility.ParseSelfTradePreventionMode(
+                    ParseUtility.GetNonEmptyString(ref reader, String.Empty)));
             }
 
             return resultList;
@@ -567,7 +566,7 @@ namespace Oakbranch.Binance.Spot
             }
         }
 
-        public Dictionary<string, Product> ParseProductsInfoList(byte[] data, object parsingArgs)
+        public Dictionary<string, Product> ParseProductsInfoList(byte[] data, object? parsingArgs)
         {
             Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
             ParseUtility.ReadObjectStart(ref reader);
@@ -575,8 +574,7 @@ namespace Oakbranch.Binance.Spot
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                ParseUtility.EnsurePropertyNameToken(ref reader);
-                string propName = reader.GetString();
+                string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
 
                 if (!reader.Read())
                     throw new JsonException($"A value of the property \"{propName}\" was expected but \"{reader.TokenType}\" encountered.");
@@ -614,30 +612,27 @@ namespace Oakbranch.Binance.Spot
         private Product ParseProductInfo(ref Utf8JsonReader reader)
         {
             ParseUtility.EnsureObjectStartToken(ref reader);
+            Product product = Product.Undefined;
 
             ParseUtility.ReadExactPropertyName(ref reader, "s");
-            if (!reader.Read() || reader.TokenType != JsonTokenType.String)
-                throw new JsonException($"A symbol property was expected but \"{reader.TokenType}\" encountered.");
-            Product product = Product.Undefined;
-            product.Symbol = reader.GetString();
+            product.Symbol = ParseUtility.ReadNonEmptyString(ref reader, "s");
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                ParseUtility.EnsurePropertyNameToken(ref reader);
-                string propName = reader.GetString();
+                string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
 
                 if (!reader.Read())
                     throw new JsonException($"A value of the property \"{propName}\" was expected but \"{reader.TokenType}\" encountered.");
                 switch (propName)
                 {
                     case "st":
-                        product.Status = reader.GetString();
+                        product.Status = ParseUtility.GetNonEmptyString(ref reader, propName);
                         break;
                     case "b":
-                        product.BaseAsset = reader.GetString();
+                        product.BaseAsset = ParseUtility.GetNonEmptyString(ref reader, propName);
                         break;
                     case "q":
-                        product.QuoteAsset = reader.GetString();
+                        product.QuoteAsset = ParseUtility.GetNonEmptyString(ref reader, propName);
                         break;
                     case "ba":
                         break;
@@ -648,10 +643,10 @@ namespace Oakbranch.Binance.Spot
                     case "ts":
                         break;
                     case "an":
-                        product.BaseAssetName = reader.GetString();
+                        product.BaseAssetName = ParseUtility.GetNonEmptyString(ref reader, propName);
                         break;
                     case "qn":
-                        product.QuoteAssetName = reader.GetString();
+                        product.QuoteAssetName = ParseUtility.GetNonEmptyString(ref reader, propName);
                         break;
                     case "o":
                         ParseUtility.ParseDouble(propName, reader.GetString(), out product.Open);
@@ -689,7 +684,11 @@ namespace Oakbranch.Binance.Spot
                         ParseUtility.EnsureArrayStartToken(ref reader);
                         while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
                         {
-                            product.Tags.Add(reader.GetString());
+                            string? tag = reader.GetString();
+                            if (!String.IsNullOrEmpty(tag))
+                            {
+                                product.Tags.Add(tag);
+                            }
                         }
                         break;
                     case "pom":
@@ -731,8 +730,7 @@ namespace Oakbranch.Binance.Spot
         /// <exception cref="ArgumentNullException"/>
         /// <exception cref="ClientNotInitializedException"/>
         /// <exception cref="ObjectDisposedException"/>
-        public IDeferredQuery<List<Trade>> PrepareGetOldTrades(
-            string symbol, int? limit = null, long? fromId = null)
+        public IDeferredQuery<List<Trade>> PrepareGetOldTrades(string symbol, int? limit = null, long? fromId = null)
         {
             ThrowIfNotRunning();
             if (String.IsNullOrWhiteSpace(symbol))
@@ -767,8 +765,8 @@ namespace Oakbranch.Binance.Spot
         /// <exception cref="ObjectDisposedException"/>
         /// <exception cref="QueryException"/>
         /// <exception cref="OperationCanceledException"/>
-        public Task<List<Trade>> GetOldTradesAsync(string symbol,
-            int? limit = null, long? fromId = null, CancellationToken ct = default)
+        public Task<List<Trade>> GetOldTradesAsync(
+            string symbol, int? limit = null, long? fromId = null, CancellationToken ct = default)
         {
             using (IDeferredQuery<List<Trade>> query = PrepareGetOldTrades(symbol, limit, fromId))
             {
@@ -776,7 +774,7 @@ namespace Oakbranch.Binance.Spot
             }
         }
 
-        private List<Trade> ParseTradesList(byte[] data, object parseArgs)
+        private List<Trade> ParseTradesList(byte[] data, object? parseArgs)
         {
             Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
 
@@ -795,10 +793,12 @@ namespace Oakbranch.Binance.Spot
 
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                 {
-                    string propName = reader.GetString();
+                    string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
+
                     if (!reader.Read())
-                        throw new JsonException($"A value of the property \"{propName}\" was expected " +
-                            "but the end of the data was reached.");
+                    {
+                        throw ParseUtility.GenerateNoPropertyValueException(propName);
+                    }
                     switch (propName)
                     {
                         case "id":
@@ -879,7 +879,10 @@ namespace Oakbranch.Binance.Spot
         /// <exception cref="ClientNotInitializedException"/>
         /// <exception cref="ObjectDisposedException"/>
         public IDeferredQuery<List<AggregateTrade>> PrepareGetAggregateTrades(
-            string symbol, DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
+            string symbol,
+            DateTime? startTime = null,
+            DateTime? endTime = null,
+            int? limit = null)
         {
             ThrowIfNotRunning();
             if (String.IsNullOrWhiteSpace(symbol))
@@ -922,8 +925,12 @@ namespace Oakbranch.Binance.Spot
         /// <exception cref="ObjectDisposedException"/>
         /// <exception cref="QueryException"/>
         /// <exception cref="OperationCanceledException"/>
-        public Task<List<AggregateTrade>> GetAggregateTradesAsync(string symbol,
-            DateTime? startTime = null, DateTime? endTime = null, int? limit = null, CancellationToken ct = default)
+        public Task<List<AggregateTrade>> GetAggregateTradesAsync(
+            string symbol,
+            DateTime? startTime = null,
+            DateTime? endTime = null,
+            int? limit = null,
+            CancellationToken ct = default)
         {
             using (IDeferredQuery<List<AggregateTrade>> query = PrepareGetAggregateTrades(symbol, startTime, endTime, limit))
             {
@@ -993,12 +1000,13 @@ namespace Oakbranch.Binance.Spot
             }
         }
 
-        private List<AggregateTrade> ParseAggregateTradesList(byte[] data, object parseArgs)
+        private List<AggregateTrade> ParseAggregateTradesList(byte[] data, object? parseArgs)
         {
             Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
-
+            List<AggregateTrade> results = new List<AggregateTrade>(
+                parseArgs is int expectedCount ? expectedCount : DefaultTradesQueryLimit);
+            
             ParseUtility.ReadArrayStart(ref reader);
-            List<AggregateTrade> results = new List<AggregateTrade>((int)parseArgs);
 
             ParseSchemaValidator validator = new ParseSchemaValidator(7);
             long id = default, firstTradeId = default, lastTradeId = default;
@@ -1012,10 +1020,13 @@ namespace Oakbranch.Binance.Spot
 
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                 {
-                    string propName = reader.GetString();
+                    string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
+
                     if (!reader.Read())
-                        throw new JsonException($"A value of the property \"{propName}\" was expected " +
-                            "but the end of the data was reached.");
+                    {
+                        throw ParseUtility.GenerateNoPropertyValueException(propName);
+                    }
+
                     switch (propName)
                     {
                         case "a":
@@ -1104,8 +1115,11 @@ namespace Oakbranch.Binance.Spot
         /// <exception cref="ClientNotInitializedException"/>
         /// <exception cref="ObjectDisposedException"/>
         public IDeferredQuery<List<Candlestick>> PrepareGetCandlestickData(
-            string symbol, KlineInterval interval,
-            int? limit = null, DateTime? startTime = null, DateTime? endTime = null)
+            string symbol,
+            KlineInterval interval,
+            int? limit = null,
+            DateTime? startTime = null,
+            DateTime? endTime = null)
         {
             ThrowIfNotRunning();
             if (String.IsNullOrWhiteSpace(symbol))
@@ -1150,8 +1164,13 @@ namespace Oakbranch.Binance.Spot
         /// <exception cref="ObjectDisposedException"/>
         /// <exception cref="QueryException"/>
         /// <exception cref="OperationCanceledException"/>
-        public Task<List<Candlestick>> GetCandlestickDataAsync(string symbol, KlineInterval interval,
-            int? limit = null, DateTime? startTime = null, DateTime? endTime = null, CancellationToken ct = default)
+        public Task<List<Candlestick>> GetCandlestickDataAsync(
+            string symbol,
+            KlineInterval interval,
+            int? limit = null,
+            DateTime? startTime = null,
+            DateTime? endTime = null,
+            CancellationToken ct = default)
         {
             using (IDeferredQuery<List<Candlestick>> query =
                 PrepareGetCandlestickData(symbol, interval, limit, startTime, endTime))
@@ -1160,15 +1179,16 @@ namespace Oakbranch.Binance.Spot
             }
         }
 
-        private List<Candlestick> ParseCandlestickList(byte[] data, object parseArgs)
+        private List<Candlestick> ParseCandlestickList(byte[] data, object? parseArgs)
         {
             Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
-
-            ParseUtility.ReadArrayStart(ref reader);
-            List<Candlestick> results = new List<Candlestick>((int)parseArgs);
+            List<Candlestick> results = new List<Candlestick>(
+                parseArgs is int expectedCount ? expectedCount : DefaultKlinesQueryLimit);
             DateTime openTime, closeTime;
             decimal o, h, l, c, bv, qv, tbv, tqv;
             uint numOfTrades;
+
+            ParseUtility.ReadArrayStart(ref reader);
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
@@ -1245,7 +1265,7 @@ namespace Oakbranch.Binance.Spot
                 new QueryWeight(GetWeightDimensionId(RateLimitType.IP), symbols != null && symbols.Length == 1 ? 2u : 4u),
             };
 
-            QueryBuilder qs = null;
+            QueryBuilder? qs = null;
             if (symbols != null && symbols.Length != 0)
             {
                 int emptyIdx = CommonUtility.IndexOfEmpty(symbols);
@@ -1264,7 +1284,7 @@ namespace Oakbranch.Binance.Spot
                 else
                 {
                     qs = new QueryBuilder(11 + 11 * symbols.Length);
-                    qs.AddParameter("symbols", symbols.Select(CommonUtility.NormalizeSymbol));
+                    qs.AddParameter("symbols", symbols.Select<string, string>(CommonUtility.NormalizeSymbol));
                 }
             }
 
@@ -1293,7 +1313,7 @@ namespace Oakbranch.Binance.Spot
             }
         }
 
-        private List<PriceTick> ParsePriceTicksList(byte[] data, object parseArgs)
+        private List<PriceTick> ParsePriceTicksList(byte[] data, object? parseArgs)
         {
             List<PriceTick> results = new List<PriceTick>(
                 parseArgs is int expectedCount ? expectedCount : ExpectedSymbolsCount);
@@ -1305,17 +1325,18 @@ namespace Oakbranch.Binance.Spot
                 ParseUtility.EnsureObjectStartToken(ref reader);
 
                 const string objName = "price tick";
-                string s = null;
+                string? s = null;
                 decimal p = -1.0m;
 
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                 {
-                    ParseUtility.EnsurePropertyNameToken(ref reader);
-                    string propName = reader.GetString();
+                    string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
 
                     if (!reader.Read())
-                        throw new JsonException($"A value of the property \"{propName}\" was expected but the end of the data was reached.");
-                    
+                    {
+                        throw ParseUtility.GenerateNoPropertyValueException(propName);
+                    }
+
                     switch (propName)
                     {
                         case "symbol":

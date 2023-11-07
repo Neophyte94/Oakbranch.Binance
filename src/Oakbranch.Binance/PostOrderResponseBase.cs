@@ -16,7 +16,7 @@ namespace Oakbranch.Binance
         /// </summary>
         public long OrderId;
         /// <summary>
-        /// Gets the custom ID of the order.
+        /// Defines the custom ID of the order.
         /// <para>The custom ID can be assigned either in the post order request or automatically by the server.</para>
         /// <para>A cancelled order can get its custom ID automatically changed by the server.</para>
         /// </summary>

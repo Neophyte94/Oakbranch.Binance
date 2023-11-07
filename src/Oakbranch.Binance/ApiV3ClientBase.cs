@@ -25,7 +25,7 @@ namespace Oakbranch.Binance
 
         #region Static members
 
-        private static ReadOnlyCollection<BaseEndpoint> s_RESTBaseEndpoints;
+        private static readonly ReadOnlyCollection<BaseEndpoint> s_RESTBaseEndpoints;
         /// <summary>
         /// Gets a list of all available base endpoints for main API requests.
         /// <para>The main API include market data, spot, margin, wallet and savings endpoints.</para>
@@ -80,7 +80,7 @@ namespace Oakbranch.Binance
 
         #region Instance constructors
 
-        public ApiV3ClientBase(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger logger = null) :
+        public ApiV3ClientBase(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger? logger = null) :
             base(connector, limitsRegistry, LimitsDiscrimativeEndpoint, logger)
         {
             m_RESTEndpoint = s_RESTBaseEndpoints.First((bep) => bep.Type == NetworkType.Live);
@@ -116,10 +116,13 @@ namespace Oakbranch.Binance
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                ParseUtility.EnsurePropertyNameToken(ref reader);
-                string propName = reader.GetString();
+                string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
+
                 if (!reader.Read())
-                    throw new JsonException($"A value of the property \"{propName}\" was expected but \"{reader.TokenType}\" encountered.");
+                {
+                    throw ParseUtility.GenerateNoPropertyValueException(propName);
+                }
+                    
                 switch (propName)
                 {
                     case "rateLimits":
@@ -140,19 +143,15 @@ namespace Oakbranch.Binance
         }
 
         // Rate limits.
-        protected override string GetRateLimitHeaderName(RateLimiter limit)
+        protected override string? GetRateLimitHeaderName(RateLimiter limit)
         {
-            switch (limit.Type)
+            return limit.Type switch
             {
-                case RateLimitType.UID:
-                    return $"X-MBX-ORDER-COUNT-{limit.IntervalNumber}{Format(limit.Interval)}";
-                case RateLimitType.IP:
-                    return $"X-MBX-USED-WEIGHT-{limit.IntervalNumber}{Format(limit.Interval)}";
-                case RateLimitType.RawRequests:
-                    return null;
-                default:
-                    throw new NotImplementedException($"An unknown rate limit type \"{limit.Type}\" was specified.");
-            }
+                RateLimitType.UID => $"X-MBX-ORDER-COUNT-{limit.IntervalNumber}{Format(limit.Interval)}",
+                RateLimitType.IP => $"X-MBX-USED-WEIGHT-{limit.IntervalNumber}{Format(limit.Interval)}",
+                RateLimitType.RawRequests => null,
+                _ => throw new NotImplementedException($"An unknown rate limit type \"{limit.Type}\" was specified."),
+            };
         }
 
         // Test connectivity.
@@ -184,7 +183,7 @@ namespace Oakbranch.Binance
             }
         }
 
-        private bool ParseConnectivityTestResponse(byte[] data, object args)
+        private bool ParseConnectivityTestResponse(byte[] data, object? args = null)
         {
             Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
             ParseUtility.ReadObjectStart(ref reader);

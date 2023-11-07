@@ -4,5 +4,5 @@ namespace Oakbranch.Binance
 {
     internal delegate T ParseResponseHandler<out T>(
         byte[] data,
-        object args);
+        object? args);
 }

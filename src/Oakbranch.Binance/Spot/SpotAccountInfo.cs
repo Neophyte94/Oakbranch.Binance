@@ -6,7 +6,7 @@ namespace Oakbranch.Binance.Spot
     /// <summary>
     /// Represents information on the state of a spot account.
     /// </summary>
-    public sealed class SpotAccountInfo
+    public sealed record SpotAccountInfo
     {
         /// <summary>
         /// Defines the rate of a commission applied to every maker trade.
