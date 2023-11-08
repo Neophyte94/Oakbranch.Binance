@@ -92,8 +92,8 @@ namespace Oakbranch.Binance
 
         #region Instance constructors
 
-        public SapiClientBase(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger logger = null) :
-            base(connector, limitsRegistry, logger)
+        public SapiClientBase(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger? logger = null)
+            : base(connector, limitsRegistry, logger)
         {
             m_RESTEndpoint = s_RESTBaseEndpoints.First((bep) => bep.Type == NetworkType.Live);
             m_LimitTemplates = new List<RateLimiter>(4);
