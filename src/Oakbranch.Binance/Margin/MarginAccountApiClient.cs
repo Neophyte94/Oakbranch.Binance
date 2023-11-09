@@ -369,7 +369,7 @@ public class MarginAccountApiClient : SapiClientBase
         }
     }
 
-    private CrossAccountInfo ParseCrossAccountInfo(byte[] data, object? parseArgs)
+    private CrossAccountInfo ParseCrossAccountInfo(byte[] data, object? _)
     {
         Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
 
@@ -585,7 +585,7 @@ public class MarginAccountApiClient : SapiClientBase
         }
     }
 
-    private IsolatedAccountsInfo ParseIsolatedAccountInfoResponse(byte[] data, object? parseArgs)
+    private IsolatedAccountsInfo ParseIsolatedAccountInfoResponse(byte[] data, object? parseArgs = null)
     {
         int expectedAccCount = parseArgs is int eac ? eac : MaxIsolatedAccountCount;
         Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
@@ -916,7 +916,7 @@ public class MarginAccountApiClient : SapiClientBase
         }
     }
 
-    public ResultsPage<TransferTransaction> ParseCrossTransferList(byte[] data, object? parseArgs)
+    public ResultsPage<TransferTransaction> ParseCrossTransferList(byte[] data, object? parseArgs = null)
     {
         Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
         ParseUtility.ReadObjectStart(ref reader);
@@ -1180,7 +1180,7 @@ public class MarginAccountApiClient : SapiClientBase
         }
     }
 
-    private ResultsPage<TransferTransaction> ParseIsolatedTransferList(byte[] data, object? parseArgs)
+    private ResultsPage<TransferTransaction> ParseIsolatedTransferList(byte[] data, object? parseArgs = null)
     {
         Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
         ParseUtility.ReadObjectStart(ref reader);
@@ -2167,7 +2167,7 @@ public class MarginAccountApiClient : SapiClientBase
             headersToLimitsMap: GetHeadersToLimitsMap(relEndpoint));
     }
 
-    private BorrowLimitInfo ParseBorrowLimitInfo(byte[] data, object? parseArgs = null)
+    private BorrowLimitInfo ParseBorrowLimitInfo(byte[] data, object? _)
     {
         Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
         ParseUtility.ReadObjectStart(ref reader);
@@ -3618,7 +3618,7 @@ public class MarginAccountApiClient : SapiClientBase
             headersToLimitsMap: GetHeadersToLimitsMap(relEndpoint));
     }
 
-    private List<MarginTrade> ParseAccountTradeList(byte[] data, object? parseArgs)
+    private List<MarginTrade> ParseAccountTradeList(byte[] data, object? parseArgs = null)
     {
         Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
         ParseUtility.ReadArrayStart(ref reader);
@@ -3796,7 +3796,7 @@ public class MarginAccountApiClient : SapiClientBase
             headersToLimitsMap: GetHeadersToLimitsMap(relEndpoint));
     }
 
-    private List<RateLimiter> ParseRateLimiters(byte[] data, object? parseArgs = null)
+    private List<RateLimiter> ParseRateLimiters(byte[] data, object? _)
     {
         Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
 
@@ -3960,7 +3960,7 @@ public class MarginAccountApiClient : SapiClientBase
         }
     }
 
-    private long ParseTransactionId(byte[] data, object? parseArgs = null)
+    private long ParseTransactionId(byte[] data, object? _)
     {
         Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
         ParseUtility.ReadObjectStart(ref reader);
@@ -3993,7 +3993,7 @@ public class MarginAccountApiClient : SapiClientBase
     }
 
     // Orders parse logic.
-    public List<MarginOrder> ParseOrderList(byte[] data, object? parseArgs)
+    public List<MarginOrder> ParseOrderList(byte[] data, object? parseArgs = null)
     {
         List<MarginOrder> orders = new List<MarginOrder>(parseArgs is int expectedCount ? expectedCount : 32);
         Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
@@ -4006,7 +4006,7 @@ public class MarginAccountApiClient : SapiClientBase
         return orders;
     }
 
-    public MarginOrder ParseOrder(byte[] data, object? parseArgs = null)
+    public MarginOrder ParseOrder(byte[] data, object? _)
     {
         Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
         ParseUtility.ReadObjectStart(ref reader);

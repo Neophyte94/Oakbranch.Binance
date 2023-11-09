@@ -203,7 +203,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
         }
     }
 
-    private SpotAccountInfo ParseAccountInfo(byte[] data, object? parseArgs = null)
+    private SpotAccountInfo ParseAccountInfo(byte[] data, object? _)
     {
         Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
         ParseUtility.ReadObjectStart(ref reader);
@@ -1671,7 +1671,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
         }
     }
 
-    private List<SpotTrade> ParseAccountTradeList(byte[] data, object? parseArgs)
+    private List<SpotTrade> ParseAccountTradeList(byte[] data, object? parseArgs = null)
     {
         List<SpotTrade> results = new List<SpotTrade>(parseArgs is int expectedCount ? expectedCount : 500);
         Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
@@ -1775,7 +1775,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
         }
     }
 
-    private List<RateLimiter> ParseRateLimiters(byte[] data, object? parseArgs = null)
+    private List<RateLimiter> ParseRateLimiters(byte[] data, object? _)
     {
         Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
 
@@ -1804,7 +1804,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
         return orders;
     }
 
-    private SpotOrder ParseOrder(byte[] data, object? parseArgs = null)
+    private SpotOrder ParseOrder(byte[] data, object? _)
     {
         Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
         ParseUtility.ReadObjectStart(ref reader);

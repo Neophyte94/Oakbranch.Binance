@@ -25,7 +25,7 @@ namespace Oakbranch.Binance.Futures.CoinM
 
         #region Static members
 
-        private static ReadOnlyCollection<BaseEndpoint> s_RESTBaseEndpoints;
+        private readonly static ReadOnlyCollection<BaseEndpoint> s_RESTBaseEndpoints;
         /// <summary>
         /// Gets a list of all available base endpoints for main API requests.
         /// <para>The main API include market data, spot, margin, wallet and savings endpoints.</para>
@@ -76,8 +76,8 @@ namespace Oakbranch.Binance.Futures.CoinM
 
         #region Instance constructors
 
-        public FuturesCMClientBase(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger logger = null) :
-            base(connector, limitsRegistry, LimitsDiscrimativeEndpoint, logger)
+        public FuturesCMClientBase(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger? logger = null)
+            : base(connector, limitsRegistry, LimitsDiscrimativeEndpoint, logger)
         {
             m_RESTEndpoint = s_RESTBaseEndpoints.First((bep) => bep.Type == NetworkType.Live);
         }
@@ -111,10 +111,13 @@ namespace Oakbranch.Binance.Futures.CoinM
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                ParseUtility.EnsurePropertyNameToken(ref reader);
-                string propName = reader.GetString();
+                string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
+
                 if (!reader.Read())
-                    throw new JsonException($"A value of the property \"{propName}\" was expected but \"{reader.TokenType}\" encountered.");
+                {
+                    throw ParseUtility.GenerateNoPropertyValueException(propName);
+                }
+
                 switch (propName)
                 {
                     case "rateLimits":
@@ -135,7 +138,7 @@ namespace Oakbranch.Binance.Futures.CoinM
         }
 
         // Rate limits.
-        protected override string GetRateLimitHeaderName(RateLimiter limit)
+        protected override string? GetRateLimitHeaderName(RateLimiter limit)
         {
             switch (limit.Type)
             {
@@ -180,7 +183,7 @@ namespace Oakbranch.Binance.Futures.CoinM
             }
         }
 
-        private bool ParseConnectivityTestResponse(byte[] data, object args)
+        private bool ParseConnectivityTestResponse(byte[] data, object? args = null)
         {
             Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
             ParseUtility.ReadObjectStart(ref reader);

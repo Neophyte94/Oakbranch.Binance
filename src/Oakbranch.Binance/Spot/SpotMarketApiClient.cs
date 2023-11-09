@@ -182,7 +182,7 @@ namespace Oakbranch.Binance.Spot
             }
         }
 
-        private DateTime ParseServerTimeResponse(byte[] data, object? parseArgs = null)
+        private DateTime ParseServerTimeResponse(byte[] data, object? _)
         {
             Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
 
@@ -272,7 +272,7 @@ namespace Oakbranch.Binance.Spot
             }
         }
 
-        private SpotExchangeInfo ParseExchangeInfoResponse(byte[] data, object? parsingArgs)
+        private SpotExchangeInfo ParseExchangeInfoResponse(byte[] data, object? parsingArgs = null)
         {
             int expectedCount = parsingArgs is int ? (int)parsingArgs : ExpectedSymbolsCount;
 
@@ -566,7 +566,7 @@ namespace Oakbranch.Binance.Spot
             }
         }
 
-        public Dictionary<string, Product> ParseProductsInfoList(byte[] data, object? parsingArgs)
+        public Dictionary<string, Product> ParseProductsInfoList(byte[] data, object? _)
         {
             Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
             ParseUtility.ReadObjectStart(ref reader);
@@ -774,7 +774,7 @@ namespace Oakbranch.Binance.Spot
             }
         }
 
-        private List<Trade> ParseTradesList(byte[] data, object? parseArgs)
+        private List<Trade> ParseTradesList(byte[] data, object? parseArgs = null)
         {
             Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
 
@@ -1000,7 +1000,7 @@ namespace Oakbranch.Binance.Spot
             }
         }
 
-        private List<AggregateTrade> ParseAggregateTradesList(byte[] data, object? parseArgs)
+        private List<AggregateTrade> ParseAggregateTradesList(byte[] data, object? parseArgs = null)
         {
             Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
             List<AggregateTrade> results = new List<AggregateTrade>(
@@ -1179,7 +1179,7 @@ namespace Oakbranch.Binance.Spot
             }
         }
 
-        private List<Candlestick> ParseCandlestickList(byte[] data, object? parseArgs)
+        private List<Candlestick> ParseCandlestickList(byte[] data, object? parseArgs = null)
         {
             Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
             List<Candlestick> results = new List<Candlestick>(
@@ -1313,7 +1313,7 @@ namespace Oakbranch.Binance.Spot
             }
         }
 
-        private List<PriceTick> ParsePriceTicksList(byte[] data, object? parseArgs)
+        private List<PriceTick> ParsePriceTicksList(byte[] data, object? parseArgs = null)
         {
             List<PriceTick> results = new List<PriceTick>(
                 parseArgs is int expectedCount ? expectedCount : ExpectedSymbolsCount);
