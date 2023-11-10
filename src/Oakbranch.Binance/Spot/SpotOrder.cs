@@ -5,7 +5,7 @@ namespace Oakbranch.Binance.Spot
     /// <summary>
     /// Represents an order posted from the spot account, either open or historical.
     /// </summary>
-    public class SpotOrder : OrderBase
+    public sealed record SpotOrder : OrderBase
     {
         /// <summary>
         /// Defines the ID of the order list. The value is -1 for non-OCO orders.
@@ -21,7 +21,7 @@ namespace Oakbranch.Binance.Spot
         public TimeInForce TimeInForce;
         /// <summary>
         /// Defines the quote asset quantity ordered in a post order request.
-        /// <para>Use the <c>Null</c> value if this term is not applicable to the order.</para>
+        /// <para>The value is <see langword="null"/> if this term is not applicable to the order.</para>
         /// </summary>
         public decimal? OriginalQuoteQuantity;
         /// <summary>
@@ -38,7 +38,7 @@ namespace Oakbranch.Binance.Spot
         public DateTime WorkingTime;
         /// <summary>
         /// Defines the ID of the prevented match for the order.
-        /// <para>The value is not <c>Null</c> only if the order has been expired due to the self-trade prevention trigger.</para>
+        /// <para>The value is not <see langword="null"/> only if the order has been expired due to the self-trade prevention trigger.</para>
         /// </summary>
         public long? PreventedMatchId;
         /// <summary>

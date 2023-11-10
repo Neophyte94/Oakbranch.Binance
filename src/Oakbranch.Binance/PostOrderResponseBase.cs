@@ -5,12 +5,12 @@ namespace Oakbranch.Binance
     /// <summary>
     /// Represents a base for a response to a post order request.
     /// </summary>
-    public abstract class PostOrderResponseBase
+    public abstract record PostOrderResponseBase
     {
         /// <summary>
         /// Defines the symbol that the order was placed on.
         /// </summary>
-        public string Symbol;
+        public string? Symbol;
         /// <summary>
         /// Defines the unique ID of the order.
         /// </summary>
@@ -20,7 +20,7 @@ namespace Oakbranch.Binance
         /// <para>The custom ID can be assigned either in the post order request or automatically by the server.</para>
         /// <para>A cancelled order can get its custom ID automatically changed by the server.</para>
         /// </summary>
-        public string ClientOrderId;
+        public string? ClientOrderId;
         /// <summary>
         /// Defines the time when the order was processed (either posted or rejected).
         /// </summary>

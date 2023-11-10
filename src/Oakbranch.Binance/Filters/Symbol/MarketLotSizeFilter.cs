@@ -5,7 +5,7 @@ namespace Oakbranch.Binance.Filters.Symbol
     /// <summary>
     /// A filter that defines the quantity (aka "lots" in auction terms) rules for market orders on a symbol. 
     /// </summary>
-    public sealed class MarketLotSizeFilter : SymbolFilter
+    public sealed record MarketLotSizeFilter : SymbolFilter
     {
         public override SymbolFilterType Type => SymbolFilterType.MarketLotSize;
 

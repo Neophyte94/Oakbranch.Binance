@@ -11,7 +11,7 @@ namespace Oakbranch.Binance.Margin
         /// <summary>
         /// Defines a list of user assets in the cross margin account.
         /// </summary>
-        public List<CrossAsset> UserAssets;
+        public List<CrossAsset>? UserAssets;
         /// <summary>
         /// Defines the total value of all owned assets in the account, denominated in Bitcoin.
         /// </summary>

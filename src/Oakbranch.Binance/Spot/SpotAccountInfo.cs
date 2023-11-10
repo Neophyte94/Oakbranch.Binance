@@ -64,16 +64,16 @@ namespace Oakbranch.Binance.Spot
         /// <summary>
         /// Defines the type of the account.
         /// </summary>
-        public string AccountType;
+        public string? AccountType;
 
         /// <summary>
         /// Defines the balances of the spot assets in the account.
         /// </summary>
-        public List<SpotAsset> Balances;
+        public List<SpotAsset>? Balances;
 
         /// <summary>
         /// Defines the permissions of the account.
         /// </summary>
-        public List<string> Permissions;
+        public List<string>? Permissions;
     }
 }

@@ -106,7 +106,7 @@ namespace Oakbranch.Binance
 
         #region Static methods
 
-        protected static string GetHeaderName(RateLimiter limiter)
+        protected static string? GetHeaderName(RateLimiter limiter)
         {
             switch (limiter.Type)
             {
@@ -200,9 +200,11 @@ namespace Oakbranch.Binance
                         LimitsRegistry.ModifyLimit(limitId, template.Limit);
                     }
 
-                    string headerName = GetHeaderName(template);
+                    string? headerName = GetHeaderName(template);
                     if (headerName != null)
+                    {
                         headersLimitsMap[headerName] = limitId;
+                    }
                 }
             }
 
@@ -210,7 +212,7 @@ namespace Oakbranch.Binance
             m_DimensionsToLimitsDict[dimId] = headersLimitsMap.Values.ToArray();
 
             // Update the headers names to limits IDs map.
-            if (m_HeadersToLimitsMapsDict.TryGetValue(discriminativeEndpoint, out ReadOnlyDictionary<string, int> existingMap))
+            if (m_HeadersToLimitsMapsDict.TryGetValue(discriminativeEndpoint, out ReadOnlyDictionary<string, int>? existingMap))
             {
                 foreach (KeyValuePair<string, int> pair in existingMap)
                 {
@@ -227,7 +229,7 @@ namespace Oakbranch.Binance
         /// </summary>
         private bool AreRateLimitsRegistered(int weightDimensionId)
         {
-            if (m_DimensionsToLimitsDict.TryGetValue(weightDimensionId, out int[] associatedLimits))
+            if (m_DimensionsToLimitsDict.TryGetValue(weightDimensionId, out int[]? associatedLimits))
             {
                 foreach (int limitId in associatedLimits)
                 {
@@ -252,7 +254,7 @@ namespace Oakbranch.Binance
         {
             ThrowIfNotRunning();
 
-            if (m_HeadersToLimitsMapsDict.TryGetValue(discriminativeEndpoint, out ReadOnlyDictionary<string, int> dict))
+            if (m_HeadersToLimitsMapsDict.TryGetValue(discriminativeEndpoint, out ReadOnlyDictionary<string, int>? dict))
             {
                 return dict;
             }
@@ -288,7 +290,7 @@ namespace Oakbranch.Binance
                 headersToLimitsMap: GetHeadersToLimitsMap(relEndpoint));
         }
 
-        private SystemStatus ParseSystemStatus(byte[] data, object parseArgs)
+        private SystemStatus ParseSystemStatus(byte[] data, object? _)
         {
             Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
             ParseUtility.ReadObjectStart(ref reader);
@@ -296,11 +298,12 @@ namespace Oakbranch.Binance
             int? statusCode = null;
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                ParseUtility.EnsurePropertyNameToken(ref reader);
-                string propName = reader.GetString();
+                string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
 
                 if (!reader.Read())
+                {
                     throw ParseUtility.GenerateNoPropertyValueException(propName);
+                }
 
                 switch (propName)
                 {
@@ -319,14 +322,16 @@ namespace Oakbranch.Binance
             }
 
             if (statusCode == null)
-                throw ParseUtility.GenerateMissingPropertyException("system status", "status code");
-
-            switch (statusCode.Value)
             {
-                case 0: return SystemStatus.Normal;
-                case 1: return SystemStatus.Maintenance;
-                default: throw new JsonException($"An unknown system status code \"{statusCode}\" was encountered.");
+                throw ParseUtility.GenerateMissingPropertyException("system status", "status code");
             }
+
+            return statusCode.Value switch
+            {
+                0 => SystemStatus.Normal,
+                1 => SystemStatus.Maintenance,
+                _ => throw new JsonException($"An unknown system status code \"{statusCode}\" was encountered."),
+            };
         }
 
         #endregion

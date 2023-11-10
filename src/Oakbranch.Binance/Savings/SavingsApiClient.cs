@@ -44,29 +44,23 @@ namespace Oakbranch.Binance.Savings
 
         #region Instance constructors
 
-        public SavingsApiClient(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger logger) :
-            base(connector, limitsRegistry, logger)
-        {
-
-        }
+        public SavingsApiClient(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger? logger)
+            : base(connector, limitsRegistry, logger)
+        { }
 
         #endregion
 
         #region Static methods
 
-        private string Format(SavingsProductType value)
+        private static string Format(SavingsProductType value)
         {
-            switch (value)
+            return value switch
             {
-                case SavingsProductType.Flexible:
-                    return "DAILY";
-                case SavingsProductType.Activity:
-                    return "ACTIVITY";
-                case SavingsProductType.Fixed:
-                    return "CUSTOMIZED_FIXED";
-                default:
-                    throw new NotImplementedException($"The savings product type \"{value}\" is not implemented.");
-            }
+                SavingsProductType.Flexible => "DAILY",
+                SavingsProductType.Activity => "ACTIVITY",
+                SavingsProductType.Fixed => "CUSTOMIZED_FIXED",
+                _ => throw new NotImplementedException($"The savings product type \"{value}\" is not implemented."),
+            };
         }
 
         private static SavingsProductType ParseLendingType(string s)
@@ -126,7 +120,7 @@ namespace Oakbranch.Binance.Savings
             }
         }
 
-        private SavingsAccountInfo ParseAccountInfo(byte[] data, object parseArgs)
+        private SavingsAccountInfo ParseAccountInfo(byte[] data, object? _)
         {
             Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
 
@@ -135,10 +129,12 @@ namespace Oakbranch.Binance.Savings
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                string propName = reader.GetString();
+                string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
+
                 if (!reader.Read())
-                    throw new JsonException($"A value of the property \"{propName}\" was expected " +
-                        "but the end of the data was reached.");
+                {
+                    throw ParseUtility.GenerateNoPropertyValueException(propName);
+                }
 
                 switch (propName)
                 {
@@ -180,7 +176,7 @@ namespace Oakbranch.Binance.Savings
             ParseUtility.EnsureArrayStartToken(ref reader);
             List<AggregateSavingsPosition> resultList = new List<AggregateSavingsPosition>(32);
 
-            string asset = null;
+            string? asset = null;
             decimal amount = 0.0m;
             double amountInBtc = double.NaN, amountInUsdt = double.NaN;
             ParseSchemaValidator validator = new ParseSchemaValidator(4);
@@ -192,7 +188,7 @@ namespace Oakbranch.Binance.Savings
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                 {
                     ParseUtility.EnsurePropertyNameToken(ref reader);
-                    string propName = reader.GetString();
+                    string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
 
                     if (!reader.Read())
                         throw ParseUtility.GenerateNoPropertyValueException(propName);
@@ -223,17 +219,17 @@ namespace Oakbranch.Binance.Savings
                 {
                     const string objName = "aggregate savings position";
                     int missingPropNum = validator.GetMissingPropertyNumber();
-                    switch (missingPropNum)
+                    throw missingPropNum switch
                     {
-                        case 0: throw ParseUtility.GenerateMissingPropertyException(objName, "amount");
-                        case 1: throw ParseUtility.GenerateMissingPropertyException(objName, "amount in BTC");
-                        case 2: throw ParseUtility.GenerateMissingPropertyException(objName, "amount in USDT");
-                        case 3: throw ParseUtility.GenerateMissingPropertyException(objName, "asset");
-                        default: throw ParseUtility.GenerateMissingPropertyException(objName, $"unknown ({missingPropNum})");
-                    }
+                        0 => ParseUtility.GenerateMissingPropertyException(objName, "amount"),
+                        1 => ParseUtility.GenerateMissingPropertyException(objName, "amount in BTC"),
+                        2 => ParseUtility.GenerateMissingPropertyException(objName, "amount in USDT"),
+                        3 => ParseUtility.GenerateMissingPropertyException(objName, "asset"),
+                        _ => ParseUtility.GenerateMissingPropertyException(objName, $"unknown ({missingPropNum})"),
+                    };
                 }
 
-                resultList.Add(new AggregateSavingsPosition(asset, amount, amountInBtc, amountInUsdt));
+                resultList.Add(new AggregateSavingsPosition(asset!, amount, amountInBtc, amountInUsdt));
                 validator.Reset();
             }
 
@@ -245,7 +241,7 @@ namespace Oakbranch.Binance.Savings
         /// Prepares a query for active subscriptions on flexible savings products, either on all assets or only the specified one.
         /// </summary>
         /// <param name="asset">The asset to get subscriptions info on (optional).</param>
-        public IDeferredQuery<List<FlexibleProductPosition>> PrepareGetFlexibleProductPositions(string asset = null)
+        public IDeferredQuery<List<FlexibleProductPosition>> PrepareGetFlexibleProductPositions(string? asset = null)
         {
             ThrowIfNotRunning();
             if (asset != null && String.IsNullOrWhiteSpace(asset))
@@ -259,7 +255,7 @@ namespace Oakbranch.Binance.Savings
                 new QueryWeight(GetWeightDimensionId(relEndpoint, RateLimitType.IP), 1),
             };
 
-            QueryBuilder qs = null;
+            QueryBuilder? qs = null;
             if (asset != null)
             {
                 qs = new QueryBuilder(133);
@@ -279,7 +275,7 @@ namespace Oakbranch.Binance.Savings
         /// Gets active subscriptions on flexible savings products, either on all assets or only the specified one, asynchronously.
         /// </summary>
         public Task<List<FlexibleProductPosition>> GetFlexibleProductPositionsAsync(
-            string asset = null, CancellationToken ct = default)
+            string? asset = null, CancellationToken ct = default)
         {
             using (IDeferredQuery<List<FlexibleProductPosition>> query = PrepareGetFlexibleProductPositions(asset))
             {
@@ -287,7 +283,7 @@ namespace Oakbranch.Binance.Savings
             }
         }
 
-        private List<FlexibleProductPosition> ParseFlexibleSavingsPosition(byte[] data, object parseArgs)
+        private List<FlexibleProductPosition> ParseFlexibleSavingsPosition(byte[] data, object? parseArgs = null)
         {
             Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
 
@@ -305,23 +301,25 @@ namespace Oakbranch.Binance.Savings
 
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                 {
-                    ParseUtility.EnsurePropertyNameToken(ref reader);
-                    string propName = reader.GetString();
+                    string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
 
                     if (!reader.Read())
+                    {
                         throw ParseUtility.GenerateNoPropertyValueException(propName);
+                    }
+
                     switch (propName)
                     {
                         case "asset":
-                            pos.Asset = reader.GetString();
+                            pos.Asset = ParseUtility.GetNonEmptyString(ref reader, propName);
                             validator.RegisterProperty(0);
                             break;
                         case "productId":
-                            pos.ProductId = reader.GetString();
+                            pos.ProductId = ParseUtility.GetNonEmptyString(ref reader, propName);
                             validator.RegisterProperty(1);
                             break;
                         case "productName":
-                            pos.ProductName = reader.GetString();
+                            pos.ProductName = ParseUtility.GetNonEmptyString(ref reader, propName);
                             validator.RegisterProperty(2);
                             break;
                         case "canRedeem":
@@ -386,23 +384,23 @@ namespace Oakbranch.Binance.Savings
                 {
                     const string objName = "flexible product position";
                     int missingPropNum = validator.GetMissingPropertyNumber();
-                    switch (missingPropNum)
+                    throw missingPropNum switch
                     {
-                        case 0: throw ParseUtility.GenerateMissingPropertyException(objName, "asset");
-                        case 1: throw ParseUtility.GenerateMissingPropertyException(objName, "product ID");
-                        case 2: throw ParseUtility.GenerateMissingPropertyException(objName, "product name");
-                        case 3: throw ParseUtility.GenerateMissingPropertyException(objName, "can redeem");
-                        case 4: throw ParseUtility.GenerateMissingPropertyException(objName, "total amount");
-                        case 5: throw ParseUtility.GenerateMissingPropertyException(objName, "free amount");
-                        case 6: throw ParseUtility.GenerateMissingPropertyException(objName, "redeeming amount");
-                        case 7: throw ParseUtility.GenerateMissingPropertyException(objName, "collateral amount");
-                        case 8: throw ParseUtility.GenerateMissingPropertyException(objName, "total earned interest");
-                        case 9: throw ParseUtility.GenerateMissingPropertyException(objName, "total bonus rewards");
-                        case 10: throw ParseUtility.GenerateMissingPropertyException(objName, "total market rewards");
-                        case 11: throw ParseUtility.GenerateMissingPropertyException(objName, "daily interest rate");
-                        case 12: throw ParseUtility.GenerateMissingPropertyException(objName, "annual interest rate");
-                        default: throw ParseUtility.GenerateMissingPropertyException(objName, $"unknown ({missingPropNum})");
-                    }
+                        0 => ParseUtility.GenerateMissingPropertyException(objName, "asset"),
+                        1 => ParseUtility.GenerateMissingPropertyException(objName, "product ID"),
+                        2 => ParseUtility.GenerateMissingPropertyException(objName, "product name"),
+                        3 => ParseUtility.GenerateMissingPropertyException(objName, "can redeem"),
+                        4 => ParseUtility.GenerateMissingPropertyException(objName, "total amount"),
+                        5 => ParseUtility.GenerateMissingPropertyException(objName, "free amount"),
+                        6 => ParseUtility.GenerateMissingPropertyException(objName, "redeeming amount"),
+                        7 => ParseUtility.GenerateMissingPropertyException(objName, "collateral amount"),
+                        8 => ParseUtility.GenerateMissingPropertyException(objName, "total earned interest"),
+                        9 => ParseUtility.GenerateMissingPropertyException(objName, "total bonus rewards"),
+                        10 => ParseUtility.GenerateMissingPropertyException(objName, "total market rewards"),
+                        11 => ParseUtility.GenerateMissingPropertyException(objName, "daily interest rate"),
+                        12 => ParseUtility.GenerateMissingPropertyException(objName, "annual interest rate"),
+                        _ => ParseUtility.GenerateMissingPropertyException(objName, $"unknown ({missingPropNum})"),
+                    };
                 }
 
                 resultList.Add(pos);
@@ -419,12 +417,14 @@ namespace Oakbranch.Binance.Savings
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                ParseUtility.EnsurePropertyNameToken(ref reader);
+                string tierName = ParseUtility.GetNonEmptyPropertyName(ref reader);
 
-                string tierName = reader.GetString();
                 if (!reader.Read())
-                    throw new JsonException($"A value for the interest rate tier \"{tierName}\" " +
+                {
+                    throw new JsonException(
+                        $"A value for the interest rate tier \"{tierName}\" " +
                         $"was expected but \"{reader.TokenType}\" encountered.");
+                }
 
                 ParseUtility.ParseDouble(tierName, reader.GetString(), out double tierValue);
                 result.Add(new InterestRateTier(tierName, tierValue));
@@ -461,8 +461,12 @@ namespace Oakbranch.Binance.Savings
         /// <para>The default value is 10. The maximum value is 100.</para>
         /// </param>
         public IDeferredQuery<List<InterestRecord>> PrepareGetInterestHistory(
-            SavingsProductType type, string asset = null, DateTime? startTime = null, DateTime? endTime = null,
-            int? currentPage = null, int? pageSize = null)
+            SavingsProductType type,
+            string? asset = null,
+            DateTime? startTime = null,
+            DateTime? endTime = null,
+            int? currentPage = null,
+            int? pageSize = null)
         {
             ThrowIfNotRunning();
             if (asset != null && String.IsNullOrWhiteSpace(asset))
@@ -526,8 +530,13 @@ namespace Oakbranch.Binance.Savings
         /// Gets the interest (distribution) history for the specified savings product or products type, asynchronously.
         /// </summary>
         public Task<List<InterestRecord>> GetInterestHistoryAsync(
-            SavingsProductType type, string asset = null, DateTime? startTime = null, DateTime? endTime = null,
-            int? currentPage = null, int? pageSize = null, CancellationToken ct = default)
+            SavingsProductType type,
+            string? asset = null,
+            DateTime? startTime = null,
+            DateTime? endTime = null,
+            int? currentPage = null,
+            int? pageSize = null,
+            CancellationToken ct = default)
         {
             using (IDeferredQuery<List<InterestRecord>> query = PrepareGetInterestHistory(
                 type, asset, startTime, endTime, currentPage, pageSize))
@@ -536,18 +545,19 @@ namespace Oakbranch.Binance.Savings
             }
         }
 
-        private List<InterestRecord> ParseSavingsInterestRecords(byte[] data, object parseArgs)
+        private List<InterestRecord> ParseSavingsInterestRecords(byte[] data, object? parseArgs)
         {
             Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
 
             ParseUtility.ReadArrayStart(ref reader);
-            List<InterestRecord> resultList = new List<InterestRecord>(parseArgs is int expectedCount ? expectedCount : 10);
+            List<InterestRecord> resultList = new List<InterestRecord>(
+                parseArgs is int expectedCount ? expectedCount : 10);
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
                 ParseUtility.EnsureObjectStartToken(ref reader);
 
-                string asset = null, productName = null;
+                string? asset = null, productName = null;
                 decimal interest = 0.0m;
                 DateTime time = DateTime.MinValue;
                 SavingsProductType productType = default;
@@ -555,8 +565,7 @@ namespace Oakbranch.Binance.Savings
 
                 while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                 {
-                    ParseUtility.EnsurePropertyNameToken(ref reader);
-                    string propName = reader.GetString();
+                    string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
 
                     if (!reader.Read())
                         throw ParseUtility.GenerateNoPropertyValueException(propName);
@@ -571,7 +580,7 @@ namespace Oakbranch.Binance.Savings
                             validator.RegisterProperty(1);
                             break;
                         case "lendingType":
-                            productType = ParseLendingType(reader.GetString());
+                            productType = ParseLendingType(ParseUtility.GetNonEmptyString(ref reader, propName));
                             validator.RegisterProperty(2);
                             break;
                         case "productName":
@@ -592,17 +601,17 @@ namespace Oakbranch.Binance.Savings
                 {
                     const string objName = "savings interest record";
                     int missingPropNum = validator.GetMissingPropertyNumber();
-                    switch (missingPropNum)
+                    throw missingPropNum switch
                     {
-                        case 0: throw ParseUtility.GenerateMissingPropertyException(objName, "asset");
-                        case 1: throw ParseUtility.GenerateMissingPropertyException(objName, "interest");
-                        case 2: throw ParseUtility.GenerateMissingPropertyException(objName, "product type");
-                        case 3: throw ParseUtility.GenerateMissingPropertyException(objName, "time");
-                        default: throw ParseUtility.GenerateMissingPropertyException(objName, $"unknown ({missingPropNum})");
-                    }
+                        0 => ParseUtility.GenerateMissingPropertyException(objName, "asset"),
+                        1 => ParseUtility.GenerateMissingPropertyException(objName, "interest"),
+                        2 => ParseUtility.GenerateMissingPropertyException(objName, "product type"),
+                        3 => ParseUtility.GenerateMissingPropertyException(objName, "time"),
+                        _ => ParseUtility.GenerateMissingPropertyException(objName, $"unknown ({missingPropNum})"),
+                    };
                 }
 
-                resultList.Add(new InterestRecord(asset, interest, time, productType, productName));
+                resultList.Add(new InterestRecord(asset!, interest, time, productType, productName));
                 validator.Reset();
             }
 

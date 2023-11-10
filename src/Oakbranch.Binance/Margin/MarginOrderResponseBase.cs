@@ -2,7 +2,7 @@
 
 namespace Oakbranch.Binance.Margin
 {
-    public abstract class MarginOrderResponseBase : PostOrderResponseBase
+    public abstract record MarginOrderResponseBase : PostOrderResponseBase
     {
         /// <summary>
         /// Gets the type of the response.

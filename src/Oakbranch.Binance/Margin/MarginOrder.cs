@@ -5,11 +5,12 @@ namespace Oakbranch.Binance.Margin
     /// <summary>
     /// Represents an order posted from a margin account, either open or historical.
     /// </summary>
-    public class MarginOrder : OrderBase
+    public sealed record MarginOrder : OrderBase
     {
         /// <summary>
         /// Defines the type of a margin account the order was posted from.
-        /// <para>The value <see langword="true"/> for an isolated margin account, <see langword="false"/> for the cross margin account.</para>
+        /// <para>The value is <see langword="true"/> for an isolated margin account,
+        /// and <see langword="false"/> for the cross margin account.</para>
         /// </summary>
         public bool IsIsolated;
         /// <summary>

@@ -5,7 +5,7 @@ namespace Oakbranch.Binance.Filters.Symbol
     /// <summary>
     /// A filter that defines the price rules for a symbol.
     /// </summary>
-    public sealed class AbsolutePriceFilter : SymbolFilter
+    public sealed record AbsolutePriceFilter : SymbolFilter
     {
         public override SymbolFilterType Type => SymbolFilterType.AbsolutePrice;
 

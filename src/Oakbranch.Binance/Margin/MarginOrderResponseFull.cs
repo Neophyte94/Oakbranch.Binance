@@ -6,7 +6,7 @@ namespace Oakbranch.Binance.Margin
     /// <summary>
     /// Represents a response of the type <see cref="OrderResponseType.Full"/> to a post order request.
     /// </summary>
-    public sealed class MarginOrderResponseFull : MarginOrderResponseBase
+    public sealed record MarginOrderResponseFull : MarginOrderResponseBase
     {
         public override OrderResponseType Type => OrderResponseType.Full;
         /// <summary>
@@ -58,10 +58,10 @@ namespace Oakbranch.Binance.Margin
         /// Defines an asset borrowed as a side effect of a margin order.
         /// <para>If no borrowing is involved then the value is <c>Null</c>.</para>
         /// </summary>
-        public string MarginBuyBorrowAsset;
+        public string? MarginBuyBorrowAsset;
         /// <summary>
         /// Defines the list of partial fills for the order.
         /// </summary>
-        public List<OrderPartialFill> Fills;
+        public List<OrderPartialFill>? Fills;
     }
 }

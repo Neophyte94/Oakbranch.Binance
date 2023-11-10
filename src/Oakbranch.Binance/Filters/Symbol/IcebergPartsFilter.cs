@@ -6,7 +6,7 @@ namespace Oakbranch.Binance.Filters.Symbol
     /// A filter that defines the maximum parts an iceberg order can have.
     /// <para>The number of iceberg parts is defined as a ceiling of (quantity / icebergQuantity).</para>
     /// </summary>
-    public sealed class IcebergPartsFilter : SymbolFilter
+    public sealed record IcebergPartsFilter : SymbolFilter
     {
         public override SymbolFilterType Type => SymbolFilterType.IcebergParts;
 

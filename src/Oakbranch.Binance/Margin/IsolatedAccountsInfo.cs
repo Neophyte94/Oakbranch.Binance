@@ -6,12 +6,12 @@ namespace Oakbranch.Binance.Margin
     /// <summary>
     /// Represents summary on all isolated margin accounts.
     /// </summary>
-    public sealed class IsolatedAccountsInfo
+    public sealed record IsolatedAccountsInfo
     {
         /// <summary>
         /// Defines a list of symbol-specific information in the isolated margin account.
         /// </summary>
-        public List<IsolatedSymbolAccInfo> IsolatedSymbols;
+        public List<IsolatedSymbolAccInfo>? IsolatedSymbols;
         /// <summary>
         /// Defines the total value of all owned assets in the account, denominated in Bitcoin (BTC).
         /// </summary>

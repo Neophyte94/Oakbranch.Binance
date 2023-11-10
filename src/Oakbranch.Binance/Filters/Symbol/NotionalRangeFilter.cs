@@ -6,7 +6,7 @@ namespace Oakbranch.Binance.Filters.Symbol
     /// A filter that defines defines the acceptable notional range allowed for an order on a symbol. 
     /// <para>An order's notional value is the price * quantity.</para>
     /// </summary>
-    public sealed class NotionalRangeFilter : SymbolFilter
+    public sealed record NotionalRangeFilter : SymbolFilter
     {
         public override SymbolFilterType Type => SymbolFilterType.NotionalRange;
 

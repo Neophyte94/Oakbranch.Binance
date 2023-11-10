@@ -26,7 +26,7 @@ namespace Oakbranch.Binance.Savings
         /// <summary>
         /// The name of the savings product for which the interest was earned.
         /// </summary>
-        public readonly string ProductName;
+        public readonly string? ProductName;
 
         /// <summary>
         /// Creates a new instance of the <see cref="InterestRecord"/> struct.
@@ -36,7 +36,7 @@ namespace Oakbranch.Binance.Savings
         /// <param name="time">The date &amp; time when the interest was earned.</param>
         /// <param name="type">The type of savings product for which the interest was earned.</param>
         /// <param name="productName">The name of the savings product for which the interest was earned.</param>
-        public InterestRecord(string asset, decimal interest, DateTime time, SavingsProductType type, string productName)
+        public InterestRecord(string asset, decimal interest, DateTime time, SavingsProductType type, string? productName)
         {
             Asset = asset;
             Interest = interest;

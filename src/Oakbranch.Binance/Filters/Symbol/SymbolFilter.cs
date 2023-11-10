@@ -5,7 +5,7 @@ namespace Oakbranch.Binance.Filters.Symbol
     /// <summary>
     /// The base class for filters (constraints) applied to a trading symbol.
     /// </summary>
-    public abstract class SymbolFilter
+    public abstract record SymbolFilter
     {
         /// <summary>
         /// Gets the type of the symbol filter.

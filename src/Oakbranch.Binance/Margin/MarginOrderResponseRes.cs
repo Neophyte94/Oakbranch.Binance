@@ -5,7 +5,7 @@ namespace Oakbranch.Binance.Margin
     /// <summary>
     /// Represents a response of the type <see cref="OrderResponseType.Result"/> to a post order request.
     /// </summary>
-    public sealed class MarginOrderResponseRes : MarginOrderResponseBase
+    public sealed record MarginOrderResponseRes : MarginOrderResponseBase
     {
         public override OrderResponseType Type => OrderResponseType.Result;
         /// <summary>

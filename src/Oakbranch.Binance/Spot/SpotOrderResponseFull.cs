@@ -6,13 +6,13 @@ namespace Oakbranch.Binance.Spot
     /// <summary>
     /// Represents a response of the type <see cref="OrderResponseType.Full"/> to a post order request.
     /// </summary>
-    public sealed class SpotOrderResponseFull : SpotOrderResponseBase
+    public sealed record SpotOrderResponseFull : SpotOrderResponseBase
     {
         public override OrderResponseType Type => OrderResponseType.Full;
         /// <summary>
         /// Defines the list of partial fills for the order.
         /// </summary>
-        public List<OrderPartialFill> Fills;
+        public List<OrderPartialFill>? Fills;
         /// <summary>
         /// Defines the type of the order.
         /// </summary>
@@ -70,7 +70,7 @@ namespace Oakbranch.Binance.Spot
         /// Defines an asset borrowed as a side effect of a margin order.
         /// <para>If no borrowing is involved then the value is null.</para>
         /// </summary>
-        public string MarginBuyBorrowAsset;
+        public string? MarginBuyBorrowAsset;
         /// <summary>
         /// Defines the ID of the order strategy that the order is part of.
         /// <para>The value is not <c>Null</c> only if the corresponding parameter was specified on order placement.</para>

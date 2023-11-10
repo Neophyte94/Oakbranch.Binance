@@ -2,7 +2,7 @@
 
 namespace Oakbranch.Binance
 {
-    public abstract class OrderBase
+    public abstract record OrderBase
     {
         /// <summary>
         /// Defines the unique ID of a order.
@@ -12,23 +12,23 @@ namespace Oakbranch.Binance
         /// Defines the custom ID assigned to an order either automatically (by the server) or manually (specified in a post order query).
         /// <para>The manually assigned ID is automatically changed if an order is canceled.</para>
         /// </summary>
-        public string ClientOrderId;
+        public string? ClientOrderId;
         /// <summary>
         /// Defines the trading pair that an order was posted on.
         /// </summary>
-        public string Symbol;
+        public string? Symbol;
         /// <summary>
         /// Defines the side of an order.
         /// </summary>
         public OrderSide Side;
         /// <summary>
         /// Defines the limit order price.
-        /// <para>Use the value -1.0m to denote a non-limit order.</para>
+        /// <para>The value is <see langword="null"/> for a non-limit order.</para>
         /// </summary>
         public decimal? Price;
         /// <summary>
         /// Defines the base asset quantity ordered in a post order request.
-        /// <para>Use the <c>Null</c> value if this term is not applicable to the order.</para>
+        /// <para>The value is <see langword="null"/> if this term is not applicable to the order.</para>
         /// </summary>
         public decimal? OriginalBaseQuantity;
         /// <summary>
@@ -37,12 +37,12 @@ namespace Oakbranch.Binance
         public decimal ExecutedBaseQuantity;
         /// <summary>
         /// Defines the cummulative quote asset quantity of all trades executed within an order so far.
-        /// <para>Use the <c>Null</c> value if this term is not applicable to the order.</para>
+        /// <para>The value is <see langword="null"/> if this term is not applicable to the order.</para>
         /// </summary>
         public decimal? CummulativeQuoteQuantity;
         /// <summary>
         /// Defines the activation price of a stop loss order.
-        /// <para>Use the <c>Null</c> value if this term is not applicable to the order.</para>
+        /// <para>The value is <see langword="null"/> if this term is not applicable to the order.</para>
         /// </summary>
         public decimal? StopPrice;
         /// <summary>
@@ -60,8 +60,10 @@ namespace Oakbranch.Binance
         public DateTime? UpdateTime;
         /// <summary>
         /// Indicates whether the order has been activated by the matching engine or not.
-        /// <para>The value is <see langword="true"/> if the order is activated and waiting to be filled, or has already been filled.</para>
-        /// <para>The value is <see langword="false"/> in all the other cases, i.e. waiting for some conditions to be activated, or cancelled, or rejected.</para>
+        /// <para>The value is <see langword="true"/> if the order is activated and waiting to be filled,
+        /// or has already been filled.</para>
+        /// <para>The value is <see langword="false"/> in all the other cases,
+        /// i.e. waiting for some conditions to be activated, or cancelled, or rejected.</para>
         /// </summary>
         public bool IsWorking;
     }

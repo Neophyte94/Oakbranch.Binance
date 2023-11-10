@@ -332,7 +332,7 @@ public sealed class ApiConnector : IApiConnector, IDisposable
         CancellationTokenSource unitedCts = CancellationTokenSource.CreateLinkedTokenSource(timeoutCts.Token, ct);
         try
         {
-            QueryBuilder queryString = query.QueryString;
+            QueryBuilder? queryString = query.QueryString;
             if (query.IsSecured)
             {
                 CompleteAndSign(ref queryString);
@@ -435,7 +435,7 @@ public sealed class ApiConnector : IApiConnector, IDisposable
         }
     }
 
-    private string CreateFullEndpoint(string baseEndpoint, string relativeEndpoint, QueryBuilder queryString)
+    private string CreateFullEndpoint(string baseEndpoint, string relativeEndpoint, QueryBuilder? queryString)
     {
         if (queryString != null)
         {
@@ -452,7 +452,7 @@ public sealed class ApiConnector : IApiConnector, IDisposable
     /// signs the complete query and finally adds the signature to the query string.
     /// </summary>
     /// <param name="rawQuery">A query string to sign (without security parameters). Can be null.</param>
-    private void CompleteAndSign(ref QueryBuilder rawQuery)
+    private void CompleteAndSign(ref QueryBuilder? rawQuery)
     {
         ThrowIfDisposed();
 

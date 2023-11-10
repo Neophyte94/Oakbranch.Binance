@@ -5,7 +5,7 @@ namespace Oakbranch.Binance.Filters.Exchange
     /// <summary>
     /// The base class for exchange-level filters (contraints).
     /// </summary>
-    public abstract class ExchangeFilter
+    public abstract record ExchangeFilter
     {
         /// <summary>
         /// Gets the type of the exchange filter.

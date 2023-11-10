@@ -6,7 +6,7 @@ namespace Oakbranch.Binance.Filters.Symbol
     /// A filter that defines the minimum notional value allowed for an order on a symbol.
     /// <para>An order's notional value is the price * quantity.</para>
     /// </summary>
-    public sealed class MinNotionalFilter : SymbolFilter
+    public sealed record MinNotionalFilter : SymbolFilter
     {
         public override SymbolFilterType Type => SymbolFilterType.MinNotional;
 

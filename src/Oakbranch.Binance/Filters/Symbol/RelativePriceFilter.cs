@@ -5,7 +5,7 @@ namespace Oakbranch.Binance.Filters.Symbol
     /// <summary>
     /// A filter that defines valid range for a price based on the average of the previous trades.
     /// </summary>
-    public sealed class RelativePriceFilter : SymbolFilter
+    public sealed record RelativePriceFilter : SymbolFilter
     {
         public override SymbolFilterType Type => SymbolFilterType.RelativePrice;
 

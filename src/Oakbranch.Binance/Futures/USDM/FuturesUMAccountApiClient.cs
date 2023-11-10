@@ -2,27 +2,26 @@
 using Oakbranch.Common.Logging;
 using Oakbranch.Binance.RateLimits;
 
-namespace Oakbranch.Binance.Futures.USDM
+namespace Oakbranch.Binance.Futures.USDM;
+
+/// <summary>
+/// Encapsulates functions for accessing the account data and trade endpoints of the Binance USD-Margined Futures API.
+/// </summary>
+public class FuturesUMAccountApiClient : FuturesUMClientBase
 {
-    /// <summary>
-    /// Encapsulates functions for accessing the account data and trade endpoints of the Binance USD-Margined Futures API.
-    /// </summary>
-    public class FuturesUMAccountApiClient : FuturesUMClientBase
-    {
-        #region Instance members
+    #region Instance members
 
-        #endregion
+    #endregion
 
-        #region Instance constructors
+    #region Instance constructors
 
-        public FuturesUMAccountApiClient(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger logger = null) :
-            base(connector, limitsRegistry, logger)
-        { }
+    public FuturesUMAccountApiClient(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger? logger = null)
+        : base(connector, limitsRegistry, logger)
+    { }
 
-        #endregion
+    #endregion
 
-        #region Instance methods
+    #region Instance methods
 
-        #endregion
-    }
+    #endregion
 }

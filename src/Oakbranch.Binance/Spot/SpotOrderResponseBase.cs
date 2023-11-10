@@ -2,7 +2,7 @@
 
 namespace Oakbranch.Binance.Spot
 {
-    public abstract class SpotOrderResponseBase : PostOrderResponseBase
+    public abstract record SpotOrderResponseBase : PostOrderResponseBase
     {
         /// <summary>
         /// Gets the type of the response.

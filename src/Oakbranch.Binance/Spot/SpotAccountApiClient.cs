@@ -1816,7 +1816,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
         ParseUtility.EnsureObjectStartToken(ref reader);
 
         SpotOrder order = new SpotOrder();
-        ParseSchemaValidator validator = new ParseSchemaValidator(6);
+        ParseSchemaValidator validator = new ParseSchemaValidator(8);
 
         while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
         {
@@ -1887,6 +1887,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
                     break;
                 case "isWorking":
                     order.IsWorking = reader.GetBoolean();
+                    validator.RegisterProperty(6);
                     break;
                 case "workingTime":
                     order.WorkingTime = CommonUtility.ConvertToDateTime(reader.GetInt64());
@@ -1898,6 +1899,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
                 case "selfTradePreventionMode":
                     order.STPMode = SpotUtility.ParseSelfTradePreventionMode(
                         ParseUtility.GetNonEmptyString(ref reader, propName));
+                    validator.RegisterProperty(7);
                     break;
                 case "preventedMatchId":
                     order.PreventedMatchId = reader.GetInt64();
@@ -1931,6 +1933,8 @@ public class SpotAccountApiClient : ApiV3ClientBase
                 3 => ParseUtility.GenerateMissingPropertyException(objName, "time in force"),
                 4 => ParseUtility.GenerateMissingPropertyException(objName, "order type"),
                 5 => ParseUtility.GenerateMissingPropertyException(objName, "side"),
+                6 => ParseUtility.GenerateMissingPropertyException(objName, "is working"),
+                7 => ParseUtility.GenerateMissingPropertyException(objName, "self-trade prevention mode"),
                 _ => ParseUtility.GenerateMissingPropertyException(objName, $"unknown ({missingPropNum})"),
             };
         }

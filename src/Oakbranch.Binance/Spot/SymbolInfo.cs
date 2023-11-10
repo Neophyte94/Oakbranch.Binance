@@ -7,12 +7,12 @@ namespace Oakbranch.Binance.Spot
     /// <summary>
     /// Represents information on a trading pair in the spot market.
     /// </summary>
-    public sealed class SymbolInfo
+    public sealed record SymbolInfo
     {
         /// <summary>
         /// Defines the symbol representing the trading pair (e.g., BTCUSDT).
         /// </summary>
-        public string Symbol;
+        public string? Symbol;
         /// <summary>
         /// Defines the status of the trading pair symbol.
         /// </summary>
@@ -21,12 +21,12 @@ namespace Oakbranch.Binance.Spot
         /// Defines the base asset of the trading pair symbol.
         /// <para>E.g., for the symbol BTCUSDT the base asset would be BTC.</para>
         /// </summary>
-        public string BaseAsset;
+        public string? BaseAsset;
         /// <summary>
         /// Defines the quote asset of the trading pair symbol.
         /// <para>E.g., for the symbol BTCUSDT the quote asset would be USDT.</para>
         /// </summary>
-        public string QuoteAsset;
+        public string? QuoteAsset;
         /// <summary>
         /// Defines the precision of the base asset quantity.
         /// </summary>
@@ -46,11 +46,11 @@ namespace Oakbranch.Binance.Spot
         /// <summary>
         /// Defines the list of order types allowed for the trading pair.
         /// </summary>
-        public List<OrderType> OrderTypes;
+        public List<OrderType>? OrderTypes;
         /// <summary>
         /// Defines the list of symbol-level filters (restrictions).
         /// </summary>
-        public List<SymbolFilter> Filters;
+        public List<SymbolFilter>? Filters;
         /// <summary>
         /// Defines the permissions for the trading pair.
         /// </summary>
@@ -62,7 +62,7 @@ namespace Oakbranch.Binance.Spot
         /// <summary>
         /// Defines self-trade prevention modes available to a user.
         /// </summary>
-        public List<SelfTradePreventionMode> AllowedSTPModes;
+        public List<SelfTradePreventionMode>? AllowedSTPModes;
 
         /// <summary>
         /// Returns a string representation of the <see cref="SymbolInfo"/> class.

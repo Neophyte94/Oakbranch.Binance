@@ -10,7 +10,7 @@ namespace Oakbranch.Binance.Margin
         /// <summary>
         /// Defines the symbol associated with the account.
         /// </summary>
-        public string Symbol;
+        public string? Symbol;
         /// <summary>
         /// Defines the base asset information for the account.
         /// </summary>

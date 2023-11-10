@@ -5,7 +5,7 @@ namespace Oakbranch.Binance.Spot
     /// <summary>
     /// Represents a response of the type <see cref="OrderResponseType.Result"/> to a post order request.
     /// </summary>
-    public sealed class SpotOrderResponseRes : SpotOrderResponseBase
+    public sealed record SpotOrderResponseRes : SpotOrderResponseBase
     {
         public override OrderResponseType Type => OrderResponseType.Result;
         /// <summary>
