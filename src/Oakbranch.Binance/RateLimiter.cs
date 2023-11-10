@@ -5,32 +5,32 @@ namespace Oakbranch.Binance
     /// <summary>
     /// Represents settings of a rate limit on API calls.
     /// </summary>
-    public struct RateLimiter
+    public readonly struct RateLimiter
     {
         /// <summary>
         /// Defines the type of the rate limit.
         /// </summary>
-        public RateLimitType Type;
+        public readonly RateLimitType Type;
 
         /// <summary>
         /// Defines the time unit of the interval of the rate limit window.
         /// </summary>
-        public Interval Interval;
+        public readonly Interval Interval;
 
         /// <summary>
         /// Defines the number of time units in the interval of the rate limit window.
         /// </summary>
-        public ushort IntervalNumber;
+        public readonly ushort IntervalNumber;
 
         /// <summary>
         /// Defines the maximum allowed usage of the rate limit.
         /// </summary>
-        public uint Limit;
+        public readonly uint Limit;
 
         /// <summary>
         /// Defines the current usage of the rate limit.
         /// </summary>
-        public uint? Usage;
+        public readonly uint? Usage;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RateLimiter"/> struct with the specified rate limit settings.
