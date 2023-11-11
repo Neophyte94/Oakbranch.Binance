@@ -23,15 +23,15 @@ namespace Oakbranch.Binance
         /// </summary>
         private readonly string LimitNameEndpointSpecifier;
 
-        private readonly int[] m_WeightDimensions;
+        private readonly int[] _weightDimensions;
 
-        private readonly Dictionary<string, int> m_HeadersToLimitsMap;
+        private readonly Dictionary<string, int> _headersToLimitsMap;
         protected IReadOnlyDictionary<string, int> HeadersToLimitsMap
         {
             get
             {
                 ThrowIfNotRunning();
-                return m_HeadersToLimitsMap;
+                return _headersToLimitsMap;
             }
         }
 
@@ -62,13 +62,13 @@ namespace Oakbranch.Binance
                 .ToUpperInvariant();
 
             int[] limitTypes = (int[])Enum.GetValues(typeof(RateLimitType));
-            m_WeightDimensions = new int[limitTypes.Length];
+            _weightDimensions = new int[limitTypes.Length];
             for (int i = 0; i != limitTypes.Length; ++i)
             {
-                m_WeightDimensions[i] = GenerateWeightDimensionId(DiscrimativeEndpoint, (RateLimitType)i);
+                _weightDimensions[i] = GenerateWeightDimensionId(DiscrimativeEndpoint, (RateLimitType)i);
             }
 
-            m_HeadersToLimitsMap = new Dictionary<string, int>(4);
+            _headersToLimitsMap = new Dictionary<string, int>(4);
         }
 
         #endregion
@@ -122,10 +122,10 @@ namespace Oakbranch.Binance
             }
 
             // Update the dictionary of the HTTP headers and the corresponding rate limits.
-            m_HeadersToLimitsMap.Clear();
+            _headersToLimitsMap.Clear();
             foreach (KeyValuePair<string, int> pair in headersLimitsMap)
             {
-                m_HeadersToLimitsMap.Add(pair.Key, pair.Value);
+                _headersToLimitsMap.Add(pair.Key, pair.Value);
             }
             // We don't check whether the limit metrics map is already registered because we want to update it.
             Connector.SetLimitMetricsMap(DiscrimativeEndpoint, headersLimitsMap.Keys.ToArray());
@@ -136,7 +136,7 @@ namespace Oakbranch.Binance
         /// </summary>
         protected int GetWeightDimensionId(RateLimitType limitType)
         {
-            return m_WeightDimensions[(int)limitType];
+            return _weightDimensions[(int)limitType];
         }
 
         #endregion

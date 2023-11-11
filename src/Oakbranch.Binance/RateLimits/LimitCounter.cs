@@ -28,11 +28,11 @@ public class LimitCounter
     /// </summary>
     public readonly string Name;
 
-    private readonly object m_Locker;
-    private readonly Stopwatch m_ResetTimer;
-    private DateTime m_LastUpdateTime;
+    private readonly object _locker;
+    private readonly Stopwatch _resetTimer;
+    private DateTime _lastUpdateTime;
 
-    private uint m_Limit;
+    private uint _limit;
     /// <summary>
     /// Defines the maximum permitted level of limit usage.
     /// </summary>
@@ -40,15 +40,15 @@ public class LimitCounter
     {
         get
         {
-            return m_Limit;
+            return _limit;
         }
         set
         {
-            m_Limit = value;
+            _limit = value;
         }
     }
 
-    private uint m_Usage;
+    private uint _usage;
     /// <summary>
     /// Gets the current level of limit usage.
     /// </summary>
@@ -57,14 +57,14 @@ public class LimitCounter
         get
         {
             CheckResetTimer();
-            return m_Usage;
+            return _usage;
         }
     }
 
     /// <summary>
     /// Gets a value indicating whether the current usage level exceeds the usage limit.
     /// </summary>
-    public bool IsViolated => m_Usage >= m_Limit;
+    public bool IsViolated => _usage >= _limit;
 
     #endregion
 
@@ -103,11 +103,11 @@ public class LimitCounter
         ResetInterval = resetInterval;
         Name = name;
 
-        m_Locker = new object();
-        m_ResetTimer = Stopwatch.StartNew();
+        _locker = new object();
+        _resetTimer = Stopwatch.StartNew();
         if (usage != null)
         {
-            m_Usage = usage.Value;
+            _usage = usage.Value;
         }
     }
 
@@ -124,18 +124,18 @@ public class LimitCounter
     public bool TestUsage(uint extra)
     {
         CheckResetTimer();
-        return m_Usage + extra < m_Limit;
+        return _usage + extra < _limit;
     }
 
     public void AddUsage(uint points, DateTime timestamp)
     {
         CheckResetTimer();
-        lock (m_Locker)
+        lock (_locker)
         {
-            m_Usage += points;
-            if (timestamp > m_LastUpdateTime)
+            _usage += points;
+            if (timestamp > _lastUpdateTime)
             {
-                m_LastUpdateTime = timestamp;
+                _lastUpdateTime = timestamp;
             }
         }
     }
@@ -145,28 +145,28 @@ public class LimitCounter
         bool wasTimerReset = CheckResetTimer();
 
         bool wasUsageReset = false;
-        lock (m_Locker)
+        lock (_locker)
         {
-            if (timestamp >= m_LastUpdateTime)
+            if (timestamp >= _lastUpdateTime)
             {
-                wasUsageReset = points < m_Usage;
-                m_Usage = points;
-                m_LastUpdateTime = timestamp;
+                wasUsageReset = points < _usage;
+                _usage = points;
+                _lastUpdateTime = timestamp;
             }
         }
 
         if (wasUsageReset && !wasTimerReset)
         {
-            m_ResetTimer.Restart();
+            _resetTimer.Restart();
         }
     }
 
     private bool CheckResetTimer()
     {
-        if (m_ResetTimer.Elapsed >= ResetInterval)
+        if (_resetTimer.Elapsed >= ResetInterval)
         {
-            lock (m_Locker) { m_Usage = 0; }
-            m_ResetTimer.Restart();
+            lock (_locker) { _usage = 0; }
+            _resetTimer.Restart();
             return true;
         }
         else

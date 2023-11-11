@@ -35,7 +35,7 @@ namespace Oakbranch.Binance
 
         #region Instance members
 
-        private BaseEndpoint m_RESTEndpoint;
+        private BaseEndpoint _RESTEndpoint;
         /// <summary>
         /// Gets ot sets the base endpoint used for REST API requests.
         /// </summary>
@@ -43,18 +43,18 @@ namespace Oakbranch.Binance
         {
             get
             {
-                return m_RESTEndpoint;
+                return _RESTEndpoint;
             }
             set
             {
-                if (m_RESTEndpoint == value) return;
+                if (_RESTEndpoint == value) return;
                 if (!s_RESTBaseEndpoints.Contains(value))
                 {
                     throw new ArgumentException(
                         $"The specified base endpoint \"{value}\" is not one of the supported main base endpoints. " +
                         $"Please use one of the endpoints listed in {nameof(ApiConnector)}.{nameof(RESTBaseEndpoints)}.");
                 }
-                m_RESTEndpoint = value;
+                _RESTEndpoint = value;
             }
         }
 
@@ -62,15 +62,15 @@ namespace Oakbranch.Binance
         /// Defines the list containing templates of all rate limits relevant to SAPI endpoints.
         /// <para>New rate limits are created from these templates for each separate discriminative endpoint.</para>
         /// </summary>
-        private readonly List<RateLimiter> m_LimitTemplates;
+        private readonly List<RateLimiter> _limitTemplates;
         /// <summary>
         /// Defines the dictionary of limit IDs keyed by their weight dimensions' IDs. 
         /// </summary>
-        private readonly Dictionary<int, int[]> m_DimensionsToLimitsDict;
+        private readonly Dictionary<int, int[]> _dimensionsToLimitsDict;
         /// <summary>
         /// Defines teh dictionary of limit headers names keyed by their discriminative endpoints.
         /// </summary>
-        private readonly Dictionary<string, ReadOnlyDictionary<string, int>> m_HeadersToLimitsMapsDict;
+        private readonly Dictionary<string, ReadOnlyDictionary<string, int>> _headersToLimitsMapsDict;
 
         #endregion
 
@@ -95,10 +95,10 @@ namespace Oakbranch.Binance
         public SapiClientBase(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger? logger = null)
             : base(connector, limitsRegistry, logger)
         {
-            m_RESTEndpoint = s_RESTBaseEndpoints.First((bep) => bep.Type == NetworkType.Live);
-            m_LimitTemplates = new List<RateLimiter>(4);
-            m_DimensionsToLimitsDict = new Dictionary<int, int[]>(64);
-            m_HeadersToLimitsMapsDict = new Dictionary<string, ReadOnlyDictionary<string, int>>(
+            _RESTEndpoint = s_RESTBaseEndpoints.First((bep) => bep.Type == NetworkType.Live);
+            _limitTemplates = new List<RateLimiter>(4);
+            _dimensionsToLimitsDict = new Dictionary<int, int[]>(64);
+            _headersToLimitsMapsDict = new Dictionary<string, ReadOnlyDictionary<string, int>>(
                 64, StringComparer.InvariantCultureIgnoreCase);
         }
 
@@ -132,7 +132,7 @@ namespace Oakbranch.Binance
 
             // Send the initialization query.
             QueryParams initQueryParams = new QueryParams(
-                HttpMethod.GET, m_RESTEndpoint.Url, GetSystemStatusEndpoint, null, false);
+                HttpMethod.GET, _RESTEndpoint.Url, GetSystemStatusEndpoint, null, false);
             Response rsp = await Connector.SendAsync(initQueryParams, ct).ConfigureAwait(false);
 
             // Parse the response.
@@ -146,9 +146,9 @@ namespace Oakbranch.Binance
             }
 
             // Register or update SAPI rate limits in the registry.
-            m_LimitTemplates.Clear();
-            m_LimitTemplates.Add(new RateLimiter(RateLimitType.IP, Interval.Minute, 1, 12000));
-            m_LimitTemplates.Add(new RateLimiter(RateLimitType.UID, Interval.Minute, 1, 180000));
+            _limitTemplates.Clear();
+            _limitTemplates.Add(new RateLimiter(RateLimitType.IP, Interval.Minute, 1, 12000));
+            _limitTemplates.Add(new RateLimiter(RateLimitType.UID, Interval.Minute, 1, 180000));
         }
 
         // Rate limits.
@@ -181,7 +181,7 @@ namespace Oakbranch.Binance
             Dictionary<string, int> headersLimitsMap = new Dictionary<string, int>(4, StringComparer.InvariantCultureIgnoreCase);
 
             // Traverse through the limit templates, and create limits corresponding to the specified limit type.
-            foreach (RateLimiter template in m_LimitTemplates)
+            foreach (RateLimiter template in _limitTemplates)
             {
                 if (template.Type == limitType)
                 {
@@ -209,10 +209,10 @@ namespace Oakbranch.Binance
             }
 
             // Update the dictionary of limits IDs keyed by weight dimensions.
-            m_DimensionsToLimitsDict[dimId] = headersLimitsMap.Values.ToArray();
+            _dimensionsToLimitsDict[dimId] = headersLimitsMap.Values.ToArray();
 
             // Update the headers names to limits IDs map.
-            if (m_HeadersToLimitsMapsDict.TryGetValue(discriminativeEndpoint, out ReadOnlyDictionary<string, int>? existingMap))
+            if (_headersToLimitsMapsDict.TryGetValue(discriminativeEndpoint, out ReadOnlyDictionary<string, int>? existingMap))
             {
                 foreach (KeyValuePair<string, int> pair in existingMap)
                 {
@@ -220,7 +220,7 @@ namespace Oakbranch.Binance
                         headersLimitsMap.Add(pair.Key, pair.Value);
                 }
             }
-            m_HeadersToLimitsMapsDict[discriminativeEndpoint] = new ReadOnlyDictionary<string, int>(headersLimitsMap);
+            _headersToLimitsMapsDict[discriminativeEndpoint] = new ReadOnlyDictionary<string, int>(headersLimitsMap);
             Connector.SetLimitMetricsMap(discriminativeEndpoint, headersLimitsMap.Keys.ToArray());
         }
 
@@ -229,7 +229,7 @@ namespace Oakbranch.Binance
         /// </summary>
         private bool AreRateLimitsRegistered(int weightDimensionId)
         {
-            if (m_DimensionsToLimitsDict.TryGetValue(weightDimensionId, out int[]? associatedLimits))
+            if (_dimensionsToLimitsDict.TryGetValue(weightDimensionId, out int[]? associatedLimits))
             {
                 foreach (int limitId in associatedLimits)
                 {
@@ -254,7 +254,7 @@ namespace Oakbranch.Binance
         {
             ThrowIfNotRunning();
 
-            if (m_HeadersToLimitsMapsDict.TryGetValue(discriminativeEndpoint, out ReadOnlyDictionary<string, int>? dict))
+            if (_headersToLimitsMapsDict.TryGetValue(discriminativeEndpoint, out ReadOnlyDictionary<string, int>? dict))
             {
                 return dict;
             }

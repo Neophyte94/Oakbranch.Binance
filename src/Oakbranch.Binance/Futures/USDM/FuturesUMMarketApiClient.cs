@@ -95,7 +95,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
 
     #region Instance members
 
-    private readonly ReadOnlyDictionary<string, int> m_DummyHeadersLimitsMap;
+    private readonly ReadOnlyDictionary<string, int> _dummyHeadersLimitsMap;
 
     #endregion
 
@@ -104,7 +104,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
     public FuturesUMMarketApiClient(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger? logger = null)
         : base(connector, limitsRegistry, logger)
     {
-        m_DummyHeadersLimitsMap = new ReadOnlyDictionary<string, int>(new Dictionary<string, int>(0));
+        _dummyHeadersLimitsMap = new ReadOnlyDictionary<string, int>(new Dictionary<string, int>(0));
 
         if (!Connector.IsLimitMetricsMapRegistered(MarketStatsDiscriminativeEndpoint))
         {
@@ -1601,7 +1601,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
             executeHandler: ExecuteQueryAsync,
             parseHandler: ParseSingleOpenInterest,
             weights: weights,
-            headersToLimitsMap: m_DummyHeadersLimitsMap);
+            headersToLimitsMap: _dummyHeadersLimitsMap);
     }
 
     private OpenInterest ParseSingleOpenInterest(byte[] data, object? parseArgs)
@@ -1698,7 +1698,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
             executeHandler: ExecuteQueryAsync,
             parseHandler: ParseOpenInterestList,
             parseArgs: limit != null ? limit.Value : DefaultMarketStatsQueryLimit,
-            headersToLimitsMap: m_DummyHeadersLimitsMap);
+            headersToLimitsMap: _dummyHeadersLimitsMap);
     }
 
     /// <summary>
@@ -1826,7 +1826,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
             executeHandler: ExecuteQueryAsync,
             parseHandler: ParseLongShortRatioList,
             parseArgs: limit != null ? limit.Value : DefaultMarketStatsQueryLimit,
-            headersToLimitsMap: m_DummyHeadersLimitsMap);
+            headersToLimitsMap: _dummyHeadersLimitsMap);
     }
 
     /// <summary>
@@ -1884,7 +1884,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
             executeHandler: ExecuteQueryAsync,
             parseHandler: ParseLongShortRatioList,
             parseArgs: limit != null ? limit.Value : DefaultMarketStatsQueryLimit,
-            headersToLimitsMap: m_DummyHeadersLimitsMap);
+            headersToLimitsMap: _dummyHeadersLimitsMap);
     }
 
     /// <summary>
@@ -1942,7 +1942,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
             executeHandler: ExecuteQueryAsync,
             parseHandler: ParseLongShortRatioList,
             parseArgs: limit != null ? limit.Value : DefaultMarketStatsQueryLimit,
-            headersToLimitsMap: m_DummyHeadersLimitsMap);
+            headersToLimitsMap: _dummyHeadersLimitsMap);
     }
 
     /// <summary>
@@ -2000,7 +2000,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
             executeHandler: ExecuteQueryAsync,
             parseHandler: ParseTakerVolumeList,
             parseArgs: limit != null ? limit.Value : DefaultMarketStatsQueryLimit,
-            headersToLimitsMap: m_DummyHeadersLimitsMap);
+            headersToLimitsMap: _dummyHeadersLimitsMap);
     }
 
     /// <summary>

@@ -36,7 +36,7 @@ namespace Oakbranch.Binance
 
         #region Instance members
 
-        private BaseEndpoint m_RESTEndpoint;
+        private BaseEndpoint _RESTEndpoint;
         /// <summary>
         /// Gets ot sets the base endpoint used for REST API requests.
         /// </summary>
@@ -44,18 +44,18 @@ namespace Oakbranch.Binance
         {
             get
             {
-                return m_RESTEndpoint;
+                return _RESTEndpoint;
             }
             set
             {
-                if (m_RESTEndpoint == value) return;
+                if (_RESTEndpoint == value) return;
                 if (!s_RESTBaseEndpoints.Contains(value))
                 {
                     throw new ArgumentException(
                         $"The specified base endpoint \"{value}\" is not one of the supported main base endpoints. " +
                         $"Please use one of the endpoints listed in {nameof(ApiConnector)}.{nameof(RESTBaseEndpoints)}.");
                 }
-                m_RESTEndpoint = value;
+                _RESTEndpoint = value;
             }
         }
 
@@ -83,7 +83,7 @@ namespace Oakbranch.Binance
         public ApiV3ClientBase(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger? logger = null) :
             base(connector, limitsRegistry, LimitsDiscrimativeEndpoint, logger)
         {
-            m_RESTEndpoint = s_RESTBaseEndpoints.First((bep) => bep.Type == NetworkType.Live);
+            _RESTEndpoint = s_RESTBaseEndpoints.First((bep) => bep.Type == NetworkType.Live);
         }
 
         #endregion
@@ -98,7 +98,7 @@ namespace Oakbranch.Binance
             // Send the initialization query.
             QueryBuilder initQueryString = new QueryBuilder(13);
             initQueryString.AddParameter("symbol", "ETHBTC");
-            QueryParams initQueryParams = new QueryParams(HttpMethod.GET, m_RESTEndpoint.Url, GetExchangeInfoEndpoint, initQueryString);
+            QueryParams initQueryParams = new QueryParams(HttpMethod.GET, _RESTEndpoint.Url, GetExchangeInfoEndpoint, initQueryString);
             Response rsp = await Connector.SendAsync(initQueryParams, ct).ConfigureAwait(false);
 
             // Parse the response.
@@ -165,7 +165,7 @@ namespace Oakbranch.Binance
                 new QueryWeight(GetWeightDimensionId(RateLimitType.IP), 1),
             };
             return new DeferredQuery<bool>(
-                query: new QueryParams(HttpMethod.GET, m_RESTEndpoint.Url, GetConnectivityEndpoint, null, false),
+                query: new QueryParams(HttpMethod.GET, _RESTEndpoint.Url, GetConnectivityEndpoint, null, false),
                 executeHandler: ExecuteQueryAsync,
                 parseHandler: ParseConnectivityTestResponse,
                 weights: weights, 

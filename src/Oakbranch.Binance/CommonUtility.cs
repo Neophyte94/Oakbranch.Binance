@@ -13,8 +13,8 @@ namespace Oakbranch.Binance
 
         public static readonly NumberFormatInfo NumberFormat;
 
-        private static readonly DateTime s_ApiBaseDate = new DateTime(1970, 1, 1);
-        public static DateTime ApiBaseDate => s_ApiBaseDate;
+        private static readonly DateTime s_apiBaseDate = new DateTime(1970, 1, 1);
+        public static DateTime ApiBaseDate => s_apiBaseDate;
 
         #endregion
 
@@ -52,7 +52,7 @@ namespace Oakbranch.Binance
         /// <returns>A <see cref="DateTime"/> instance corresponding to the specified time.</returns>
         public static DateTime ConvertToDateTime(long ms)
         {
-            return s_ApiBaseDate + TimeSpan.FromMilliseconds(ms);
+            return s_apiBaseDate + TimeSpan.FromMilliseconds(ms);
         }
 
         /// <summary>

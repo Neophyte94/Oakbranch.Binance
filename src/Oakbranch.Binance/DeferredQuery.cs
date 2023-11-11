@@ -11,24 +11,24 @@ namespace Oakbranch.Binance
     {
         #region Instance members
 
-        private QueryParams m_Params;
-        internal QueryParams Params => m_Params;
+        private QueryParams _params;
+        internal QueryParams Params => _params;
 
-        private ReadOnlyCollection<QueryWeight> m_Weights;
+        private ReadOnlyCollection<QueryWeight> _weights;
         public IReadOnlyList<QueryWeight> Weights
         {
             get
             {
                 ThrowIfDisposed();
-                return m_Weights;
+                return _weights;
             }
         }
 
-        private ExecuteQueryHandler<T> m_ExecuteHandler;
-        private IReadOnlyDictionary<string, int>? m_HeadersToLimitsMap;
-        private ParseResponseHandler<T> m_ParseHandler;
-        private object? m_ParseArgs;
-        private bool m_IsDisposed;
+        private ExecuteQueryHandler<T> _executeHandler;
+        private IReadOnlyDictionary<string, int>? _headersToLimitsMap;
+        private ParseResponseHandler<T> _parseHandler;
+        private object? _parseArgs;
+        private bool _isDisposed;
 
         #endregion
 
@@ -44,12 +44,12 @@ namespace Oakbranch.Binance
         {
             if (query.IsUndefined)
                 throw new ArgumentNullException(nameof(query), $"The specified query parameters are empty.");
-            m_ExecuteHandler = executeHandler ?? throw new ArgumentNullException(nameof(executeHandler));
-            m_ParseHandler = parseHandler ?? throw new ArgumentNullException(nameof(parseHandler));
-            m_Params = query;
-            m_Weights = new ReadOnlyCollection<QueryWeight>(weights ?? Array.Empty<QueryWeight>());
-            m_ParseArgs = parseArgs;
-            m_HeadersToLimitsMap = headersToLimitsMap;
+            _executeHandler = executeHandler ?? throw new ArgumentNullException(nameof(executeHandler));
+            _parseHandler = parseHandler ?? throw new ArgumentNullException(nameof(parseHandler));
+            _params = query;
+            _weights = new ReadOnlyCollection<QueryWeight>(weights ?? Array.Empty<QueryWeight>());
+            _parseArgs = parseArgs;
+            _headersToLimitsMap = headersToLimitsMap;
         }
 
         #endregion
@@ -59,30 +59,30 @@ namespace Oakbranch.Binance
         public Task<T> ExecuteAsync(CancellationToken ct)
         {
             ThrowIfDisposed();
-            return m_ExecuteHandler(m_Params, m_Weights, m_ParseHandler, m_ParseArgs, m_HeadersToLimitsMap, ct);
+            return _executeHandler(_params, _weights, _parseHandler, _parseArgs, _headersToLimitsMap, ct);
         }
 
         public override string ToString()
         {
             string text = $"Deferred query ({typeof(T).Name}): ";
-            if (m_IsDisposed) return text + "(Disposed)";
+            if (_isDisposed) return text + "(Disposed)";
 
-            text += $"{m_Params.Method} {m_Params.BaseEndpoint}{m_Params.RelativeEndpoint}";
-            if (m_Params.QueryString != null)
-                text += "?" + m_Params.QueryString.ToQuery();
+            text += $"{_params.Method} {_params.BaseEndpoint}{_params.RelativeEndpoint}";
+            if (_params.QueryString != null)
+                text += "?" + _params.QueryString.ToQuery();
 
             return text;
         }
 
         private void ThrowIfDisposed()
         {
-            if (m_IsDisposed)
+            if (_isDisposed)
                 throw new ObjectDisposedException(GetType().Name);
         }
 
         public void Dispose()
         {
-            if (m_IsDisposed)
+            if (_isDisposed)
             {
                 Dispose(true);
                 GC.SuppressFinalize(this);
@@ -91,15 +91,15 @@ namespace Oakbranch.Binance
 
         private void Dispose(bool releaseManaged)
         {
-            m_IsDisposed = true;
+            _isDisposed = true;
             if (releaseManaged)
             {
-                m_ExecuteHandler = null!;
-                m_ParseHandler = null!;
-                m_ParseArgs = null;
-                m_HeadersToLimitsMap = null;
-                m_Params = default;
-                m_Weights = null!;
+                _executeHandler = null!;
+                _parseHandler = null!;
+                _parseArgs = null;
+                _headersToLimitsMap = null;
+                _params = default;
+                _weights = null!;
             }
         }
 
@@ -109,7 +109,7 @@ namespace Oakbranch.Binance
 
         ~DeferredQuery()
         {
-            if (!m_IsDisposed)
+            if (!_isDisposed)
             {
                 Dispose(false);
             }

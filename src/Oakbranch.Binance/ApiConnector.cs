@@ -37,14 +37,14 @@ public sealed class ApiConnector : IApiConnector, IDisposable
 
     #region Instance members
 
-    private readonly HttpClient m_Client;
-    private byte[]? m_SecretKey;
-    private ILogger? m_Logger;
+    private readonly HttpClient _client;
+    private byte[]? _secretKey;
+    private ILogger? _logger;
 
     // A collection of the pairs "relative endpoint - rate limit metrics map"
-    private readonly Dictionary<string, string[]> m_LimitMetricsMapsDict;
+    private readonly Dictionary<string, string[]> _limitMetricsMapsDict;
 
-    private ITimeProvider m_TimeProvider;
+    private ITimeProvider _timeProvider;
     /// <summary>
     /// Gets or sets the time provider used for timestamps.
     /// </summary>
@@ -55,25 +55,25 @@ public sealed class ApiConnector : IApiConnector, IDisposable
         get
         {
             ThrowIfDisposed();
-            return m_TimeProvider;
+            return _timeProvider;
         }
         set
         {
             ThrowIfDisposed();
             if (value == null)
                 throw new ArgumentNullException(nameof(TimeProvider));
-            m_TimeProvider = value;
+            _timeProvider = value;
         }
     }
 
-    private readonly bool m_AreSecuredQueriesSupported;
+    private readonly bool _areSecuredQueriesSupported;
     /// <summary>
     /// Gets a value indicating whether the connector instance is able to send secured queries. 
     /// <para>It depends on whether the instance was constructed with a secret API key provided.</para>
     /// </summary>
-    public bool AreSecuredQueriesSupported => m_AreSecuredQueriesSupported;
+    public bool AreSecuredQueriesSupported => _areSecuredQueriesSupported;
 
-    private ushort m_RequestWindow = RequestWindowDefault;
+    private ushort _requestWindow = RequestWindowDefault;
     /// <summary>
     /// Gets or sets the period after a request creation that the request is valid within (in ms).
     /// <para>The server automatically rejects all requests received within a bigger interval than this.</para>
@@ -87,7 +87,7 @@ public sealed class ApiConnector : IApiConnector, IDisposable
     {
         get
         {
-            return m_RequestWindow;
+            return _requestWindow;
         }
         set
         {
@@ -97,11 +97,11 @@ public sealed class ApiConnector : IApiConnector, IDisposable
             if (value > RequestWindowMaximum)
                 throw new ArgumentOutOfRangeException(
                     $"The specified request window value ({value}) is greater than the permitted maximum ({RequestWindowMaximum}).");
-            m_RequestWindow = value;
+            _requestWindow = value;
         }
     }
 
-    private int m_RequestTimeout = RequestTimeoutDefault;
+    private int _requestTimeout = RequestTimeoutDefault;
     /// <summary>
     /// Gets or sets waiting duration for a web request's completion (in ms).
     /// <para>Any query task will be terminated in <see cref="RequestTimeout"/> ms, throwing
@@ -116,30 +116,30 @@ public sealed class ApiConnector : IApiConnector, IDisposable
     {
         get
         {
-            return m_RequestTimeout;
+            return _requestTimeout;
         }
         set
         {
             if (value < 0 || value > RequestTimeoutMaximum)
                 throw new ArgumentOutOfRangeException(nameof(RequestTimeout));
-            m_RequestTimeout = value;
+            _requestTimeout = value;
         }
     }
 
-    private readonly Stopwatch m_BanPreventionTimer;
-    private long m_BanPreventionDelta;
+    private readonly Stopwatch _banPreventionTimer;
+    private long _banPreventionDelta;
     private bool IsBanPreventionActive
     {
         get
         {
-            if (m_BanPreventionDelta == 0)
+            if (_banPreventionDelta == 0)
             {
                 return false;
             }
             else
             {
                 UpdateBanPreventionDelay();
-                return m_BanPreventionDelta == 0;
+                return _banPreventionDelta == 0;
             }
         }
     }
@@ -156,9 +156,9 @@ public sealed class ApiConnector : IApiConnector, IDisposable
             ThrowIfDisposed();
             UpdateBanPreventionDelay();
             
-            if (m_BanPreventionTimer.IsRunning)
+            if (_banPreventionTimer.IsRunning)
             {
-                long ticksLeft = m_BanPreventionDelta - m_BanPreventionTimer.ElapsedTicks;
+                long ticksLeft = _banPreventionDelta - _banPreventionTimer.ElapsedTicks;
                 return new TimeSpan(ticksLeft > 0 ? ticksLeft : 0);
             }
             else
@@ -168,11 +168,11 @@ public sealed class ApiConnector : IApiConnector, IDisposable
         }
     }
 
-    private bool m_IsDisposed;
+    private bool _isDisposed;
     /// <summary>
     /// Gets a value indicating whether the <see cref="ApiConnector"/> instance has been disposed.
     /// </summary>
-    public bool IsDisposed => m_IsDisposed;
+    public bool IsDisposed => _isDisposed;
 
     #endregion
 
@@ -235,23 +235,23 @@ public sealed class ApiConnector : IApiConnector, IDisposable
             throw new ArgumentException($"The specified API key is of the invalid length ({apiKey.Length}). " +
                 $"The valid key is a {ApiKeyLength}-character string.");
         
-        m_AreSecuredQueriesSupported = !String.IsNullOrEmpty(secretKey);
-        if (m_AreSecuredQueriesSupported)
+        _areSecuredQueriesSupported = !String.IsNullOrEmpty(secretKey);
+        if (_areSecuredQueriesSupported)
         {
             if (secretKey!.Length != SecretKeyLength)
                 throw new ArgumentException("The specified secret key is of the invalid length " +
                     $"({secretKey.Length}). The valid key is a {SecretKeyLength}-character string.");
-            m_SecretKey = Encoding.ASCII.GetBytes(secretKey);
+            _secretKey = Encoding.ASCII.GetBytes(secretKey);
         }
 
-        m_Client = new HttpClient();
-        m_Client.Timeout = new TimeSpan(TimeSpan.TicksPerMillisecond * RequestTimeoutMaximum + TimeSpan.TicksPerSecond);
-        m_Client.DefaultRequestHeaders.Add(ApiKeyHeaderName, apiKey);
+        _client = new HttpClient();
+        _client.Timeout = new TimeSpan(TimeSpan.TicksPerMillisecond * RequestTimeoutMaximum + TimeSpan.TicksPerSecond);
+        _client.DefaultRequestHeaders.Add(ApiKeyHeaderName, apiKey);
 
-        m_TimeProvider = timeProvider ?? new SystemTimeProvider();
-        m_Logger = logger;
-        m_LimitMetricsMapsDict = new Dictionary<string, string[]>(StringComparer.InvariantCultureIgnoreCase);
-        m_BanPreventionTimer = new Stopwatch();
+        _timeProvider = timeProvider ?? new SystemTimeProvider();
+        _logger = logger;
+        _limitMetricsMapsDict = new Dictionary<string, string[]>(StringComparer.InvariantCultureIgnoreCase);
+        _banPreventionTimer = new Stopwatch();
     }
 
     #endregion
@@ -318,7 +318,7 @@ public sealed class ApiConnector : IApiConnector, IDisposable
         {
             throw new ArgumentException("The specified query parameters are empty.");
         }
-        if (query.IsSecured && !m_AreSecuredQueriesSupported)
+        if (query.IsSecured && !_areSecuredQueriesSupported)
         {
             throw new QueryNotSupportedException($"This {nameof(ApiConnector)} instance does not support secured queries.");
         }
@@ -328,7 +328,7 @@ public sealed class ApiConnector : IApiConnector, IDisposable
         }
 
         string? fullEndpoint = null;
-        CancellationTokenSource timeoutCts = new CancellationTokenSource(m_RequestTimeout);
+        CancellationTokenSource timeoutCts = new CancellationTokenSource(_requestTimeout);
         CancellationTokenSource unitedCts = CancellationTokenSource.CreateLinkedTokenSource(timeoutCts.Token, ct);
         try
         {
@@ -349,16 +349,16 @@ public sealed class ApiConnector : IApiConnector, IDisposable
             switch (query.Method)
             {
                 case HttpMethod.GET:
-                    rspTask = m_Client.GetAsync(fullEndpoint, unitedCts.Token);
+                    rspTask = _client.GetAsync(fullEndpoint, unitedCts.Token);
                     break;
                 case HttpMethod.PUT:
-                    rspTask = m_Client.PutAsync(fullEndpoint, null, unitedCts.Token);
+                    rspTask = _client.PutAsync(fullEndpoint, null, unitedCts.Token);
                     break;
                 case HttpMethod.POST:
-                    rspTask = m_Client.PostAsync(fullEndpoint, null, unitedCts.Token);
+                    rspTask = _client.PostAsync(fullEndpoint, null, unitedCts.Token);
                     break;
                 case HttpMethod.DELETE:
-                    rspTask = m_Client.DeleteAsync(fullEndpoint, unitedCts.Token);
+                    rspTask = _client.DeleteAsync(fullEndpoint, unitedCts.Token);
                     break;
                 default:
                     throw new NotImplementedException($"The http method \"{query.Method}\" is not supported.");
@@ -457,11 +457,11 @@ public sealed class ApiConnector : IApiConnector, IDisposable
         ThrowIfDisposed();
 
         rawQuery ??= new QueryBuilder(123);
-        rawQuery.AddParameter("recvWindow", m_RequestWindow);
-        rawQuery.AddParameter("timestamp", CommonUtility.ConvertToApiTime(m_TimeProvider.UtcNow));
+        rawQuery.AddParameter("recvWindow", _requestWindow);
+        rawQuery.AddParameter("timestamp", CommonUtility.ConvertToApiTime(_timeProvider.UtcNow));
 
         string signature;
-        using (HMACSHA256 signProvider = new HMACSHA256(m_SecretKey!))
+        using (HMACSHA256 signProvider = new HMACSHA256(_secretKey!))
         {
             byte[] buffer = Encoding.ASCII.GetBytes(rawQuery.ToQuery());
             buffer = signProvider.ComputeHash(buffer);
@@ -480,7 +480,7 @@ public sealed class ApiConnector : IApiConnector, IDisposable
         string[]? limitMetricsMap = null;
         foreach (string url in CommonUtility.TraversePathHierarchy(relativeEndpoint))
         {
-            if (m_LimitMetricsMapsDict.TryGetValue(url, out limitMetricsMap))
+            if (_limitMetricsMapsDict.TryGetValue(url, out limitMetricsMap))
             {
                 break;
             }
@@ -489,7 +489,7 @@ public sealed class ApiConnector : IApiConnector, IDisposable
         // Check whether the limit metrics map is found.
         if (limitMetricsMap == null)
         {
-            if (m_LimitMetricsMapsDict.Count != 0)
+            if (_limitMetricsMapsDict.Count != 0)
             {
                 PostLogMessage(
                     LogLevel.Debug,
@@ -500,7 +500,7 @@ public sealed class ApiConnector : IApiConnector, IDisposable
             {
                 PostLogMessage(
                     LogLevel.Debug,
-                    $"None of {m_LimitMetricsMapsDict.Count} registered limit metrics maps " +
+                    $"None of {_limitMetricsMapsDict.Count} registered limit metrics maps " +
                     $"can be applied to the relative endpoint \"{relativeEndpoint}\".");
             }
 
@@ -600,7 +600,7 @@ public sealed class ApiConnector : IApiConnector, IDisposable
     /// <returns><see langword="true"/> if the map has been registered for <paramref name="relativeEndpoint"/>, otherwise <see langword="false"/>.</returns>
     public bool IsLimitMetricsMapRegistered(string relativeEndpoint)
     {
-        return m_LimitMetricsMapsDict.ContainsKey(relativeEndpoint);
+        return _limitMetricsMapsDict.ContainsKey(relativeEndpoint);
     }
 
     /// <summary>
@@ -618,24 +618,24 @@ public sealed class ApiConnector : IApiConnector, IDisposable
     {
         if (limitKeysMap == null)
             throw new ArgumentNullException(nameof(limitKeysMap));
-        lock (m_LimitMetricsMapsDict)
+        lock (_limitMetricsMapsDict)
         {
-            m_LimitMetricsMapsDict[relativeEndpoint] = limitKeysMap.ToArray();
+            _limitMetricsMapsDict[relativeEndpoint] = limitKeysMap.ToArray();
         }
     }
 
     // Ban prevention.
     private void ActivateBanPreventionDelay(long delayInTicks)
     {
-        m_BanPreventionDelta = delayInTicks;
-        m_BanPreventionTimer.Restart();
+        _banPreventionDelta = delayInTicks;
+        _banPreventionTimer.Restart();
     }
 
     private void UpdateBanPreventionDelay()
     {
-        if (m_BanPreventionTimer.IsRunning)
+        if (_banPreventionTimer.IsRunning)
         {
-            if (m_BanPreventionTimer.ElapsedTicks > m_BanPreventionDelta)
+            if (_banPreventionTimer.ElapsedTicks > _banPreventionDelta)
             {
                 CancelBanPreventionDelay();
             }
@@ -648,24 +648,24 @@ public sealed class ApiConnector : IApiConnector, IDisposable
     /// </summary>
     public void CancelBanPreventionDelay()
     {
-        m_BanPreventionTimer.Stop();
-        m_BanPreventionDelta = 0;
+        _banPreventionTimer.Stop();
+        _banPreventionDelta = 0;
     }
 
     // Miscellaneous.
     private bool IsLogLevelEnabled(LogLevel level)
     {
-        return m_Logger != null && m_Logger.IsLevelEnabled(level);
+        return _logger != null && _logger.IsLevelEnabled(level);
     }
 
     private void PostLogMessage(LogLevel level, string message)
     {
-        m_Logger?.Log(level, LogContextName, message);
+        _logger?.Log(level, LogContextName, message);
     }
 
     private void ThrowIfDisposed()
     {
-        if (m_IsDisposed)
+        if (_isDisposed)
         {
             throw new ObjectDisposedException(nameof(ApiConnector));
         }
@@ -679,18 +679,18 @@ public sealed class ApiConnector : IApiConnector, IDisposable
 
     private void Dispose(bool releaseManaged)
     {
-        if (m_IsDisposed) return;
-        m_IsDisposed = true;
+        if (_isDisposed) return;
+        _isDisposed = true;
 
-        Common.Utility.CommonUtility.Clear(ref m_SecretKey);
+        Common.Utility.CommonUtility.Clear(ref _secretKey);
 
         if (releaseManaged)
         {
-            m_Client?.Dispose();
-            m_TimeProvider = null!;
-            m_Logger = null;
-            m_LimitMetricsMapsDict.Clear();
-            m_BanPreventionTimer.Stop();
+            _client?.Dispose();
+            _timeProvider = null!;
+            _logger = null;
+            _limitMetricsMapsDict.Clear();
+            _banPreventionTimer.Stop();
         }
     }
 

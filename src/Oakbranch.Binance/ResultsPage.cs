@@ -5,7 +5,7 @@ namespace Oakbranch.Binance
 {
     public class ResultsPage<T> : List<T>
     {
-        private int m_Total;
+        private int _total;
         /// <summary>
         /// Gets or sets the total number of results in all pages.
         /// </summary>
@@ -13,13 +13,13 @@ namespace Oakbranch.Binance
         {
             get
             {
-                return m_Total;
+                return _total;
             }
             set
             {
                 if (value < 0)
                     throw new ArgumentOutOfRangeException(nameof(Total));
-                m_Total = value;
+                _total = value;
             }
         }
 

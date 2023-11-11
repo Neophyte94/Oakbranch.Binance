@@ -9,8 +9,12 @@ namespace Oakbranch.Binance.Exceptions
     /// </summary>
     public class QueryNotSupportedException : NotSupportedException
     {
+        #region Instance constructors
+
         public QueryNotSupportedException() : base() { }
 
         public QueryNotSupportedException(string? message) : base(message) { }
+
+        #endregion
     }
 }

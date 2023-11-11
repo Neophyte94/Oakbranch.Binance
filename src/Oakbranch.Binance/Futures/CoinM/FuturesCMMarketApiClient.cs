@@ -86,7 +86,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
 
     #region Instance members
 
-    private readonly ReadOnlyDictionary<string, int> m_DummyHeadersLimitsMap;
+    private readonly ReadOnlyDictionary<string, int> _dummyHeadersLimitsMap;
 
     #endregion
 
@@ -95,7 +95,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     public FuturesCMMarketApiClient(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger? logger = null)
         : base(connector, limitsRegistry, logger)
     {
-        m_DummyHeadersLimitsMap = new ReadOnlyDictionary<string, int>(new Dictionary<string, int>(0));
+        _dummyHeadersLimitsMap = new ReadOnlyDictionary<string, int>(new Dictionary<string, int>(0));
 
         if (!Connector.IsLimitMetricsMapRegistered(MarketStatsDiscriminativeEndpoint))
         {
@@ -1565,7 +1565,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
             executeHandler: ExecuteQueryAsync,
             parseHandler: ParseSingleOpenInterest,
             weights: weights,
-            headersToLimitsMap: m_DummyHeadersLimitsMap);
+            headersToLimitsMap: _dummyHeadersLimitsMap);
     }
 
     private OpenInterest ParseSingleOpenInterest(byte[] data, object? _)
@@ -1681,7 +1681,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
             executeHandler: ExecuteQueryAsync,
             parseHandler: ParseOpenInterestList,
             parseArgs: limit,
-            headersToLimitsMap: m_DummyHeadersLimitsMap);
+            headersToLimitsMap: _dummyHeadersLimitsMap);
     }
 
     /// <summary>
@@ -1813,7 +1813,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
             executeHandler: ExecuteQueryAsync,
             parseHandler: ParseLongShortRatioList,
             parseArgs: limit,
-            headersToLimitsMap: m_DummyHeadersLimitsMap);
+            headersToLimitsMap: _dummyHeadersLimitsMap);
     }
 
     /// <summary>
@@ -1871,7 +1871,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
             executeHandler: ExecuteQueryAsync,
             parseHandler: ParseLongShortRatioList,
             parseArgs: limit,
-            headersToLimitsMap: m_DummyHeadersLimitsMap);
+            headersToLimitsMap: _dummyHeadersLimitsMap);
     }
 
     /// <summary>
@@ -1929,7 +1929,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
             executeHandler: ExecuteQueryAsync,
             parseHandler: ParseLongShortRatioList,
             parseArgs: limit,
-            headersToLimitsMap: m_DummyHeadersLimitsMap);
+            headersToLimitsMap: _dummyHeadersLimitsMap);
     }
 
     /// <summary>
@@ -1994,7 +1994,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
             executeHandler: ExecuteQueryAsync,
             parseHandler: ParseTakerVolumeList,
             parseArgs: limit,
-            headersToLimitsMap: m_DummyHeadersLimitsMap);
+            headersToLimitsMap: _dummyHeadersLimitsMap);
     }
 
     /// <summary>

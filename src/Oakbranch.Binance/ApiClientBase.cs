@@ -23,7 +23,7 @@ namespace Oakbranch.Binance
 
         #region Instance members
 
-        private IApiConnector m_Connector;
+        private IApiConnector _connector;
         /// <summary>
         /// Gets the API connector used by the client for accessing low-level functions. 
         /// </summary>
@@ -32,33 +32,33 @@ namespace Oakbranch.Binance
             get
             {
                 ThrowIfDisposed();
-                return m_Connector;
+                return _connector;
             }
         }
 
-        private IRateLimitsRegistry m_LimitsRegistry;
+        private IRateLimitsRegistry _limitsRegistry;
         /// <summary>
         /// Gets the rate limits registry used by the client for checking and updating API rate limits.
         /// </summary>
-        public IRateLimitsRegistry LimitsRegistry => m_LimitsRegistry;
+        public IRateLimitsRegistry LimitsRegistry => _limitsRegistry;
 
-        private ILogger? m_Logger;
-        private Task? m_InitializationTask;
+        private ILogger? _logger;
+        private Task? _initializationTask;
+
+        private ClientState _state;
+        /// <summary>
+        /// Gets a value indicating whether the client has been initialized and not disposed yet.
+        /// </summary>
+        public bool IsInitialized => _state == ClientState.Running;
+        /// <summary>
+        /// Gets a value indicating whether the client has been disposed.
+        /// </summary>
+        public bool IsDisposed => _state == ClientState.Disposed;
 
         /// <summary>
         /// Gets a string used for specifying the logging context of logs posted by this client.
         /// </summary>
         protected virtual string LogContextName => LogContextNameDefault;
-
-        private ClientState m_State;
-        /// <summary>
-        /// Gets a value indicating whether the client has been initialized and not disposed yet.
-        /// </summary>
-        public bool IsInitialized => m_State == ClientState.Running;
-        /// <summary>
-        /// Gets a value indicating whether the client has been disposed.
-        /// </summary>
-        public bool IsDisposed => m_State == ClientState.Disposed;
 
         #endregion
 
@@ -73,9 +73,9 @@ namespace Oakbranch.Binance
         /// <exception cref="ArgumentNullException"/>
         internal ApiClientBase(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger? logger = null)
         {
-            m_Connector = connector ?? throw new ArgumentNullException(nameof(connector));
-            m_LimitsRegistry = limitsRegistry ?? throw new ArgumentNullException(nameof(limitsRegistry));
-            m_Logger = logger;
+            _connector = connector ?? throw new ArgumentNullException(nameof(connector));
+            _limitsRegistry = limitsRegistry ?? throw new ArgumentNullException(nameof(limitsRegistry));
+            _logger = logger;
         }
 
         #endregion
@@ -233,13 +233,13 @@ namespace Oakbranch.Binance
         {
             ThrowIfDisposed();
 
-            Task? t = m_InitializationTask;
+            Task? t = _initializationTask;
             if (t != null)
             {
                 return t;
             }
 
-            t = m_InitializationTask = InitializePrivateAsync(ct);
+            t = _initializationTask = InitializePrivateAsync(ct);
             Task.Run(async () =>
             {
                 try
@@ -258,8 +258,8 @@ namespace Oakbranch.Binance
                 }
                 finally
                 {
-                    if (m_InitializationTask == t)
-                        m_InitializationTask = null;
+                    if (_initializationTask == t)
+                        _initializationTask = null;
                 }
             }, ct);
 
@@ -269,8 +269,8 @@ namespace Oakbranch.Binance
         private async Task InitializePrivateAsync(CancellationToken ct)
         {
             await InitializeProtectedAsync(ct);
-            if (m_State == ClientState.Created)
-                m_State = ClientState.Running;
+            if (_state == ClientState.Created)
+                _state = ClientState.Running;
         }
 
         /// <summary>
@@ -400,9 +400,9 @@ namespace Oakbranch.Binance
         /// <param name="weights">An array of extra weights to check for.</param>
         private void ThrowIfRateLimitsAtRisk(IReadOnlyList<QueryWeight> weights)
         {
-            if (m_LimitsRegistry != null && !m_LimitsRegistry.TestUsage(weights, out int violatedLimitId))
+            if (_limitsRegistry != null && !_limitsRegistry.TestUsage(weights, out int violatedLimitId))
             {
-                RateLimitInfo limitInfo = m_LimitsRegistry[violatedLimitId];
+                RateLimitInfo limitInfo = _limitsRegistry[violatedLimitId];
 
                 uint? amount = null;
                 int count = weights.Count;
@@ -431,11 +431,11 @@ namespace Oakbranch.Binance
                 {
                     if (uint.TryParse(pair.Value, out uint usageLevel))
                     {
-                        m_LimitsRegistry.UpdateUsage(limitId, usageLevel, timestamp);
+                        _limitsRegistry.UpdateUsage(limitId, usageLevel, timestamp);
                     }
                     else
                     {
-                        RateLimitInfo limitInfo = m_LimitsRegistry[limitId];
+                        RateLimitInfo limitInfo = _limitsRegistry[limitId];
                         PostLogMessage(
                             LogLevel.Warning,
                             $"The usage value \"{pair.Value}\" for the limit {limitId} ({limitInfo.Name}) cannot be parsed.");
@@ -486,7 +486,7 @@ namespace Oakbranch.Binance
             Task<Response> rsp = Connector.SendAsync(queryParams, ct);
 
             // Register rate limits usage.
-            m_LimitsRegistry.IncrementUsage(weights, timestamp);
+            _limitsRegistry.IncrementUsage(weights, timestamp);
 
             // Wait for the response.
             await rsp.ConfigureAwait(false);
@@ -507,8 +507,8 @@ namespace Oakbranch.Binance
                 }
             }
 #if DEBUG
-            if (m_Logger != null && m_LimitsRegistry is RateLimitsRegistry rlr)
-                ((RateLimitsRegistry)m_LimitsRegistry).LogCurrentUsage(m_Logger);
+            if (_logger != null && _limitsRegistry is RateLimitsRegistry rlr)
+                ((RateLimitsRegistry)_limitsRegistry).LogCurrentUsage(_logger);
 #endif
 
             // Parse the response content.
@@ -546,7 +546,7 @@ namespace Oakbranch.Binance
         /// otherwise, <see langword="false"/>.</returns>
         protected bool IsLogLevelEnabled(LogLevel level)
         {
-            return m_Logger != null && m_Logger.IsLevelEnabled(level);
+            return _logger != null && _logger.IsLevelEnabled(level);
         }
 
         /// <summary>
@@ -557,7 +557,7 @@ namespace Oakbranch.Binance
         /// <param name="message">The message to be logged.</param>
         protected void PostLogMessage(LogLevel level, string message)
         {
-            m_Logger?.Log(level, LogContextName, message);
+            _logger?.Log(level, LogContextName, message);
         }
 
         /// <summary>
@@ -566,7 +566,7 @@ namespace Oakbranch.Binance
         /// <exception cref="ObjectDisposedException"/>
         protected void ThrowIfDisposed()
         {
-            if (m_State == ClientState.Disposed)
+            if (_state == ClientState.Disposed)
                 throw new ObjectDisposedException(GetType().Name);
         }
 
@@ -579,9 +579,9 @@ namespace Oakbranch.Binance
         /// <exception cref="Exception"/>
         protected void ThrowIfNotRunning()
         {
-            if (m_State != ClientState.Running)
+            if (_state != ClientState.Running)
             {
-                switch (m_State)
+                switch (_state)
                 {
                     case ClientState.Created:
                         throw new ClientNotInitializedException(this);
@@ -602,10 +602,10 @@ namespace Oakbranch.Binance
 
         private void Dispose(bool releaseManaged)
         {
-            if (m_State == ClientState.Disposed) return;
+            if (_state == ClientState.Disposed) return;
 
             // Set in the beginning to prevent any asynchronous usage of the class before the disposal completes.
-            m_State = ClientState.Disposed; 
+            _state = ClientState.Disposed; 
 
             try
             {
@@ -618,9 +618,9 @@ namespace Oakbranch.Binance
 
             if (releaseManaged)
             {
-                m_LimitsRegistry = null!;
-                m_Connector = null!;
-                m_Logger = null;
+                _limitsRegistry = null!;
+                _connector = null!;
+                _logger = null;
             }
         }
 

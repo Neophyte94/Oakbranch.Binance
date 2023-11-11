@@ -10,7 +10,7 @@ namespace Oakbranch.Binance
     /// </summary>
     public sealed class QueryBuilder
     {
-        private readonly StringBuilder m_Container;
+        private readonly StringBuilder _container;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="QueryBuilder"/> class.
@@ -18,7 +18,7 @@ namespace Oakbranch.Binance
         /// <param name="capacity">The initial capacity of the query string. Default is 100.</param>
         public QueryBuilder(int capacity = 100)
         {
-            m_Container = new StringBuilder(capacity);
+            _container = new StringBuilder(capacity);
         }
 
         /// <summary>
@@ -34,11 +34,11 @@ namespace Oakbranch.Binance
             if (String.IsNullOrEmpty(value))
                 throw new ArgumentNullException(nameof(value));
 
-            if (m_Container.Length != 0)
-                m_Container.Append('&');
-            m_Container.Append(name);
-            m_Container.Append('=');
-            m_Container.Append(value);
+            if (_container.Length != 0)
+                _container.Append('&');
+            _container.Append(name);
+            _container.Append('=');
+            _container.Append(value);
         }
 
         /// <summary>
@@ -54,19 +54,19 @@ namespace Oakbranch.Binance
             if (values == null)
                 throw new ArgumentNullException(nameof(values));
 
-            if (m_Container.Length != 0)
-                m_Container.Append('&');
+            if (_container.Length != 0)
+                _container.Append('&');
 
-            m_Container.Append(name);
-            m_Container.Append("=[");
+            _container.Append(name);
+            _container.Append("=[");
             for (int i = 0; i != values.Length; ++i)
             {
-                if (i != 0) { m_Container.Append(','); }
-                m_Container.Append('"');
-                m_Container.Append(values[i]);
-                m_Container.Append('"');
+                if (i != 0) { _container.Append(','); }
+                _container.Append('"');
+                _container.Append(values[i]);
+                _container.Append('"');
             }
-            m_Container.Append(']');
+            _container.Append(']');
         }
 
         /// <summary>
@@ -82,23 +82,23 @@ namespace Oakbranch.Binance
             if (values == null)
                 throw new ArgumentNullException(nameof(values));
 
-            if (m_Container.Length != 0)
-                m_Container.Append('&');
+            if (_container.Length != 0)
+                _container.Append('&');
 
-            m_Container.Append(name);
-            m_Container.Append("=[");
+            _container.Append(name);
+            _container.Append("=[");
 
             bool isFirst = true;
             foreach (string val in values)
             {
                 if (isFirst) { isFirst = false; }
-                else { m_Container.Append(','); }
+                else { _container.Append(','); }
 
-                m_Container.Append('"');
-                m_Container.Append(val);
-                m_Container.Append('"');
+                _container.Append('"');
+                _container.Append(val);
+                _container.Append('"');
             }
-            m_Container.Append(']');
+            _container.Append(']');
         }
 
         /// <summary>
@@ -147,6 +147,6 @@ namespace Oakbranch.Binance
         /// Converts the provided query parameters to a query string.
         /// </summary>
         /// <returns>The query string containing the constructed parameters.</returns>
-        public string ToQuery() => m_Container.ToString();
+        public string ToQuery() => _container.ToString();
     }
 }

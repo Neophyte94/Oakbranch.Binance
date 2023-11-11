@@ -7,14 +7,14 @@ namespace Oakbranch.Binance
     /// </summary>
     internal class ParseSchemaValidator
     {
-        private readonly int m_TotalCount;
+        private readonly int _totalCount;
         /// <summary>
         /// Gets the total number of properties tracked within this object schema.
         /// </summary>
-        public int TotalCount => m_TotalCount;
+        public int TotalCount => _totalCount;
 
-        private int m_Mask;
-        private int CompleteMask => (1 << m_TotalCount) - 1;
+        private int _mask;
+        private int CompleteMask => (1 << _totalCount) - 1;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ParseSchemaValidator"/> class
@@ -29,7 +29,7 @@ namespace Oakbranch.Binance
         {
             if (trackedPropCount < 0 || trackedPropCount > 30)
                 throw new ArgumentOutOfRangeException(nameof(trackedPropCount));
-            m_TotalCount = trackedPropCount;
+            _totalCount = trackedPropCount;
         }
 
         /// <summary>
@@ -41,9 +41,9 @@ namespace Oakbranch.Binance
         /// </exception>
         public void RegisterProperty(int propertyNumber)
         {
-            if (propertyNumber < 0 || propertyNumber >= m_TotalCount)
+            if (propertyNumber < 0 || propertyNumber >= _totalCount)
                 throw new ArgumentOutOfRangeException(nameof(propertyNumber));
-            m_Mask |= 1 << propertyNumber;
+            _mask |= 1 << propertyNumber;
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace Oakbranch.Binance
         public bool IsComplete()
         {
             // Check whether the mask has all bits set.
-            return m_Mask == CompleteMask;
+            return _mask == CompleteMask;
         }
 
         /// <summary>
@@ -62,9 +62,9 @@ namespace Oakbranch.Binance
         /// <returns>The number of the first missing property, or -1 if all properties have been registered.</returns>
         public int GetMissingPropertyNumber()
         {
-            for (int i = 0; i != m_TotalCount; ++i)
+            for (int i = 0; i != _totalCount; ++i)
             {
-                if (((1 << i) & m_Mask) == 0)
+                if (((1 << i) & _mask) == 0)
                 {
                     return i;
                 }
@@ -78,7 +78,7 @@ namespace Oakbranch.Binance
         /// </summary>
         public void Reset()
         {
-            m_Mask = 0;
+            _mask = 0;
         }
     }
 }

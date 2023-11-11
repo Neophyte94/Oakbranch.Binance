@@ -4,6 +4,8 @@ namespace Oakbranch.Binance.Exceptions
 {
     public class ClientNotInitializedException : Exception
     {
+        #region Instance constructors
+
         public ClientNotInitializedException(ApiClientBase instance) : base(GenerateMessage(instance))
         { }
 
@@ -13,5 +15,7 @@ namespace Oakbranch.Binance.Exceptions
             string methodName = nameof(ApiClientBase) + "." + nameof(ApiClientBase.InitializeAsync);
             return $"The {className} instance has not been initialized. Ensure to call {methodName}() before using it.";
         }
+
+        #endregion
     }
 }

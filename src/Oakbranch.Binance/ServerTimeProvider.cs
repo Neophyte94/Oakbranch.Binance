@@ -11,9 +11,9 @@ namespace Oakbranch.Binance
     {
         #region Instance members
 
-        private readonly Stopwatch m_TimeCounter;
-        private readonly long m_ServerZoneOffset;
-        private long m_BaseTime;
+        private readonly Stopwatch _timeCounter;
+        private readonly long _serverZoneOffset;
+        private long _baseTime;
 
         /// <summary>
         /// Gets the estimated server time.
@@ -22,7 +22,7 @@ namespace Oakbranch.Binance
         {
             get
             {
-                return new DateTime(m_BaseTime + m_ServerZoneOffset + m_TimeCounter.Elapsed.Ticks);
+                return new DateTime(_baseTime + _serverZoneOffset + _timeCounter.Elapsed.Ticks);
             }
         }
 
@@ -33,7 +33,7 @@ namespace Oakbranch.Binance
         {
             get
             {
-                return new DateTime(m_BaseTime + m_TimeCounter.Elapsed.Ticks);
+                return new DateTime(_baseTime + _timeCounter.Elapsed.Ticks);
             }
         }
 
@@ -52,8 +52,8 @@ namespace Oakbranch.Binance
             if (serverTimeZone == null)
                 throw new ArgumentNullException(nameof(serverTimeZone));
 
-            m_TimeCounter = new Stopwatch();
-            m_ServerZoneOffset = serverTimeZone.BaseUtcOffset.Ticks;
+            _timeCounter = new Stopwatch();
+            _serverZoneOffset = serverTimeZone.BaseUtcOffset.Ticks;
             SetServerNow(serverNow);
         }
 
@@ -67,8 +67,8 @@ namespace Oakbranch.Binance
         /// <param name="serverNow">The last known server time.</param>
         public void SetServerNow(DateTime serverNow)
         {
-            m_BaseTime = serverNow.Ticks - m_ServerZoneOffset;
-            m_TimeCounter.Restart();
+            _baseTime = serverNow.Ticks - _serverZoneOffset;
+            _timeCounter.Restart();
         }
 
         #endregion
