@@ -6,13 +6,7 @@ namespace Oakbranch.Binance.Benchmark
 {
     public sealed class ConsoleLogger : ILogger
     {
-        #region Instance members
-
         public LogLevel Level { get; set; } = LogLevel.Info;
-
-        #endregion
-
-        #region Static methods
 
         private static int GetLevelPriority(LogLevel level)
         {
@@ -25,10 +19,6 @@ namespace Oakbranch.Binance.Benchmark
                 _ => int.MaxValue,
             };
         }
-
-        #endregion
-
-        #region Instance methods
 
         public bool IsLevelEnabled(LogLevel level)
         {
@@ -43,7 +33,5 @@ namespace Oakbranch.Binance.Benchmark
             Console.WriteLine(msg);
             Debug.WriteLine(msg);
         }
-
-        #endregion
     }
 }

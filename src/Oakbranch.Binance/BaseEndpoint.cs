@@ -20,11 +20,11 @@ namespace Oakbranch.Binance
 
         public BaseEndpoint(NetworkType type, string url, string? description)
         {
-            if (String.IsNullOrWhiteSpace(url))
+            if (string.IsNullOrWhiteSpace(url))
                 throw new ArgumentNullException(nameof(url));
             if (!url.StartsWith("https://"))
                 throw new ArgumentException($"The specified URL \"{url}\" is invalid.");
-            if (String.IsNullOrWhiteSpace(description))
+            if (string.IsNullOrWhiteSpace(description))
                 description = String.Empty;
 
             Type = type;

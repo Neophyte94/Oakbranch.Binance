@@ -4,13 +4,7 @@ namespace Oakbranch.Binance.Exceptions
 {
     public class QueryInputException : QueryException
     {
-        #region Instance members
-
         public InputErrorCode ErrorCode { get; }
-
-        #endregion
-
-        #region Instance constructors
 
         public QueryInputException(InputErrorCode errorCode) : base(FailureReason.InvalidInput)
         {
@@ -21,7 +15,5 @@ namespace Oakbranch.Binance.Exceptions
         {
             ErrorCode = errorCode;
         }
-
-        #endregion
     }
 }

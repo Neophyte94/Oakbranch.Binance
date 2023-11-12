@@ -28,9 +28,9 @@ namespace Oakbranch.Binance
             QueryBuilder? queryString = null,
             bool isSecured = false)
         {
-            if (String.IsNullOrWhiteSpace(baseEndpoint))
+            if (string.IsNullOrWhiteSpace(baseEndpoint))
                 throw new ArgumentNullException(nameof(baseEndpoint));
-            if (String.IsNullOrWhiteSpace(relativeEndpoint))
+            if (string.IsNullOrWhiteSpace(relativeEndpoint))
                 throw new ArgumentNullException(nameof(relativeEndpoint));
 
             Method = method;

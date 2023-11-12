@@ -54,8 +54,8 @@ namespace Oakbranch.Binance.UnitTests
 
         #region Instance members
 
-        private readonly SpotMarketApiClient m_Client;
-        private readonly List<IDisposable> m_CleanupTargets;
+        private readonly SpotMarketApiClient _client;
+        private readonly List<IDisposable> _cleanupTargets;
 
         protected override string LogContext => "Spot Market Api Tester";
 
@@ -74,16 +74,16 @@ namespace Oakbranch.Binance.UnitTests
             IApiConnector connector = apiConnFactory.Create();
             IRateLimitsRegistry limitsRegistry = new RateLimitsRegistry();
 
-            m_Client = new SpotMarketApiClient(connector, limitsRegistry, Logger);
+            _client = new SpotMarketApiClient(connector, limitsRegistry, Logger);
 
-            m_CleanupTargets = new List<IDisposable>();
+            _cleanupTargets = new List<IDisposable>();
             if (connector is IDisposable dsp2)
             {
-                m_CleanupTargets.Add(dsp2);
+                _cleanupTargets.Add(dsp2);
             }
             if (limitsRegistry is IDisposable dsp3)
             {
-                m_CleanupTargets.Add(dsp3);
+                _cleanupTargets.Add(dsp3);
             }
         }
 
@@ -101,7 +101,7 @@ namespace Oakbranch.Binance.UnitTests
                 CancellationTokenSource cts = new CancellationTokenSource(GlobalSetUpTimeout);
                 try
                 {
-                    await m_Client.InitializeAsync(cts.Token).ConfigureAwait(false);
+                    await _client.InitializeAsync(cts.Token).ConfigureAwait(false);
                     break;
                 }
                 catch (Exception exc)
@@ -119,8 +119,8 @@ namespace Oakbranch.Binance.UnitTests
         [OneTimeTearDown]
         public void TearDownGlobal()
         {
-            m_Client.Dispose();
-            foreach (IDisposable dsp in m_CleanupTargets)
+            _client.Dispose();
+            foreach (IDisposable dsp in _cleanupTargets)
             {
                 dsp.Dispose();
             }
@@ -134,7 +134,7 @@ namespace Oakbranch.Binance.UnitTests
             DateTime result;
 
             // Act.
-            using IDeferredQuery<DateTime> query = m_Client.PrepareCheckServerTime();
+            using IDeferredQuery<DateTime> query = _client.PrepareCheckServerTime();
             result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
 
             // Assert.
@@ -149,7 +149,7 @@ namespace Oakbranch.Binance.UnitTests
             SpotExchangeInfo result;
 
             // Act.
-            using IDeferredQuery<SpotExchangeInfo> query = m_Client.PrepareGetExchangeInfo();
+            using IDeferredQuery<SpotExchangeInfo> query = _client.PrepareGetExchangeInfo();
             result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
 
             // Assert.
@@ -176,7 +176,7 @@ namespace Oakbranch.Binance.UnitTests
             SpotExchangeInfo result;
 
             // Act.
-            using IDeferredQuery<SpotExchangeInfo> query = m_Client.PrepareGetExchangeInfo(symbols);
+            using IDeferredQuery<SpotExchangeInfo> query = _client.PrepareGetExchangeInfo(symbols);
             result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
 
             // Assert.
@@ -202,7 +202,7 @@ namespace Oakbranch.Binance.UnitTests
             List<Trade> result;
 
             // Act;
-            using IDeferredQuery<List<Trade>> query = m_Client.PrepareGetOldTrades(DefaultSymbol);
+            using IDeferredQuery<List<Trade>> query = _client.PrepareGetOldTrades(DefaultSymbol);
             result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
 
             // Assert.
@@ -225,7 +225,7 @@ namespace Oakbranch.Binance.UnitTests
             List<Trade> result;
 
             // Act;
-            using IDeferredQuery<List<Trade>> query = m_Client.PrepareGetOldTrades(DefaultSymbol, limit: limit);
+            using IDeferredQuery<List<Trade>> query = _client.PrepareGetOldTrades(DefaultSymbol, limit: limit);
             result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
 
             // Assert.
@@ -244,7 +244,7 @@ namespace Oakbranch.Binance.UnitTests
         public void GetOldTrades_ThrowsArgumentNullException_WhenEmptySymbolSpecified(string symbol)
         {
             // Arrange.
-            TestDelegate td = new TestDelegate(() => m_Client.PrepareGetOldTrades(symbol));
+            TestDelegate td = new TestDelegate(() => _client.PrepareGetOldTrades(symbol));
 
             // Act & Assert.
             Assert.That(td, Throws.ArgumentNullException);
@@ -258,7 +258,7 @@ namespace Oakbranch.Binance.UnitTests
             List<AggregateTrade> result;
 
             // Act.
-            using IDeferredQuery<List<AggregateTrade>> query = m_Client.PrepareGetAggregateTrades(
+            using IDeferredQuery<List<AggregateTrade>> query = _client.PrepareGetAggregateTrades(
                 symbol: DefaultSymbol,
                 startTime: from,
                 endTime: to,
@@ -287,7 +287,7 @@ namespace Oakbranch.Binance.UnitTests
         {
             // Arrange.
             TestDelegate td = new TestDelegate(() =>
-                m_Client.PrepareGetAggregateTrades(
+                _client.PrepareGetAggregateTrades(
                     symbol: DefaultSymbol,
                     startTime: from,
                     endTime: to));
@@ -303,7 +303,7 @@ namespace Oakbranch.Binance.UnitTests
         {
             // Arrange.
             TestDelegate td = new TestDelegate(() =>
-                m_Client.PrepareGetAggregateTrades(
+                _client.PrepareGetAggregateTrades(
                     symbol: DefaultSymbol,
                     limit: limit));
 

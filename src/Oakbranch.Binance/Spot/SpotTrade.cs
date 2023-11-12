@@ -65,7 +65,7 @@ namespace Oakbranch.Binance.Spot
         /// Returns a string representation of the <see cref="SpotTrade"/> struct.
         /// </summary>
         /// <returns>A string representation of the <see cref="SpotTrade"/> struct.</returns>
-        public override string ToString()
+        public override readonly string ToString()
         {
             return $"Spot acc trade: Symbol = {Symbol}, Id = {Id}, Price = {Price}, Quantity = {Quantity}";
         }

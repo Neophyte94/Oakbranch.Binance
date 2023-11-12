@@ -29,9 +29,9 @@ namespace Oakbranch.Binance
         /// <exception cref="ArgumentNullException"/>
         public void AddParameter(string name, string value)
         {
-            if (String.IsNullOrWhiteSpace(name))
+            if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentNullException(nameof(name));
-            if (String.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(value))
                 throw new ArgumentNullException(nameof(value));
 
             if (_container.Length != 0)
@@ -49,7 +49,7 @@ namespace Oakbranch.Binance
         /// <exception cref="ArgumentNullException"/>
         public void AddParameter(string name, string[] values)
         {
-            if (String.IsNullOrWhiteSpace(name))
+            if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentNullException(nameof(name));
             if (values == null)
                 throw new ArgumentNullException(nameof(values));
@@ -77,7 +77,7 @@ namespace Oakbranch.Binance
         /// <exception cref="ArgumentNullException"/>
         public void AddParameter(string name, IEnumerable<string> values)
         {
-            if (String.IsNullOrWhiteSpace(name))
+            if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentNullException(nameof(name));
             if (values == null)
                 throw new ArgumentNullException(nameof(values));

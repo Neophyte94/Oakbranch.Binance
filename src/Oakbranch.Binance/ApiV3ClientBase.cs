@@ -88,6 +88,43 @@ namespace Oakbranch.Binance
 
         #endregion
 
+        #region Static methods
+
+        private static List<RateLimiter> ParseRateLimiters(byte[] data)
+        {
+            Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
+            ParseUtility.ReadObjectStart(ref reader);
+
+            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+            {
+                string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
+
+                if (!reader.Read())
+                {
+                    throw ParseUtility.GenerateNoPropertyValueException(propName);
+                }
+
+                switch (propName)
+                {
+                    case "rateLimits":
+                        ParseUtility.EnsureArrayStartToken(ref reader);
+                        List<RateLimiter> limiters = new List<RateLimiter>(6);
+                        while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+                        {
+                            limiters.Add(ParseRateLimiter(ref reader));
+                        }
+                        return limiters;
+                    default:
+                        reader.Skip();
+                        break;
+                }
+            }
+
+            throw new JsonException("The response data contains no rate limits info.");
+        }
+
+        #endregion
+
         #region Instance methods
 
         // Initialization.
@@ -109,40 +146,6 @@ namespace Oakbranch.Binance
             RegisterOrUpdateRateLimits(limits);
         }
 
-        private List<RateLimiter> ParseRateLimiters(byte[] data)
-        {
-            Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
-            ParseUtility.ReadObjectStart(ref reader);
-
-            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
-            {
-                string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
-
-                if (!reader.Read())
-                {
-                    throw ParseUtility.GenerateNoPropertyValueException(propName);
-                }
-                    
-                switch (propName)
-                {
-                    case "rateLimits":
-                        ParseUtility.EnsureArrayStartToken(ref reader);
-                        List<RateLimiter> limiters = new List<RateLimiter>(6);
-                        while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
-                        {
-                            limiters.Add(ParseRateLimiter(ref reader));
-                        }
-                        return limiters;
-                    default:
-                        reader.Skip();
-                        break;
-                }
-            }
-
-            throw new JsonException("The response data contains no rate limits info.");
-        }
-
-        // Rate limits.
         protected override string? GetRateLimitHeaderName(RateLimiter limit)
         {
             return limit.Type switch

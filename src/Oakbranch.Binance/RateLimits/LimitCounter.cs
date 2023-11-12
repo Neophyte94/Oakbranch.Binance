@@ -92,7 +92,7 @@ public class LimitCounter
                 $"The specified value of the reset interval ({resetInterval}) is invalid. " +
                 "The limit reset interval must be at least 1 second long.");
         }
-        if (String.IsNullOrWhiteSpace(name))
+        if (string.IsNullOrWhiteSpace(name))
         {
             name = $"{CommonUtility.GetIntervalDescription(resetInterval)} interval on the dimension {dimensionId}";
         }

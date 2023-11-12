@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -92,14 +93,17 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
 
     #region Instance constructors
 
-    public FuturesCMMarketApiClient(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger? logger = null)
+    public FuturesCMMarketApiClient(
+        IApiConnector connector,
+        IRateLimitsRegistry limitsRegistry,
+        ILogger? logger = null)
         : base(connector, limitsRegistry, logger)
     {
         _dummyHeadersLimitsMap = new ReadOnlyDictionary<string, int>(new Dictionary<string, int>(0));
 
         if (!Connector.IsLimitMetricsMapRegistered(MarketStatsDiscriminativeEndpoint))
         {
-            Connector.SetLimitMetricsMap(MarketStatsDiscriminativeEndpoint, new string[0]);
+            Connector.SetLimitMetricsMap(MarketStatsDiscriminativeEndpoint, Array.Empty<string>());
         }
     }
 
@@ -515,7 +519,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     public IDeferredQuery<List<Trade>> PrepareGetOldTrades(string symbol, int? limit = null, long? fromId = null)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
         if (limit < 1 || limit > MaxTradesQueryLimit)
             throw new ArgumentOutOfRangeException(nameof(limit));
@@ -704,7 +708,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
         string symbol, long? fromId = null, DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
             throw new ArgumentException($"The specified period [{startTime} - {endTime}] is invalid.");
@@ -847,7 +851,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
         int? limit = null)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
             throw new ArgumentException($"The specified period [{startTime} - {endTime}] is invalid.");
@@ -919,7 +923,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
         int? limit = null)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(pair))
+        if (string.IsNullOrWhiteSpace(pair))
             throw new ArgumentNullException(nameof(pair));
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
             throw new ArgumentException($"The specified period [{startTime} - {endTime}] is invalid.");
@@ -996,7 +1000,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
         int? limit = null)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(pair))
+        if (string.IsNullOrWhiteSpace(pair))
             throw new ArgumentNullException(nameof(pair));
         if (startTime != null && endTime != null)
         {
@@ -1064,7 +1068,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
         DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
             throw new ArgumentException($"The specified period [{startTime} - {endTime}] is invalid.");
@@ -1127,7 +1131,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
         DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
             throw new ArgumentException($"The specified period [{startTime} - {endTime}] is invalid.");
@@ -1208,7 +1212,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     public IDeferredQuery<List<PremiumInfo>> PrepareGetPremiumInfoOnPair(string pair)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(pair))
+        if (string.IsNullOrWhiteSpace(pair))
             throw new ArgumentNullException(nameof(pair));
 
         QueryWeight[] weights = new QueryWeight[]
@@ -1260,7 +1264,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     public IDeferredQuery<PremiumInfo> PrepareGetPremiumInfoOnSymbol(string symbol)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
 
         QueryWeight[] weights = new QueryWeight[]
@@ -1353,7 +1357,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
                     validator.RegisterProperty(4);
                     break;
                 case "lastFundingRate":
-                    if (!String.IsNullOrEmpty(reader.GetString()))
+                    if (!string.IsNullOrEmpty(reader.GetString()))
                         ParseUtility.ParseDecimal(propName, reader.GetString(), out lastFundRate);
                     validator.RegisterProperty(5);
                     break;
@@ -1363,7 +1367,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
                     validator.RegisterProperty(6);
                     break;
                 case "interestRate":
-                    if (!String.IsNullOrEmpty(reader.GetString()))
+                    if (!string.IsNullOrEmpty(reader.GetString()))
                         ParseUtility.ParseDecimal(propName, reader.GetString(), out interestRate);
                     validator.RegisterProperty(7);
                     break;
@@ -1427,7 +1431,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
         int? limit = null)
     {
         ThrowIfDisposed();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
             throw new ArgumentException($"The specified time period [{startTime} ; {endTime}] is invalid.");
@@ -1549,7 +1553,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     public IDeferredQuery<OpenInterest> PrepareGetOpenInterest(string symbol)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
 
         QueryWeight[] weights = new QueryWeight[]
@@ -1615,15 +1619,15 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
         {
             const string objName = "open interest record";
             int missingPropNum = validator.GetMissingPropertyNumber();
-            switch (missingPropNum)
+            throw missingPropNum switch
             {
-                case 0: throw ParseUtility.GenerateMissingPropertyException(objName, "symbol");
-                case 1: throw ParseUtility.GenerateMissingPropertyException(objName, "trading pair");
-                case 2: throw ParseUtility.GenerateMissingPropertyException(objName, "contract type");
-                case 3: throw ParseUtility.GenerateMissingPropertyException(objName, "total quantity");
-                case 4: throw ParseUtility.GenerateMissingPropertyException(objName, "timestamp");
-                default: throw ParseUtility.GenerateMissingPropertyException(objName, $"unknown {missingPropNum}");
-            }
+                0 => ParseUtility.GenerateMissingPropertyException(objName, "symbol"),
+                1 => ParseUtility.GenerateMissingPropertyException(objName, "trading pair"),
+                2 => ParseUtility.GenerateMissingPropertyException(objName, "contract type"),
+                3 => ParseUtility.GenerateMissingPropertyException(objName, "total quantity"),
+                4 => ParseUtility.GenerateMissingPropertyException(objName, "timestamp"),
+                _ => ParseUtility.GenerateMissingPropertyException(objName, $"unknown {missingPropNum}"),
+            };
         }
 
         // Return the result.
@@ -1658,7 +1662,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
         int? limit = null)
     {
         ThrowIfDisposed();
-        if (String.IsNullOrWhiteSpace(pair))
+        if (string.IsNullOrWhiteSpace(pair))
             throw new ArgumentNullException(nameof(pair));
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
             throw new ArgumentException($"The specified time period [{startTime} ; {endTime}] is invalid.");
@@ -1791,7 +1795,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
         DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
     {
         ThrowIfDisposed();
-        if (String.IsNullOrWhiteSpace(pair))
+        if (string.IsNullOrWhiteSpace(pair))
             throw new ArgumentNullException(nameof(pair));
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
             throw new ArgumentException($"The specified time period [{startTime} ; {endTime}] is invalid.");
@@ -1849,7 +1853,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
         DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
     {
         ThrowIfDisposed();
-        if (String.IsNullOrWhiteSpace(pair))
+        if (string.IsNullOrWhiteSpace(pair))
             throw new ArgumentNullException(nameof(pair));
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
             throw new ArgumentException($"The specified time period [{startTime} ; {endTime}] is invalid.");
@@ -1907,7 +1911,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
         DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
     {
         ThrowIfDisposed();
-        if (String.IsNullOrWhiteSpace(pair))
+        if (string.IsNullOrWhiteSpace(pair))
             throw new ArgumentNullException(nameof(pair));
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
             throw new ArgumentException($"The specified time period [{startTime} ; {endTime}] is invalid.");
@@ -1971,7 +1975,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
         DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
     {
         ThrowIfDisposed();
-        if (String.IsNullOrWhiteSpace(pair))
+        if (string.IsNullOrWhiteSpace(pair))
             throw new ArgumentNullException(nameof(pair));
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
             throw new ArgumentException($"The specified time period [{startTime} ; {endTime}] is invalid.");
@@ -2121,6 +2125,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     /// <summary>
     /// Parses a list of complete candlesticks from the given JSON data.
     /// </summary>
+    [SuppressMessage("Style", "IDE0018:Inline variable declaration", Justification = "Explicit declaration is preferred.")]
     private List<Candlestick> ParseCompleteCandlestickList(byte[] data, object? parseArgs = null)
     {
         Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
@@ -2194,6 +2199,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     /// <summary>
     /// Parses a list of partial candlesticks from the given JSON data.
     /// </summary>
+    [SuppressMessage("Style", "IDE0018:Inline variable declaration", Justification = "Explicit declaration is preferred.")]
     private List<Candlestick> ParsePartialCandlestickList(byte[] data, object? parseArgs = null)
     {
         Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);

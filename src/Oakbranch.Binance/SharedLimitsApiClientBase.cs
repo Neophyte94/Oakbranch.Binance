@@ -53,12 +53,12 @@ namespace Oakbranch.Binance
             ILogger? logger = null) :
             base(connector, limitsRegistry, logger)
         {
-            if (String.IsNullOrWhiteSpace(discriminativeEndpoint))
+            if (string.IsNullOrWhiteSpace(discriminativeEndpoint))
                 throw new ArgumentNullException(nameof(discriminativeEndpoint));
 
             DiscrimativeEndpoint = discriminativeEndpoint;
             LimitNameEndpointSpecifier = discriminativeEndpoint.Split('/')
-                .First((n) => !String.IsNullOrWhiteSpace(n))
+                .First((n) => !string.IsNullOrWhiteSpace(n))
                 .ToUpperInvariant();
 
             int[] limitTypes = (int[])Enum.GetValues(typeof(RateLimitType));

@@ -98,7 +98,7 @@ namespace Oakbranch.Binance
 
             for (int i = 0; i != items.Length; ++i)
             {
-                if (String.IsNullOrWhiteSpace(items[i]))
+                if (string.IsNullOrWhiteSpace(items[i]))
                 {
                     return i;
                 }
@@ -115,19 +115,14 @@ namespace Oakbranch.Binance
         /// <returns>A <see cref="TimeSpan"/> instance representing the specified interval.</returns>
         public static TimeSpan CreateTimespan(Interval interval, int num)
         {
-            switch (interval)
+            return interval switch
             {
-                case Interval.Day:
-                    return new TimeSpan(num * TimeSpan.TicksPerDay);
-                case Interval.Hour:
-                    return new TimeSpan(num * TimeSpan.TicksPerHour);
-                case Interval.Minute:
-                    return new TimeSpan(num * TimeSpan.TicksPerMinute);
-                case Interval.Second:
-                    return new TimeSpan(num * TimeSpan.TicksPerSecond);
-                default:
-                    throw new NotImplementedException($"The interval \"{interval}\" is unknown.");
-            }
+                Interval.Day => new TimeSpan(num * TimeSpan.TicksPerDay),
+                Interval.Hour => new TimeSpan(num * TimeSpan.TicksPerHour),
+                Interval.Minute => new TimeSpan(num * TimeSpan.TicksPerMinute),
+                Interval.Second => new TimeSpan(num * TimeSpan.TicksPerSecond),
+                _ => throw new NotImplementedException($"The interval \"{interval}\" is unknown."),
+            };
         }
 
         /// <summary>
@@ -167,7 +162,10 @@ namespace Oakbranch.Binance
         /// <returns>An enumerable sequence of strings representing each segment of the path hierarchy, in the reverse order.</returns>
         public static IEnumerable<string> TraversePathHierarchy(string endpoint)
         {
-            if (String.IsNullOrWhiteSpace(endpoint)) yield break;
+            if (string.IsNullOrWhiteSpace(endpoint))
+            {
+                yield break;
+            }
 
             yield return endpoint;
 
@@ -176,7 +174,7 @@ namespace Oakbranch.Binance
                 int slashIdx = endpoint.LastIndexOf('/', endpoint.Length - 1, endpoint.Length);
                 if (slashIdx < 1) yield break;
 
-                endpoint = endpoint.Substring(0, slashIdx);
+                endpoint = endpoint[..slashIdx];
                 yield return endpoint;
             }
         }

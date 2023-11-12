@@ -9,288 +9,193 @@ namespace Oakbranch.Binance.Futures
 
         public static string Format(ContractType value)
         {
-            switch (value)
+            return value switch
             {
-                case ContractType.Perpetual:
-                    return "PERPETUAL";
-                case ContractType.CurrentMonth:
-                    return "CURRENT_MONTH";
-                case ContractType.NextMonth:
-                    return "NEXT_MONTH";
-                case ContractType.CurrentQuarter:
-                    return "CURRENT_QUARTER";
-                case ContractType.NextQuarter:
-                    return "NEXT_QUARTER";
-                case ContractType.PerpetualDelivering:
-                    return "PERPETUAL_DELIVERING";
-                default:
-                    throw new NotImplementedException($"The contract type \"{value}\" is not implemented.");
-            }
+                ContractType.Perpetual => "PERPETUAL",
+                ContractType.CurrentMonth => "CURRENT_MONTH",
+                ContractType.NextMonth => "NEXT_MONTH",
+                ContractType.CurrentQuarter => "CURRENT_QUARTER",
+                ContractType.NextQuarter => "NEXT_QUARTER",
+                ContractType.PerpetualDelivering => "PERPETUAL_DELIVERING",
+                _ => throw new NotImplementedException($"The contract type \"{value}\" is not implemented."),
+            };
         }
 
         public static ContractType ParseContractType(string s)
         {
-            if (String.IsNullOrWhiteSpace(s))
+            if (string.IsNullOrWhiteSpace(s))
                 throw new JsonException($"The contract type value is null.");
 
-            switch (s)
+            return s switch
             {
-                case "PERPETUAL":
-                    return ContractType.Perpetual;
-                case "CURRENT_MONTH":
-                    return ContractType.CurrentMonth;
-                case "NEXT_MONTH":
-                    return ContractType.NextMonth;
-                case "CURRENT_QUARTER":
-                case "CURRENT_QUARTER_DELIVERING":
-                    return ContractType.CurrentQuarter;
-                case "NEXT_QUARTER":
-                case "NEXT_QUARTER_DELIVERING":
-                    return ContractType.NextQuarter;
-                case "PERPETUAL_DELIVERING":
-                case "PERPETUAL DELIVERING":
-                    return ContractType.PerpetualDelivering;
-                default:
-                    throw new JsonException($"An unknown contract type \"{s}\" was encountered.");
-            }
+                "PERPETUAL" => ContractType.Perpetual,
+                "CURRENT_MONTH" => ContractType.CurrentMonth,
+                "NEXT_MONTH" => ContractType.NextMonth,
+                "CURRENT_QUARTER" or "CURRENT_QUARTER_DELIVERING" => ContractType.CurrentQuarter,
+                "NEXT_QUARTER" or "NEXT_QUARTER_DELIVERING" => ContractType.NextQuarter,
+                "PERPETUAL_DELIVERING" or "PERPETUAL DELIVERING" => ContractType.PerpetualDelivering,
+                _ => throw new JsonException($"An unknown contract type \"{s}\" was encountered."),
+            };
         }
 
         public static string Format(ContractStatus value)
         {
-            switch (value)
+            return value switch
             {
-                case ContractStatus.PendingTrading:
-                    return "PENDING_TRADING";
-                case ContractStatus.Trading:
-                    return "TRADING";
-                case ContractStatus.PreDelivering:
-                    return "PRE_DELIVERING";
-                case ContractStatus.Delivering:
-                    return "DELIVERING";
-                case ContractStatus.Delivered:
-                    return "DELIVERED";
-                case ContractStatus.PreSettle:
-                    return "PRE_SETTLE";
-                case ContractStatus.Settling:
-                    return "SETTLING";
-                case ContractStatus.Close:
-                    return "CLOSE";
-                default:
-                    throw new NotImplementedException($"The contract status \"{value}\" is not implemented.");
-            }
+                ContractStatus.PendingTrading => "PENDING_TRADING",
+                ContractStatus.Trading => "TRADING",
+                ContractStatus.PreDelivering => "PRE_DELIVERING",
+                ContractStatus.Delivering => "DELIVERING",
+                ContractStatus.Delivered => "DELIVERED",
+                ContractStatus.PreSettle => "PRE_SETTLE",
+                ContractStatus.Settling => "SETTLING",
+                ContractStatus.Close => "CLOSE",
+                _ => throw new NotImplementedException($"The contract status \"{value}\" is not implemented."),
+            };
         }
 
         public static ContractStatus ParseContractStatus(string s)
         {
-            if (String.IsNullOrWhiteSpace(s))
+            if (string.IsNullOrWhiteSpace(s))
                 throw new JsonException($"The contract status value is null.");
 
-            switch (s)
+            return s switch
             {
-                case "PENDING_TRADING":
-                    return ContractStatus.PendingTrading;
-                case "TRADING":
-                    return ContractStatus.Trading;
-                case "PRE_DELIVERING":
-                    return ContractStatus.PreDelivering;
-                case "DELIVERING":
-                    return ContractStatus.Delivering;
-                case "DELIVERED":
-                    return ContractStatus.Delivered;
-                case "PRE_SETTLE":
-                    return ContractStatus.PreSettle;
-                case "SETTLING":
-                    return ContractStatus.Settling;
-                case "CLOSE":
-                    return ContractStatus.Close;
-                default:
-                    throw new JsonException($"An unknown contract status \"{s}\" was encountered.");
-            }
+                "PENDING_TRADING" => ContractStatus.PendingTrading,
+                "TRADING" => ContractStatus.Trading,
+                "PRE_DELIVERING" => ContractStatus.PreDelivering,
+                "DELIVERING" => ContractStatus.Delivering,
+                "DELIVERED" => ContractStatus.Delivered,
+                "PRE_SETTLE" => ContractStatus.PreSettle,
+                "SETTLING" => ContractStatus.Settling,
+                "CLOSE" => ContractStatus.Close,
+                _ => throw new JsonException($"An unknown contract status \"{s}\" was encountered."),
+            };
         }
 
         public static string Format(OrderType value)
         {
-            switch (value)
+            return value switch
             {
-                case OrderType.Limit:
-                    return "LIMIT";
-                case OrderType.Market:
-                    return "MARKET";
-                case OrderType.StopLossLimit:
-                    return "STOP";
-                case OrderType.StopLossMarket:
-                    return "STOP_MARKET";
-                case OrderType.TakeProfitLimit:
-                    return "TAKE_PROFIT";
-                case OrderType.TakeProfitMarket:
-                    return "TAKE_PROFIT_MARKET";
-                case OrderType.TrailingStopMarket:
-                    return "TRAILING_STOP_MARKET";
-                default:
-                    throw new NotImplementedException($"The order type \"{value}\" is not implemented.");
-            }
+                OrderType.Limit => "LIMIT",
+                OrderType.Market => "MARKET",
+                OrderType.StopLossLimit => "STOP",
+                OrderType.StopLossMarket => "STOP_MARKET",
+                OrderType.TakeProfitLimit => "TAKE_PROFIT",
+                OrderType.TakeProfitMarket => "TAKE_PROFIT_MARKET",
+                OrderType.TrailingStopMarket => "TRAILING_STOP_MARKET",
+                _ => throw new NotImplementedException($"The order type \"{value}\" is not implemented."),
+            };
         }
 
         public static OrderType ParseOrderType(string s)
         {
-            if (String.IsNullOrWhiteSpace(s))
+            if (string.IsNullOrWhiteSpace(s))
                 throw new JsonException("The order type value is null.");
 
-            switch (s)
+            return s switch
             {
-                case "LIMIT":
-                    return OrderType.Limit;
-                case "MARKET":
-                    return OrderType.Market;
-                case "STOP":
-                    return OrderType.StopLossLimit;
-                case "STOP_MARKET":
-                    return OrderType.StopLossMarket;
-                case "TAKE_PROFIT":
-                    return OrderType.TakeProfitLimit;
-                case "TAKE_PROFIT_MARKET":
-                    return OrderType.TakeProfitMarket;
-                case "TRAILING_STOP_MARKET":
-                    return OrderType.TrailingStopMarket;
-                default:
-                    throw new JsonException($"An unknown order type \"{s}\" was encountered.");
-            }
+                "LIMIT" => OrderType.Limit,
+                "MARKET" => OrderType.Market,
+                "STOP" => OrderType.StopLossLimit,
+                "STOP_MARKET" => OrderType.StopLossMarket,
+                "TAKE_PROFIT" => OrderType.TakeProfitLimit,
+                "TAKE_PROFIT_MARKET" => OrderType.TakeProfitMarket,
+                "TRAILING_STOP_MARKET" => OrderType.TrailingStopMarket,
+                _ => throw new JsonException($"An unknown order type \"{s}\" was encountered."),
+            };
         }
 
         public static string Format(TimeInForce value)
         {
-            switch (value)
+            return value switch
             {
-                case TimeInForce.GoodTillCanceled:
-                    return "GTC";
-                case TimeInForce.FillOrKill:
-                    return "FOK";
-                case TimeInForce.ImmediateOrCancel:
-                    return "IOC";
-                case TimeInForce.GoodTillCrossing:
-                    return "GTX";
-                case TimeInForce.GoodTillDate:
-                    return "GTD";
-                default:
-                    throw new NotImplementedException($"The time-in-force type \"{value}\" is not implemented.");
-            }
+                TimeInForce.GoodTillCanceled => "GTC",
+                TimeInForce.FillOrKill => "FOK",
+                TimeInForce.ImmediateOrCancel => "IOC",
+                TimeInForce.GoodTillCrossing => "GTX",
+                TimeInForce.GoodTillDate => "GTD",
+                _ => throw new NotImplementedException($"The time-in-force type \"{value}\" is not implemented."),
+            };
         }
 
         public static TimeInForce ParseTimeInForce(string s)
         {
-            if (String.IsNullOrWhiteSpace(s))
+            if (string.IsNullOrWhiteSpace(s))
                 throw new JsonException($"The time in force rule value is null.");
 
-            switch (s)
+            return s switch
             {
-                case "GTC":
-                    return TimeInForce.GoodTillCanceled;
-                case "IOC":
-                    return TimeInForce.ImmediateOrCancel;
-                case "FOK":
-                    return TimeInForce.FillOrKill;
-                case "GTX":
-                    return TimeInForce.GoodTillCrossing;
-                case "GTD":
-                    return TimeInForce.GoodTillDate;
-                default:
-                    throw new JsonException($"An unknown time in force rule \"{s}\" was encountered.");
-            }
+                "GTC" => TimeInForce.GoodTillCanceled,
+                "IOC" => TimeInForce.ImmediateOrCancel,
+                "FOK" => TimeInForce.FillOrKill,
+                "GTX" => TimeInForce.GoodTillCrossing,
+                "GTD" => TimeInForce.GoodTillDate,
+                _ => throw new JsonException($"An unknown time in force rule \"{s}\" was encountered."),
+            };
         }
 
         public static string Format(OrderResponseType value)
         {
-            switch (value)
+            return value switch
             {
-                case OrderResponseType.Ack:
-                    return "ACK";
-                case OrderResponseType.Result:
-                    return "RESULT";
-                default:
-                    throw new NotImplementedException($"The order response type \"{value}\" is not implemented.");
-            }
+                OrderResponseType.Ack => "ACK",
+                OrderResponseType.Result => "RESULT",
+                _ => throw new NotImplementedException($"The order response type \"{value}\" is not implemented."),
+            };
         }
 
         public static OrderResponseType ParseOrderResponseType(string s)
         {
-            if (String.IsNullOrWhiteSpace(s))
+            if (string.IsNullOrWhiteSpace(s))
                 throw new JsonException($"The order response type value is null.");
 
-            switch (s)
+            return s switch
             {
-                case "ACK":
-                    return OrderResponseType.Ack;
-                case "RESULT":
-                    return OrderResponseType.Result;
-                default:
-                    throw new JsonException($"An unknown order response type \"{s}\" was encountered.");
-            }
+                "ACK" => OrderResponseType.Ack,
+                "RESULT" => OrderResponseType.Result,
+                _ => throw new JsonException($"An unknown order response type \"{s}\" was encountered."),
+            };
         }
 
         public static string Format(KlineInterval value)
         {
-            switch (value)
+            return value switch
             {
-                case KlineInterval.Minute1:
-                    return "1m";
-                case KlineInterval.Minute3:
-                    return "3m";
-                case KlineInterval.Minute5:
-                    return "5m";
-                case KlineInterval.Minute15:
-                    return "15m";
-                case KlineInterval.Minute30:
-                    return "30m";
-                case KlineInterval.Hour1:
-                    return "1h";
-                case KlineInterval.Hour2:
-                    return "2h";
-                case KlineInterval.Hour4:
-                    return "4h";
-                case KlineInterval.Hour6:
-                    return "6h";
-                case KlineInterval.Hour8:
-                    return "8h";
-                case KlineInterval.Hour12:
-                    return "12h";
-                case KlineInterval.Day1:
-                    return "1d";
-                case KlineInterval.Week1:
-                    return "1w";
-                case KlineInterval.Day3:
-                    return "3d";
-                case KlineInterval.Month1:
-                    return "1M";
-                default:
-                    throw new NotImplementedException($"The kline interval \"{value}\" is not implemented.");
-            }
+                KlineInterval.Minute1 => "1m",
+                KlineInterval.Minute3 => "3m",
+                KlineInterval.Minute5 => "5m",
+                KlineInterval.Minute15 => "15m",
+                KlineInterval.Minute30 => "30m",
+                KlineInterval.Hour1 => "1h",
+                KlineInterval.Hour2 => "2h",
+                KlineInterval.Hour4 => "4h",
+                KlineInterval.Hour6 => "6h",
+                KlineInterval.Hour8 => "8h",
+                KlineInterval.Hour12 => "12h",
+                KlineInterval.Day1 => "1d",
+                KlineInterval.Week1 => "1w",
+                KlineInterval.Day3 => "3d",
+                KlineInterval.Month1 => "1M",
+                _ => throw new NotImplementedException($"The kline interval \"{value}\" is not implemented."),
+            };
         }
 
         public static string Format(StatsInterval value)
         {
-            switch (value)
+            return value switch
             {
-                case StatsInterval.Minute5:
-                    return "5m";
-                case StatsInterval.Minute15:
-                    return "15m";
-                case StatsInterval.Minute30:
-                    return "30m";
-                case StatsInterval.Hour1:
-                    return "1h";
-                case StatsInterval.Hour2:
-                    return "2h";
-                case StatsInterval.Hour4:
-                    return "4h";
-                case StatsInterval.Hour6:
-                    return "6h";
-                case StatsInterval.Hour12:
-                    return "12h";
-                case StatsInterval.Day1:
-                    return "1d";
-                default:
-                    throw new NotImplementedException($"The stats interval \"{value}\" is not implemented.");
-            }
+                StatsInterval.Minute5 => "5m",
+                StatsInterval.Minute15 => "15m",
+                StatsInterval.Minute30 => "30m",
+                StatsInterval.Hour1 => "1h",
+                StatsInterval.Hour2 => "2h",
+                StatsInterval.Hour4 => "4h",
+                StatsInterval.Hour6 => "6h",
+                StatsInterval.Hour12 => "12h",
+                StatsInterval.Day1 => "1d",
+                _ => throw new NotImplementedException($"The stats interval \"{value}\" is not implemented."),
+            };
         }
 
         #endregion

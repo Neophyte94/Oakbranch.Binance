@@ -47,11 +47,9 @@ public class SpotAccountApiClient : ApiV3ClientBase
 
     #region Instance constructors
 
-    public SpotAccountApiClient(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger logger) :
-        base(connector, limitsRegistry, logger)
-    {
-
-    }
+    public SpotAccountApiClient(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger? logger)
+        : base(connector, limitsRegistry, logger)
+    { }
 
     #endregion
 
@@ -59,112 +57,81 @@ public class SpotAccountApiClient : ApiV3ClientBase
 
     private static string Format(TimeInForce value)
     {
-        switch (value)
+        return value switch
         {
-            case TimeInForce.GoodTillCanceled:
-                return "GTC";
-            case TimeInForce.FillOrKill:
-                return "FOK";
-            case TimeInForce.ImmediateOrCancel:
-                return "IOC";
-            default:
-                throw new NotImplementedException($"The time-in-force type \"{value}\" is not implemented.");
-        }
+            TimeInForce.GoodTillCanceled => "GTC",
+            TimeInForce.FillOrKill => "FOK",
+            TimeInForce.ImmediateOrCancel => "IOC",
+            _ => throw new NotImplementedException($"The time-in-force type \"{value}\" is not implemented."),
+        };
     }
 
     private static TimeInForce ParseTimeInForce(string s)
     {
-        if (String.IsNullOrWhiteSpace(s))
+        if (string.IsNullOrWhiteSpace(s))
             throw new JsonException($"The time in force rule value is null.");
 
-        switch (s)
+        return s switch
         {
-            case "GTC":
-                return TimeInForce.GoodTillCanceled;
-            case "IOC":
-                return TimeInForce.ImmediateOrCancel;
-            case "FOK":
-                return TimeInForce.FillOrKill;
-            default:
-                throw new JsonException($"An unknown time in force rule \"{s}\" was encountered.");
-        }
+            "GTC" => TimeInForce.GoodTillCanceled,
+            "IOC" => TimeInForce.ImmediateOrCancel,
+            "FOK" => TimeInForce.FillOrKill,
+            _ => throw new JsonException($"An unknown time in force rule \"{s}\" was encountered."),
+        };
     }
 
     private static string Format(OrderType value)
     {
-        switch (value)
+        return value switch
         {
-            case OrderType.Limit:
-                return "LIMIT";
-            case OrderType.LimitMaker:
-                return "LIMIT_MAKER";
-            case OrderType.Market:
-                return "MARKET";
-            case OrderType.StopLossMarket:
-                return "STOP_LOSS";
-            case OrderType.StopLossLimit:
-                return "STOP_LOSS_LIMIT";
-            case OrderType.TakeProfitMarket:
-                return "TAKE_PROFIT";
-            case OrderType.TakeProfitLimit:
-                return "TAKE_PROFIT_LIMIT";
-            default:
-                throw new NotImplementedException($"The order type \"{value}\" is not implemented.");
-        }
+            OrderType.Limit => "LIMIT",
+            OrderType.LimitMaker => "LIMIT_MAKER",
+            OrderType.Market => "MARKET",
+            OrderType.StopLossMarket => "STOP_LOSS",
+            OrderType.StopLossLimit => "STOP_LOSS_LIMIT",
+            OrderType.TakeProfitMarket => "TAKE_PROFIT",
+            OrderType.TakeProfitLimit => "TAKE_PROFIT_LIMIT",
+            _ => throw new NotImplementedException($"The order type \"{value}\" is not implemented."),
+        };
     }
 
     private static OrderType ParseOrderType(string s)
     {
-        if (String.IsNullOrWhiteSpace(s))
+        if (string.IsNullOrWhiteSpace(s))
             throw new JsonException($"The order type value is null.");
 
-        switch (s)
+        return s switch
         {
-            case "LIMIT":
-                return OrderType.Limit;
-            case "LIMIT_MAKER":
-                return OrderType.LimitMaker;
-            case "MARKET":
-                return OrderType.Market;
-            case "STOP_LOSS":
-                return OrderType.StopLossMarket;
-            case "STOP_LOSS_LIMIT":
-                return OrderType.StopLossLimit;
-            case "TAKE_PROFIT":
-                return OrderType.TakeProfitMarket;
-            case "TAKE_PROFIT_LIMIT":
-                return OrderType.TakeProfitLimit;
-            default:
-                throw new JsonException($"The order type \"{s}\" is unknown.");
-        }
+            "LIMIT" => OrderType.Limit,
+            "LIMIT_MAKER" => OrderType.LimitMaker,
+            "MARKET" => OrderType.Market,
+            "STOP_LOSS" => OrderType.StopLossMarket,
+            "STOP_LOSS_LIMIT" => OrderType.StopLossLimit,
+            "TAKE_PROFIT" => OrderType.TakeProfitMarket,
+            "TAKE_PROFIT_LIMIT" => OrderType.TakeProfitLimit,
+            _ => throw new JsonException($"The order type \"{s}\" is unknown."),
+        };
     }
 
     private static string Format(CancellationRestriction value)
     {
-        switch (value)
+        return value switch
         {
-            case CancellationRestriction.OnlyNew:
-                return "ONLY_NEW";
-            case CancellationRestriction.OnlyPartiallyFilled:
-                return "ONLY_PARTIALLY_FILLED";
-            default:
-                throw new NotImplementedException($"The cancellation restriction rule \"{value}\" is not implemented.");
-        }
+            CancellationRestriction.OnlyNew => "ONLY_NEW",
+            CancellationRestriction.OnlyPartiallyFilled => "ONLY_PARTIALLY_FILLED",
+            _ => throw new NotImplementedException($"The cancellation restriction rule \"{value}\" is not implemented."),
+        };
     }
 
     private static string Format(OrderResponseType value)
     {
-        switch (value)
+        return value switch
         {
-            case OrderResponseType.Ack:
-                return "ACK";
-            case OrderResponseType.Full:
-                return "FULL";
-            case OrderResponseType.Result:
-                return "RESULT";
-            default:
-                throw new NotImplementedException($"The order response type \"{value}\" is not implemented.");
-        }
+            OrderResponseType.Ack => "ACK",
+            OrderResponseType.Full => "FULL",
+            OrderResponseType.Result => "RESULT",
+            _ => throw new NotImplementedException($"The order response type \"{value}\" is not implemented."),
+        };
     }
 
     #endregion
@@ -320,7 +287,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
         while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
         {
             string? permission = reader.GetString();
-            if (!String.IsNullOrEmpty(permission))
+            if (!string.IsNullOrEmpty(permission))
             {
                 resultsList.Add(permission);
             }
@@ -783,7 +750,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
         string? id, OrderResponseType? orderResponseType, SelfTradePreventionMode? selfTradePreventionMode)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
         if (price <= 0.0m)
             throw new ArgumentOutOfRangeException(nameof(price));
@@ -795,7 +762,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
             throw new ArgumentOutOfRangeException(nameof(quoteQuantity));
         if (icebergQuantity <= 0.0m)
             throw new ArgumentOutOfRangeException(nameof(icebergQuantity));
-        if (id != null && String.IsNullOrWhiteSpace(id))
+        if (id != null && string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("The specified custom ID is empty.", nameof(id));
 
         QueryWeight[] weights = new QueryWeight[]
@@ -1181,7 +1148,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
     /// <param name="orderId">The global numerical identifier of the order to cancel.</param>
     public IDeferredQuery<SpotOrder> PrepareCancelOrder(string symbol, long orderId)
     {
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
 
         return PrepareCancelOrder(
@@ -1210,9 +1177,9 @@ public class SpotAccountApiClient : ApiV3ClientBase
     /// <param name="clientOrderId">The original custom identifier of the order to cancel.</param>
     public IDeferredQuery<SpotOrder> PrepareCancelOrder(string symbol, string clientOrderId)
     {
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
-        if (String.IsNullOrWhiteSpace(clientOrderId))
+        if (string.IsNullOrWhiteSpace(clientOrderId))
             throw new ArgumentNullException(nameof(clientOrderId));
 
         return PrepareCancelOrder(
@@ -1283,7 +1250,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
     public IDeferredQuery<List<SpotOrder>> PrepareCancelAllOrders(string symbol)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
 
         QueryWeight[] weights = new QueryWeight[]
@@ -1310,7 +1277,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
     /// <param name="orderId">The unique numerical identifier of the order to fetch.</param>
     public IDeferredQuery<SpotOrder> PrepareGetOrder(string symbol, long orderId)
     {
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
 
         return PrepareGetOrder(
@@ -1326,9 +1293,9 @@ public class SpotAccountApiClient : ApiV3ClientBase
     /// <param name="clientOrderId">The original custom identifier of the order to fetch.</param>
     public IDeferredQuery<SpotOrder> PrepareGetOrder(string symbol, string clientOrderId)
     {
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
-        if (String.IsNullOrWhiteSpace(clientOrderId))
+        if (string.IsNullOrWhiteSpace(clientOrderId))
             throw new ArgumentNullException(nameof(clientOrderId));
 
         return PrepareGetOrder(
@@ -1479,7 +1446,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
         string symbol, long? fromId, DateTime? startTime, DateTime? endTime, int? limit)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
         if (startTime > endTime)
             throw new ArgumentException(
@@ -1559,7 +1526,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
     public IDeferredQuery<List<SpotOrder>> PrepareGetAllOpenOrders(string symbol)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
 
         QueryWeight[] weights = new QueryWeight[]
@@ -1609,7 +1576,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
         DateTime? startTime = null, DateTime? endTime = null, long? fromId = null, int? limit = null)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
 
         QueryWeight[] weights = new QueryWeight[]

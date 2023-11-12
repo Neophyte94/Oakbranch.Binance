@@ -620,7 +620,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
     public IDeferredQuery<List<Trade>> PrepareGetOldTrades(string symbol, int? limit = null, long? fromId = null)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
         if (limit < 1 || limit > MaxTradesQueryLimit)
             throw new ArgumentOutOfRangeException(nameof(limit));
@@ -810,7 +810,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
         string symbol, long? fromId = null, DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
             throw new ArgumentException($"The specified period [{startTime} - {endTime}] is invalid.");
@@ -952,7 +952,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
         int? limit = null)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
             throw new ArgumentException($"The specified period [{startTime} - {endTime}] is invalid.");
@@ -1020,7 +1020,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
         DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(pair))
+        if (string.IsNullOrWhiteSpace(pair))
             throw new ArgumentNullException(nameof(pair));
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
             throw new ArgumentException($"The specified period [{startTime} - {endTime}] is invalid.");
@@ -1084,7 +1084,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
         DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(pair))
+        if (string.IsNullOrWhiteSpace(pair))
             throw new ArgumentNullException(nameof(pair));
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
             throw new ArgumentException($"The specified period [{startTime} - {endTime}] is invalid.");
@@ -1147,7 +1147,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
         DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
             throw new ArgumentException($"The specified period [{startTime} - {endTime}] is invalid.");
@@ -1210,7 +1210,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
         DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
             throw new ArgumentException($"The specified period [{startTime} - {endTime}] is invalid.");
@@ -1307,7 +1307,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
     public IDeferredQuery<PremiumInfo> PrepareGetPremiumInfo(string symbol)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
 
         QueryWeight[] weights = new QueryWeight[]
@@ -1462,7 +1462,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
         int? limit = null)
     {
         ThrowIfDisposed();
-        if (symbol != null && String.IsNullOrWhiteSpace(symbol))
+        if (symbol != null && string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
             throw new ArgumentException($"The specified time period [{startTime} ; {endTime}] is invalid.");
@@ -1585,7 +1585,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
     public IDeferredQuery<OpenInterest> PrepareGetOpenInterest(string symbol)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
 
         QueryWeight[] weights = new QueryWeight[]
@@ -1676,7 +1676,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
         DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
     {
         ThrowIfDisposed();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
             throw new ArgumentException($"The specified time period [{startTime} ; {endTime}] is invalid.");
@@ -1804,7 +1804,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
         DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
     {
         ThrowIfDisposed();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
             throw new ArgumentException($"The specified time period [{startTime} ; {endTime}] is invalid.");
@@ -1862,7 +1862,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
         DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
     {
         ThrowIfDisposed();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
             throw new ArgumentException($"The specified time period [{startTime} ; {endTime}] is invalid.");
@@ -1920,7 +1920,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
         DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
     {
         ThrowIfDisposed();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
             throw new ArgumentException($"The specified time period [{startTime} ; {endTime}] is invalid.");
@@ -1978,7 +1978,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
         DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
     {
         ThrowIfDisposed();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
             throw new ArgumentException($"The specified time period [{startTime} ; {endTime}] is invalid.");
@@ -2071,14 +2071,14 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
             {
                 const string objName = "taker volume record";
                 int missingPropNum = validator.GetMissingPropertyNumber();
-                switch (missingPropNum)
+                throw missingPropNum switch
                 {
-                    case 0: throw ParseUtility.GenerateMissingPropertyException(objName, "buy/sell ratio");
-                    case 1: throw ParseUtility.GenerateMissingPropertyException(objName, "buy volume");
-                    case 2: throw ParseUtility.GenerateMissingPropertyException(objName, "sell value");
-                    case 3: throw ParseUtility.GenerateMissingPropertyException(objName, "timestamp");
-                    default: throw ParseUtility.GenerateMissingPropertyException(objName, $"unknown {missingPropNum}");
-                }
+                    0 => ParseUtility.GenerateMissingPropertyException(objName, "buy/sell ratio"),
+                    1 => ParseUtility.GenerateMissingPropertyException(objName, "buy volume"),
+                    2 => ParseUtility.GenerateMissingPropertyException(objName, "sell value"),
+                    3 => ParseUtility.GenerateMissingPropertyException(objName, "timestamp"),
+                    _ => ParseUtility.GenerateMissingPropertyException(objName, $"unknown {missingPropNum}"),
+                };
             }
 
             // Add the record to the results list.

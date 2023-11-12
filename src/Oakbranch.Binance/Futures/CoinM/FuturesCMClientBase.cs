@@ -84,27 +84,9 @@ namespace Oakbranch.Binance.Futures.CoinM
 
         #endregion
 
-        #region Instance methods
+        #region Static methods
 
-        // Initialization.
-        protected override async Task InitializeProtectedAsync(CancellationToken ct)
-        {
-            ct.ThrowIfCancellationRequested();
-
-            // Send the initialization query.
-            QueryParams initQueryParams = new QueryParams(HttpMethod.GET, _RESTEndpoint.Url, GetExchangeInfoEndpoint, null);
-            Response rsp = await Connector.SendAsync(initQueryParams, ct).ConfigureAwait(false);
-
-            // Parse the response.
-            EnsureSuccessfulInitResponse(rsp);
-            List<RateLimiter> limits = ParseRateLimiters(rsp.Content);
-            Dictionary<string, int> headersLimitsMap = new Dictionary<string, int>(limits.Count);
-
-            // Register or update rate limits in the registry.
-            RegisterOrUpdateRateLimits(limits);
-        }
-
-        private List<RateLimiter> ParseRateLimiters(byte[] data)
+        private static List<RateLimiter> ParseRateLimiters(byte[] data)
         {
             Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
             ParseUtility.ReadObjectStart(ref reader);
@@ -137,20 +119,38 @@ namespace Oakbranch.Binance.Futures.CoinM
             throw new JsonException("The response data contains no rate limits info.");
         }
 
+        #endregion
+
+        #region Instance methods
+
+        // Initialization.
+        protected override async Task InitializeProtectedAsync(CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            // Send the initialization query.
+            QueryParams initQueryParams = new QueryParams(HttpMethod.GET, _RESTEndpoint.Url, GetExchangeInfoEndpoint, null);
+            Response rsp = await Connector.SendAsync(initQueryParams, ct).ConfigureAwait(false);
+
+            // Parse the response.
+            EnsureSuccessfulInitResponse(rsp);
+            List<RateLimiter> limits = ParseRateLimiters(rsp.Content);
+            Dictionary<string, int> headersLimitsMap = new Dictionary<string, int>(limits.Count);
+
+            // Register or update rate limits in the registry.
+            RegisterOrUpdateRateLimits(limits);
+        }
+
         // Rate limits.
         protected override string? GetRateLimitHeaderName(RateLimiter limit)
         {
-            switch (limit.Type)
+            return limit.Type switch
             {
-                case RateLimitType.UID:
-                    return $"X-MBX-ORDER-COUNT-{limit.IntervalNumber}{Format(limit.Interval)}";
-                case RateLimitType.IP:
-                    return $"X-MBX-USED-WEIGHT-{limit.IntervalNumber}{Format(limit.Interval)}";
-                case RateLimitType.RawRequests:
-                    return null;
-                default:
-                    throw new NotImplementedException($"An unknown rate limit type \"{limit.Type}\" was specified.");
-            }
+                RateLimitType.UID => $"X-MBX-ORDER-COUNT-{limit.IntervalNumber}{Format(limit.Interval)}",
+                RateLimitType.IP => $"X-MBX-USED-WEIGHT-{limit.IntervalNumber}{Format(limit.Interval)}",
+                RateLimitType.RawRequests => null,
+                _ => throw new NotImplementedException($"An unknown rate limit type \"{limit.Type}\" was specified."),
+            };
         }
 
         // Test connectivity.

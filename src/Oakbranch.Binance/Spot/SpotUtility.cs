@@ -9,88 +9,62 @@ namespace Oakbranch.Binance.Spot
 
         public static string Format(OrderType value)
         {
-            switch (value)
+            return value switch
             {
-                case OrderType.Limit:
-                    return "LIMIT";
-                case OrderType.LimitMaker:
-                    return "LIMIT_MAKER";
-                case OrderType.Market:
-                    return "MARKET";
-                case OrderType.StopLossMarket:
-                    return "STOP_LOSS";
-                case OrderType.StopLossLimit:
-                    return "STOP_LOSS_LIMIT";
-                case OrderType.TakeProfitMarket:
-                    return "TAKE_PROFIT";
-                case OrderType.TakeProfitLimit:
-                    return "TAKE_PROFIT_LIMIT";
-                default:
-                    throw new NotImplementedException($"The order type \"{value}\" is not implemented.");
-            }
+                OrderType.Limit => "LIMIT",
+                OrderType.LimitMaker => "LIMIT_MAKER",
+                OrderType.Market => "MARKET",
+                OrderType.StopLossMarket => "STOP_LOSS",
+                OrderType.StopLossLimit => "STOP_LOSS_LIMIT",
+                OrderType.TakeProfitMarket => "TAKE_PROFIT",
+                OrderType.TakeProfitLimit => "TAKE_PROFIT_LIMIT",
+                _ => throw new NotImplementedException($"The order type \"{value}\" is not implemented."),
+            };
         }
 
         public static OrderType ParseOrderType(string s)
         {
-            if (String.IsNullOrWhiteSpace(s))
+            if (string.IsNullOrWhiteSpace(s))
                 throw new JsonException("The order type value is null.");
 
-            switch (s)
+            return s switch
             {
-                case "LIMIT":
-                    return OrderType.Limit;
-                case "MARKET":
-                    return OrderType.Market;
-                case "STOP_LOSS":
-                    return OrderType.StopLossMarket;
-                case "STOP_LOSS_LIMIT":
-                    return OrderType.StopLossLimit;
-                case "TAKE_PROFIT":
-                    return OrderType.TakeProfitMarket;
-                case "TAKE_PROFIT_LIMIT":
-                    return OrderType.TakeProfitLimit;
-                case "LIMIT_MAKER":
-                    return OrderType.LimitMaker;
-                default:
-                    throw new JsonException($"An unknown order type \"{s}\" was encountered.");
-            }
+                "LIMIT" => OrderType.Limit,
+                "MARKET" => OrderType.Market,
+                "STOP_LOSS" => OrderType.StopLossMarket,
+                "STOP_LOSS_LIMIT" => OrderType.StopLossLimit,
+                "TAKE_PROFIT" => OrderType.TakeProfitMarket,
+                "TAKE_PROFIT_LIMIT" => OrderType.TakeProfitLimit,
+                "LIMIT_MAKER" => OrderType.LimitMaker,
+                _ => throw new JsonException($"An unknown order type \"{s}\" was encountered."),
+            };
         }
 
         public static string Format(SelfTradePreventionMode value)
         {
-            switch (value)
+            return value switch
             {
-                case SelfTradePreventionMode.None:
-                    return "NONE";
-                case SelfTradePreventionMode.ExpireMaker:
-                    return "EXPIRE_MAKER";
-                case SelfTradePreventionMode.ExpireTaker:
-                    return "EXPIRE_TAKER";
-                case SelfTradePreventionMode.ExpireBoth:
-                    return "EXPIRE_BOTH";
-                default:
-                    throw new NotImplementedException($"The self trade prevention mode \"{value}\" is not implemented.");
-            }
+                SelfTradePreventionMode.None => "NONE",
+                SelfTradePreventionMode.ExpireMaker => "EXPIRE_MAKER",
+                SelfTradePreventionMode.ExpireTaker => "EXPIRE_TAKER",
+                SelfTradePreventionMode.ExpireBoth => "EXPIRE_BOTH",
+                _ => throw new NotImplementedException($"The self trade prevention mode \"{value}\" is not implemented."),
+            };
         }
 
         public static SelfTradePreventionMode ParseSelfTradePreventionMode(string s)
         {
-            if (String.IsNullOrWhiteSpace(s))
+            if (string.IsNullOrWhiteSpace(s))
                 throw new JsonException($"The self trade prevention value is null.");
 
-            switch (s)
+            return s switch
             {
-                case "NONE":
-                    return SelfTradePreventionMode.None;
-                case "EXPIRE_MAKER":
-                    return SelfTradePreventionMode.ExpireMaker;
-                case "EXPIRE_TAKER":
-                    return SelfTradePreventionMode.ExpireTaker;
-                case "EXPIRE_BOTH":
-                    return SelfTradePreventionMode.ExpireBoth;
-                default:
-                    throw new JsonException($"The self trade prevention mode \"{s}\" is unknown.");
-            }
+                "NONE" => SelfTradePreventionMode.None,
+                "EXPIRE_MAKER" => SelfTradePreventionMode.ExpireMaker,
+                "EXPIRE_TAKER" => SelfTradePreventionMode.ExpireTaker,
+                "EXPIRE_BOTH" => SelfTradePreventionMode.ExpireBoth,
+                _ => throw new JsonException($"The self trade prevention mode \"{s}\" is unknown."),
+            };
         }
 
         #endregion

@@ -15,11 +15,11 @@ namespace Oakbranch.Binance.UnitTests
 
         #region Instance members
 
-        private readonly ILogger? m_Logger;
-        protected ILogger? Logger => m_Logger;
+        private readonly ILogger? _logger;
+        protected ILogger? Logger => _logger;
 
-        private readonly bool m_AreQueryResultsLogged;
-        protected bool AreQueryResultsLogged => m_AreQueryResultsLogged;
+        private readonly bool _areQueryResultsLogged;
+        protected bool AreQueryResultsLogged => _areQueryResultsLogged;
 
         protected abstract string LogContext { get; }
 
@@ -29,8 +29,8 @@ namespace Oakbranch.Binance.UnitTests
 
         public ApiClientTestsBase(ILogger? logger, bool areQueryResultsLogged)
         {
-            m_Logger = logger;
-            m_AreQueryResultsLogged = areQueryResultsLogged;
+            _logger = logger;
+            _areQueryResultsLogged = areQueryResultsLogged;
         }
 
         #endregion
@@ -39,7 +39,7 @@ namespace Oakbranch.Binance.UnitTests
 
         private static void GetPublicMembers(Type type, out FieldInfo[] fields, out PropertyInfo[] props)
         {
-            bool IsReadableProperty(PropertyInfo p)
+            static bool IsReadableProperty(PropertyInfo p)
             {
                 if (!p.CanRead) return false;
 
@@ -48,7 +48,8 @@ namespace Oakbranch.Binance.UnitTests
             }
 
             fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
-            props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            props = type
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Where(IsReadableProperty)
                 .ToArray();
         }
@@ -126,7 +127,7 @@ namespace Oakbranch.Binance.UnitTests
         /// <param name="message">The message to push.</param>
         protected void LogMessage(LogLevel level, string message)
         {
-            m_Logger?.Log(level, LogContext, message);
+            _logger?.Log(level, LogContext, message);
         }
 
         /// <summary>
@@ -136,7 +137,7 @@ namespace Oakbranch.Binance.UnitTests
         /// <param name="item">The object to log.</param>
         protected void LogObject<T>(T? item)
         {
-            if (m_Logger == null)
+            if (_logger == null)
             {
                 return;
             }
@@ -151,7 +152,7 @@ namespace Oakbranch.Binance.UnitTests
             GetPublicMembers(type, out FieldInfo[]? fields, out PropertyInfo[]? props);
             string desc = GenerateDescription(type, fields, props, item);
 
-            m_Logger?.Log(LogLevel.Info, LogContext, desc);
+            _logger?.Log(LogLevel.Info, LogContext, desc);
         }
 
         /// <summary>
@@ -165,7 +166,7 @@ namespace Oakbranch.Binance.UnitTests
         /// </param>
         protected void LogCollection<T>(IEnumerable<T> items, int limit = -1)
         {
-            if (m_Logger == null)
+            if (_logger == null)
             {
                 return;
             }

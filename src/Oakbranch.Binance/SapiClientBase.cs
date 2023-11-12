@@ -24,7 +24,7 @@ namespace Oakbranch.Binance
 
         #region Static members
 
-        private static ReadOnlyCollection<BaseEndpoint> s_RESTBaseEndpoints;
+        private static readonly ReadOnlyCollection<BaseEndpoint> s_RESTBaseEndpoints;
         /// <summary>
         /// Gets a list of all available base endpoints for main API requests.
         /// <para>The main API include market data, spot, margin, wallet and savings endpoints.</para>
@@ -106,19 +106,25 @@ namespace Oakbranch.Binance
 
         #region Static methods
 
+        /// <summary>
+        /// Gets an identifier of a limit weight on spot SAPI endpoints for the specified limit type.
+        /// </summary>
+        /// <param name="discriminativeEndpoint">The endpoint that all limits targeting this weight dimension are bound to.</param>
+        /// <param name="limitType">The limit type to get the weight dimension for.</param>
+        protected static int GetWeightDimensionId(string discriminativeEndpoint, RateLimitType limitType)
+        {
+            return GenerateWeightDimensionId(discriminativeEndpoint, limitType);
+        }
+
         protected static string? GetHeaderName(RateLimiter limiter)
         {
-            switch (limiter.Type)
+            return limiter.Type switch
             {
-                case RateLimitType.UID:
-                    return $"X-SAPI-USED-UID-WEIGHT-{limiter.IntervalNumber}{Format(limiter.Interval)}";
-                case RateLimitType.IP:
-                    return $"X-SAPI-USED-IP-WEIGHT-{limiter.IntervalNumber}{Format(limiter.Interval)}";
-                case RateLimitType.RawRequests:
-                    return null;
-                default:
-                    throw new ArgumentException($"An unknown rate limit type \"{limiter.Type}\" was specified.");
-            }
+                RateLimitType.UID => $"X-SAPI-USED-UID-WEIGHT-{limiter.IntervalNumber}{Format(limiter.Interval)}",
+                RateLimitType.IP => $"X-SAPI-USED-IP-WEIGHT-{limiter.IntervalNumber}{Format(limiter.Interval)}",
+                RateLimitType.RawRequests => null,
+                _ => throw new ArgumentException($"An unknown rate limit type \"{limiter.Type}\" was specified."),
+            };
         }
 
         #endregion
@@ -153,16 +159,6 @@ namespace Oakbranch.Binance
 
         // Rate limits.
         /// <summary>
-        /// Gets an identifier of a limit weight on spot SAPI endpoints for the specified limit type.
-        /// </summary>
-        /// <param name="discriminativeEndpoint">The endpoint that all limits targeting this weight dimension are bound to.</param>
-        /// <param name="limitType">The limit type to get the weight dimension for.</param>
-        protected int GetWeightDimensionId(string discriminativeEndpoint, RateLimitType limitType)
-        {
-            return GenerateWeightDimensionId(discriminativeEndpoint, limitType);
-        }
-
-        /// <summary>
         /// Registers rate limits for the specified SAPI endpoint and limit type, or skips of they already exist.
         /// </summary>
         /// <param name="discriminativeEndpoint">The endpoint to register or update rate limits for.</param>
@@ -170,7 +166,7 @@ namespace Oakbranch.Binance
         protected void RegisterRateLimitsIfNotExist(string discriminativeEndpoint, RateLimitType limitType)
         {
             ThrowIfNotRunning();
-            if (String.IsNullOrWhiteSpace(discriminativeEndpoint))
+            if (string.IsNullOrWhiteSpace(discriminativeEndpoint))
                 throw new ArgumentNullException(nameof(discriminativeEndpoint));
 
             // Check whether rate limits have been registered for the specified "endpoint - limit type" pair.

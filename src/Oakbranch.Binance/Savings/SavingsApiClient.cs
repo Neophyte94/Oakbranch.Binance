@@ -65,20 +65,16 @@ namespace Oakbranch.Binance.Savings
 
         private static SavingsProductType ParseLendingType(string s)
         {
-            if (String.IsNullOrWhiteSpace(s))
+            if (string.IsNullOrWhiteSpace(s))
                 throw new JsonException("The lending type value is null.");
 
-            switch (s)
+            return s switch
             {
-                case "DAILY":
-                    return SavingsProductType.Flexible;
-                case "ACTIVITY":
-                    return SavingsProductType.Activity;
-                case "CUSTOMIZED_FIXED":
-                    return SavingsProductType.Fixed;
-                default:
-                    throw new JsonException($"An unknown lending type \"{s}\" was encountered.");
-            }
+                "DAILY" => SavingsProductType.Flexible,
+                "ACTIVITY" => SavingsProductType.Activity,
+                "CUSTOMIZED_FIXED" => SavingsProductType.Fixed,
+                _ => throw new JsonException($"An unknown lending type \"{s}\" was encountered."),
+            };
         }
 
         #endregion
@@ -244,7 +240,7 @@ namespace Oakbranch.Binance.Savings
         public IDeferredQuery<List<FlexibleProductPosition>> PrepareGetFlexibleProductPositions(string? asset = null)
         {
             ThrowIfNotRunning();
-            if (asset != null && String.IsNullOrWhiteSpace(asset))
+            if (asset != null && string.IsNullOrWhiteSpace(asset))
                 throw new ArgumentNullException(nameof(asset));
 
             string relEndpoint = GetFlexibleProductPositionEndpoint;
@@ -469,7 +465,7 @@ namespace Oakbranch.Binance.Savings
             int? pageSize = null)
         {
             ThrowIfNotRunning();
-            if (asset != null && String.IsNullOrWhiteSpace(asset))
+            if (asset != null && string.IsNullOrWhiteSpace(asset))
                 throw new ArgumentNullException(nameof(asset));
             if (startTime != null && endTime != null)
             {

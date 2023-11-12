@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Oakbranch.Common.Logging;
@@ -60,9 +59,7 @@ public sealed class ApiConnector : IApiConnector, IDisposable
         set
         {
             ThrowIfDisposed();
-            if (value == null)
-                throw new ArgumentNullException(nameof(TimeProvider));
-            _timeProvider = value;
+            _timeProvider = value ?? throw new ArgumentNullException(nameof(TimeProvider));
         }
     }
 
@@ -92,11 +89,18 @@ public sealed class ApiConnector : IApiConnector, IDisposable
         set
         {
             if (value == 0)
+            {
                 throw new ArgumentOutOfRangeException(
-                    $"A request window cannot be zero.");
+                    nameof(RequestWindow),
+                    "A request window cannot be zero.");
+            }
             if (value > RequestWindowMaximum)
+            {
                 throw new ArgumentOutOfRangeException(
-                    $"The specified request window value ({value}) is greater than the permitted maximum ({RequestWindowMaximum}).");
+                    nameof(RequestWindow),
+                    $"The specified request window value ({value}) is greater " +
+                    $"than the permitted maximum ({RequestWindowMaximum}).");
+            }
             _requestWindow = value;
         }
     }
@@ -229,18 +233,27 @@ public sealed class ApiConnector : IApiConnector, IDisposable
     /// </exception>
     public ApiConnector(string apiKey, string? secretKey, ITimeProvider? timeProvider = null, ILogger? logger = null)
     {
-        if (String.IsNullOrEmpty(apiKey))
+        if (string.IsNullOrEmpty(apiKey))
+        {
             throw new ArgumentNullException(nameof(apiKey));
+        }
         if (apiKey.Length != ApiKeyLength)
-            throw new ArgumentException($"The specified API key is of the invalid length ({apiKey.Length}). " +
+        {
+            throw new ArgumentException(
+                $"The specified API key is of the invalid length ({apiKey.Length}). " +
                 $"The valid key is a {ApiKeyLength}-character string.");
+        }
         
-        _areSecuredQueriesSupported = !String.IsNullOrEmpty(secretKey);
+        _areSecuredQueriesSupported = !string.IsNullOrEmpty(secretKey);
         if (_areSecuredQueriesSupported)
         {
             if (secretKey!.Length != SecretKeyLength)
-                throw new ArgumentException("The specified secret key is of the invalid length " +
-                    $"({secretKey.Length}). The valid key is a {SecretKeyLength}-character string.");
+            {
+                throw new ArgumentException(
+                    $"The specified secret key is of the invalid length ({secretKey.Length}). " +
+                    $"The valid key is a {SecretKeyLength}-character string.");
+            }
+
             _secretKey = Encoding.ASCII.GetBytes(secretKey);
         }
 
@@ -274,6 +287,18 @@ public sealed class ApiConnector : IApiConnector, IDisposable
             default:
                 value = default;
                 return false;
+        }
+    }
+
+    private static string CreateFullEndpoint(string baseEndpoint, string relativeEndpoint, QueryBuilder? queryString)
+    {
+        if (queryString != null)
+        {
+            return string.Format("{0}{1}?{2}", baseEndpoint, relativeEndpoint, queryString.ToQuery());
+        }
+        else
+        {
+            return string.Concat(baseEndpoint, relativeEndpoint);
         }
     }
 
@@ -345,26 +370,17 @@ public sealed class ApiConnector : IApiConnector, IDisposable
                 PostLogMessage(LogLevel.Debug, $"Sending the {query.Method} request: {fullEndpoint}");
             }
 
-            Task<HttpResponseMessage> rspTask;
-            switch (query.Method)
+            Task<HttpResponseMessage> rspTask = query.Method switch
             {
-                case HttpMethod.GET:
-                    rspTask = _client.GetAsync(fullEndpoint, unitedCts.Token);
-                    break;
-                case HttpMethod.PUT:
-                    rspTask = _client.PutAsync(fullEndpoint, null, unitedCts.Token);
-                    break;
-                case HttpMethod.POST:
-                    rspTask = _client.PostAsync(fullEndpoint, null, unitedCts.Token);
-                    break;
-                case HttpMethod.DELETE:
-                    rspTask = _client.DeleteAsync(fullEndpoint, unitedCts.Token);
-                    break;
-                default:
-                    throw new NotImplementedException($"The http method \"{query.Method}\" is not supported.");
-            }
+                HttpMethod.GET => _client.GetAsync(fullEndpoint, unitedCts.Token),
+                HttpMethod.PUT => _client.PutAsync(fullEndpoint, null, unitedCts.Token),
+                HttpMethod.POST => _client.PostAsync(fullEndpoint, null, unitedCts.Token),
+                HttpMethod.DELETE => _client.DeleteAsync(fullEndpoint, unitedCts.Token),
+                _ => throw new NotImplementedException($"The HTTP method \"{query.Method}\" is not supported."),
+            };
 
             HttpResponseMessage response = await rspTask.ConfigureAwait(false);
+
             byte[] content;
             try
             {
@@ -432,18 +448,6 @@ public sealed class ApiConnector : IApiConnector, IDisposable
         {
             unitedCts.Dispose();
             timeoutCts.Dispose();
-        }
-    }
-
-    private string CreateFullEndpoint(string baseEndpoint, string relativeEndpoint, QueryBuilder? queryString)
-    {
-        if (queryString != null)
-        {
-            return String.Format("{0}{1}?{2}", baseEndpoint, relativeEndpoint, queryString.ToQuery());
-        }
-        else
-        {
-            return String.Concat(baseEndpoint, relativeEndpoint);
         }
     }
 
@@ -526,7 +530,7 @@ public sealed class ApiConnector : IApiConnector, IDisposable
                 string? headerValue = null;
                 foreach (string val in headerValues)
                 {
-                    if (!String.IsNullOrEmpty(val))
+                    if (!string.IsNullOrEmpty(val))
                     {
                         headerValue = val;
                         break;

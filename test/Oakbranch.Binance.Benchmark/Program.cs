@@ -13,13 +13,7 @@ namespace Oakbranch.Binance.Benchmark
 {
     public class Program
     {
-        #region Constants
-
         private const string ApiKeysContainerName = "ApiKeys.ini";
-
-        #endregion
-
-        #region Static methods
 
         static void Main()
         {
@@ -268,7 +262,5 @@ namespace Oakbranch.Binance.Benchmark
         {
             return Task.Run(Console.ReadKey);
         }
-
-        #endregion
     }
 }

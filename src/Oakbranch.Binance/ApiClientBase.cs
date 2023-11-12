@@ -82,6 +82,170 @@ namespace Oakbranch.Binance
 
         #region Static methods
 
+        // Validation.
+        /// <summary>
+        /// Checks whether the specified response to an initialization query is successful,
+        /// and throws <see cref="Exception"/> if it is not.
+        /// <para>For a failed response, tries to parse its content and include the error message in the exception.</para>
+        /// </summary>
+        /// <param name="initQueryResponse">The response to the initialization query.</param>
+        /// <exception cref="Exception"/>
+        protected static void EnsureSuccessfulInitResponse(Response initQueryResponse)
+        {
+            if (!initQueryResponse.IsSuccessful)
+            {
+                if (initQueryResponse.Content == null)
+                {
+                    throw new Exception("The initialization query failed for an unknown reason.");
+                }
+
+                ApiErrorInfo? errorInfo = null;
+                try { errorInfo = ParseUtility.ParseErrorInfo(initQueryResponse.Content); }
+                catch { }
+
+                if (errorInfo != null)
+                {
+                    throw new Exception($"The initialization query failed: {errorInfo.Value.Message}.");
+                }
+                else
+                {
+                    throw new Exception(CommonUtility.DecodeByteContent(initQueryResponse.Content));
+                }
+            }
+        }
+
+        // Formatting and parsing.
+        /// <summary>
+        /// Converts the given time unit into its laconic string representation.
+        /// </summary>
+        /// <param name="unit">The time interval unit to format.</param>
+        /// <returns>The string representation of the specified time unit.</returns>
+        /// <exception cref="ArgumentException"/>
+        protected static string Format(Interval unit)
+        {
+            return unit switch
+            {
+                Interval.Minute => "M",
+                Interval.Second => "S",
+                Interval.Day => "D",
+                _ => throw new NotImplementedException(unit.ToString())
+            };
+        }
+
+        protected static string Format(OrderSide value)
+        {
+            return value == OrderSide.Buy ? "BUY" : "SELL";
+        }
+
+        /// <summary>
+        /// Parses a single rate limiter from the current position in the given JSON reader.
+        /// </summary>
+        /// <param name="reader">The JSON reader to parse from.</param>
+        /// <returns>An instance of the <see cref="RateLimiter"/> struct parsed from JSON.</returns>
+        /// <exception cref="JsonException"/>
+        protected static RateLimiter ParseRateLimiter(ref Utf8JsonReader reader)
+        {
+            ParseUtility.EnsureObjectStartToken(ref reader);
+
+            ParseSchemaValidator validator = new ParseSchemaValidator(4);
+            RateLimitType limitType = default;
+            Interval interval = default;
+            ushort intervalNum = default;
+            uint limit = default;
+            uint? usage = null;
+
+            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+            {
+                string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
+
+                if (!reader.Read())
+                {
+                    throw ParseUtility.GenerateNoPropertyValueException(propName);
+                }
+
+                switch (propName)
+                {
+                    case "rateLimitType":
+                        limitType = ParseRateLimitType(ParseUtility.GetNonEmptyString(ref reader, propName));
+                        validator.RegisterProperty(0);
+                        break;
+
+                    case "interval":
+                        interval = ParseInterval(ParseUtility.GetNonEmptyString(ref reader, propName));
+                        validator.RegisterProperty(1);
+                        break;
+
+                    case "intervalNum":
+                        if (reader.TokenType != JsonTokenType.Number)
+                            throw ParseUtility.GenerateInvalidValueTypeException(propName, JsonTokenType.Number, reader.TokenType);
+                        intervalNum = reader.GetUInt16();
+                        validator.RegisterProperty(2);
+                        break;
+
+                    case "limit":
+                        if (reader.TokenType != JsonTokenType.Number)
+                            throw ParseUtility.GenerateInvalidValueTypeException(propName, JsonTokenType.Number, reader.TokenType);
+                        limit = reader.GetUInt32();
+                        validator.RegisterProperty(3);
+                        break;
+
+                    case "count":
+                        if (reader.TokenType != JsonTokenType.Number)
+                            throw ParseUtility.GenerateInvalidValueTypeException(propName, JsonTokenType.Number, reader.TokenType);
+                        usage = reader.GetUInt32();
+                        break;
+                }
+            }
+
+            // Ensure that all the essental properties were provided.
+            if (!validator.IsComplete())
+            {
+                const string objName = "rate limiter";
+                int missingPropNum = validator.GetMissingPropertyNumber();
+                throw missingPropNum switch
+                {
+                    0 => ParseUtility.GenerateMissingPropertyException(objName, "limit type"),
+                    1 => ParseUtility.GenerateMissingPropertyException(objName, "interval unit"),
+                    2 => ParseUtility.GenerateMissingPropertyException(objName, "interval number"),
+                    3 => ParseUtility.GenerateMissingPropertyException(objName, "limit"),
+                    _ => ParseUtility.GenerateMissingPropertyException(objName, $"unknown ({missingPropNum})"),
+                };
+            }
+
+            // Create a rate limiter instance and return it.
+            return new RateLimiter(limitType, interval, intervalNum, limit, usage);
+        }
+
+        private static RateLimitType ParseRateLimitType(string s)
+        {
+            if (string.IsNullOrWhiteSpace(s))
+                throw new ArgumentNullException(nameof(s));
+
+            return s switch
+            {
+                "RAW_REQUESTS" => RateLimitType.RawRequests,
+                "REQUEST_WEIGHT" => RateLimitType.IP,
+                "ORDERS" => RateLimitType.UID,
+                _ => throw new JsonException($"An unknown rate limit type was encountered: \"{s}\"."),
+            };
+        }
+
+        private static Interval ParseInterval(string s)
+        {
+            if (string.IsNullOrWhiteSpace(s))
+                throw new ArgumentNullException(nameof(s));
+
+            return s switch
+            {
+                "MINUTE" => Interval.Minute,
+                "SECOND" => Interval.Second,
+                "HOUR" => Interval.Hour,
+                "DAY" => Interval.Day,
+                _ => throw new JsonException($"An unknown rate limit interval was encountered: \"{s}\"."),
+            };
+        }
+
+        // Factory utility.
         /// <summary>
         /// Generates a deterministic identifier for a query weight dimension with the given parameters.
         /// </summary>
@@ -104,73 +268,6 @@ namespace Oakbranch.Binance
         protected static int GenerateRateLimitId(int dimensionId, TimeSpan resetInterval)
         {
             return unchecked(3105 * dimensionId - 9494 * (int)resetInterval.Ticks);
-        }
-
-        /// <summary>
-        /// Converts the given time unit into its laconic string representation.
-        /// </summary>
-        /// <param name="unit">The time interval unit to format.</param>
-        /// <returns>The string representation of the specified time unit.</returns>
-        /// <exception cref="ArgumentException"/>
-        protected static string Format(Interval unit)
-        {
-            switch (unit)
-            {
-                case Interval.Minute:
-                    return "M";
-                case Interval.Second:
-                    return "S";
-                case Interval.Day:
-                    return "D";
-                default:
-                    throw new ArgumentException();
-            }
-        }
-
-        protected static string Format(OrderSide value)
-        {
-            if (value == OrderSide.Buy)
-                return "BUY";
-            else
-                return "SELL";
-        }
-
-        private static RateLimitType ParseRateLimitType(string s)
-        {
-            if (String.IsNullOrWhiteSpace(s))
-                throw new ArgumentNullException(nameof(s));
-
-            switch (s)
-            {
-                case "RAW_REQUESTS":
-                    return RateLimitType.RawRequests;
-                case "REQUEST_WEIGHT":
-                    return RateLimitType.IP;
-                case "ORDERS":
-                    return RateLimitType.UID;
-                default:
-                    throw new JsonException($"An unknown rate limit type was encountered: \"{s}\".");
-            }
-        }
-
-        private static Interval ParseInterval(string s)
-        {
-            if (String.IsNullOrWhiteSpace(s))
-                throw new ArgumentNullException(nameof(s));
-
-            switch (s)
-            {
-                case "MINUTE":
-                    return Interval.Minute;
-                case "SECOND":
-                    return Interval.Second;
-                case "HOUR":
-                    return Interval.Hour;
-                case "DAY":
-                    return Interval.Day;
-                default:
-                    throw new JsonException($"An unknown rate limit interval was encountered: \"{s}\".");
-            }
         }
 
         /// <summary>
@@ -282,117 +379,7 @@ namespace Oakbranch.Binance
         /// <returns>A task representing the initialization operation within a derived class.</returns>
         protected abstract Task InitializeProtectedAsync(CancellationToken ct);
 
-        /// <summary>
-        /// Checks whether the specified response to an initialization query is successful,
-        /// and throws <see cref="Exception"/> if it is not.
-        /// <para>For a failed response, tries to parse its content and include the error message in the exception.</para>
-        /// </summary>
-        /// <param name="initQueryResponse">The response to the initialization query.</param>
-        /// <exception cref="Exception"/>
-        protected void EnsureSuccessfulInitResponse(Response initQueryResponse)
-        {
-            if (!initQueryResponse.IsSuccessful)
-            {
-                if (initQueryResponse.Content == null)
-                {
-                    throw new Exception("The initialization query failed for an unknown reason.");
-                }
-
-                ApiErrorInfo? errorInfo = null;
-                try { errorInfo = ParseUtility.ParseErrorInfo(initQueryResponse.Content); }
-                catch { }
-
-                if (errorInfo != null)
-                {
-                    throw new Exception($"The initialization query failed: {errorInfo.Value.Message}.");
-                }
-                else
-                {
-                    throw new Exception(CommonUtility.DecodeByteContent(initQueryResponse.Content));
-                }
-            }
-        }
-
         // Rate limiters.
-        /// <summary>
-        /// Parses a single rate limiter from the current position in the given JSON reader.
-        /// </summary>
-        /// <param name="reader">The JSON reader to parse from.</param>
-        /// <returns>An instance of the <see cref="RateLimiter"/> struct parsed from JSON.</returns>
-        /// <exception cref="JsonException"/>
-        protected RateLimiter ParseRateLimiter(ref Utf8JsonReader reader)
-        {
-            ParseUtility.EnsureObjectStartToken(ref reader);
-
-            ParseSchemaValidator validator = new ParseSchemaValidator(4);
-            RateLimitType limitType = default;
-            Interval interval = default;
-            ushort intervalNum = default;
-            uint limit = default;
-            uint? usage = null;
-
-            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
-            {
-                string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
-
-                if (!reader.Read())
-                {
-                    throw ParseUtility.GenerateNoPropertyValueException(propName);
-                }
-
-                switch (propName)
-                {
-                    case "rateLimitType":
-                        limitType = ParseRateLimitType(ParseUtility.GetNonEmptyString(ref reader, propName));
-                        validator.RegisterProperty(0);
-                        break;
-
-                    case "interval":
-                        interval = ParseInterval(ParseUtility.GetNonEmptyString(ref reader, propName));
-                        validator.RegisterProperty(1);
-                        break;
-
-                    case "intervalNum":
-                        if (reader.TokenType != JsonTokenType.Number)
-                            throw ParseUtility.GenerateInvalidValueTypeException(propName, JsonTokenType.Number, reader.TokenType);
-                        intervalNum = reader.GetUInt16();
-                        validator.RegisterProperty(2);
-                        break;
-
-                    case "limit":
-                        if (reader.TokenType != JsonTokenType.Number)
-                            throw ParseUtility.GenerateInvalidValueTypeException(propName, JsonTokenType.Number, reader.TokenType);
-                        limit = reader.GetUInt32();
-                        validator.RegisterProperty(3);
-                        break;
-
-                    case "count":
-                        if (reader.TokenType != JsonTokenType.Number)
-                            throw ParseUtility.GenerateInvalidValueTypeException(propName, JsonTokenType.Number, reader.TokenType);
-                        usage = reader.GetUInt32();
-                        break;
-                }
-            }
-
-            // Ensure that all the essental properties were provided.
-            if (!validator.IsComplete())
-            {
-                const string objName = "rate limiter";
-                int missingPropNum = validator.GetMissingPropertyNumber();
-                switch (missingPropNum)
-                {
-                    case 0: throw ParseUtility.GenerateMissingPropertyException(objName, "limit type");
-                    case 1: throw ParseUtility.GenerateMissingPropertyException(objName, "interval unit");
-                    case 2: throw ParseUtility.GenerateMissingPropertyException(objName, "interval number");
-                    case 3: throw ParseUtility.GenerateMissingPropertyException(objName, "limit");
-                    default: throw ParseUtility.GenerateMissingPropertyException(objName, $"unknown ({missingPropNum})");
-                }
-            }
-
-            // Create a rate limiter instance and return it.
-            return new RateLimiter(limitType, interval, intervalNum, limit, usage);
-        }
-
         /// <summary>
         /// Checks the rate limits against a new query with the specified weights.
         /// <para>Throws <see cref="QueryException"/> if any of the rate limits is at risk.</para>
@@ -567,7 +554,9 @@ namespace Oakbranch.Binance
         protected void ThrowIfDisposed()
         {
             if (_state == ClientState.Disposed)
+            {
                 throw new ObjectDisposedException(GetType().Name);
+            }
         }
 
         /// <summary>
@@ -581,15 +570,12 @@ namespace Oakbranch.Binance
         {
             if (_state != ClientState.Running)
             {
-                switch (_state)
+                throw _state switch
                 {
-                    case ClientState.Created:
-                        throw new ClientNotInitializedException(this);
-                    case ClientState.Disposed:
-                        throw new ObjectDisposedException(GetType().Name);
-                    default:
-                        throw new Exception($"The {GetType().Name} instance is in the invalid state.");
-                }
+                    ClientState.Created => new ClientNotInitializedException(this),
+                    ClientState.Disposed => new ObjectDisposedException(GetType().Name),
+                    _ => new Exception($"The {GetType().Name} instance is in the invalid state."),
+                };
             }
         }
 

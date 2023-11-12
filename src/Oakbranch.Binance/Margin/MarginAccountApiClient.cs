@@ -383,7 +383,10 @@ public class MarginAccountApiClient : SapiClientBase
             string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
 
             if (!reader.Read())
+            {
                 throw ParseUtility.GenerateNoPropertyValueException(propName);
+            }
+
             switch (propName)
             {
                 case "borrowEnabled":
@@ -428,18 +431,18 @@ public class MarginAccountApiClient : SapiClientBase
         {
             const string objName = "cross margin acc info";
             int missingPropNum = validator.GetMissingPropertyNumber();
-            switch (missingPropNum)
+            throw missingPropNum switch
             {
-                case 0: throw ParseUtility.GenerateMissingPropertyException(objName, "borrow enabled");
-                case 1: throw ParseUtility.GenerateMissingPropertyException(objName, "margin level");
-                case 2: throw ParseUtility.GenerateMissingPropertyException(objName, "total asset of BTC");
-                case 3: throw ParseUtility.GenerateMissingPropertyException(objName, "total liability of BTC");
-                case 4: throw ParseUtility.GenerateMissingPropertyException(objName, "total net asset of BTC");
-                case 5: throw ParseUtility.GenerateMissingPropertyException(objName, "trade enabled");
-                case 6: throw ParseUtility.GenerateMissingPropertyException(objName, "transfer enabled");
-                case 7: throw ParseUtility.GenerateMissingPropertyException(objName, "user assets");
-                default: throw ParseUtility.GenerateMissingPropertyException(objName, $"unknown ({missingPropNum})");
-            }
+                0 => ParseUtility.GenerateMissingPropertyException(objName, "borrow enabled"),
+                1 => ParseUtility.GenerateMissingPropertyException(objName, "margin level"),
+                2 => ParseUtility.GenerateMissingPropertyException(objName, "total asset of BTC"),
+                3 => ParseUtility.GenerateMissingPropertyException(objName, "total liability of BTC"),
+                4 => ParseUtility.GenerateMissingPropertyException(objName, "total net asset of BTC"),
+                5 => ParseUtility.GenerateMissingPropertyException(objName, "trade enabled"),
+                6 => ParseUtility.GenerateMissingPropertyException(objName, "transfer enabled"),
+                7 => ParseUtility.GenerateMissingPropertyException(objName, "user assets"),
+                _ => ParseUtility.GenerateMissingPropertyException(objName, $"unknown ({missingPropNum})"),
+            };
         }
 
         // Return the result.
@@ -536,7 +539,7 @@ public class MarginAccountApiClient : SapiClientBase
             for (int i = 0; i != symbols.Length; ++i)
             {
                 string smb = symbols[i];
-                if (String.IsNullOrWhiteSpace(smb))
+                if (string.IsNullOrWhiteSpace(smb))
                 {
                     throw new ArgumentException(
                         $"The specified symbols array contains a null or empty string at the index {i}.");
@@ -652,7 +655,10 @@ public class MarginAccountApiClient : SapiClientBase
                 string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
 
                 if (!reader.Read())
+                {
                     throw ParseUtility.GenerateNoPropertyValueException(propName);
+                }
+
                 switch (propName)
                 {
                     case "baseAsset":
@@ -715,21 +721,21 @@ public class MarginAccountApiClient : SapiClientBase
             {
                 const string objName = "isolated margin symbol acc";
                 int missingPropNum = validator.GetMissingPropertyNumber();
-                switch (missingPropNum)
+                throw missingPropNum switch
                 {
-                    case 0: throw ParseUtility.GenerateMissingPropertyException(objName, "base asset");
-                    case 1: throw ParseUtility.GenerateMissingPropertyException(objName, "quote asset");
-                    case 2: throw ParseUtility.GenerateMissingPropertyException(objName, "symbol");
-                    case 3: throw ParseUtility.GenerateMissingPropertyException(objName, "is created");
-                    case 4: throw ParseUtility.GenerateMissingPropertyException(objName, "is enabled");
-                    case 5: throw ParseUtility.GenerateMissingPropertyException(objName, "margin level");
-                    case 6: throw ParseUtility.GenerateMissingPropertyException(objName, "margin ratio");
-                    case 7: throw ParseUtility.GenerateMissingPropertyException(objName, "index price");
-                    case 8: throw ParseUtility.GenerateMissingPropertyException(objName, "liquidation price");
-                    case 9: throw ParseUtility.GenerateMissingPropertyException(objName, "liquidation rate");
-                    case 10: throw ParseUtility.GenerateMissingPropertyException(objName, "is trade enabled");
-                    default: throw ParseUtility.GenerateMissingPropertyException(objName, $"unknown ({missingPropNum})");
-                }
+                    0 => ParseUtility.GenerateMissingPropertyException(objName, "base asset"),
+                    1 => ParseUtility.GenerateMissingPropertyException(objName, "quote asset"),
+                    2 => ParseUtility.GenerateMissingPropertyException(objName, "symbol"),
+                    3 => ParseUtility.GenerateMissingPropertyException(objName, "is created"),
+                    4 => ParseUtility.GenerateMissingPropertyException(objName, "is enabled"),
+                    5 => ParseUtility.GenerateMissingPropertyException(objName, "margin level"),
+                    6 => ParseUtility.GenerateMissingPropertyException(objName, "margin ratio"),
+                    7 => ParseUtility.GenerateMissingPropertyException(objName, "index price"),
+                    8 => ParseUtility.GenerateMissingPropertyException(objName, "liquidation price"),
+                    9 => ParseUtility.GenerateMissingPropertyException(objName, "liquidation rate"),
+                    10 => ParseUtility.GenerateMissingPropertyException(objName, "is trade enabled"),
+                    _ => ParseUtility.GenerateMissingPropertyException(objName, $"unknown ({missingPropNum})"),
+                };
             }
 
             // Add the instance to the result list.
@@ -755,7 +761,10 @@ public class MarginAccountApiClient : SapiClientBase
             string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
 
             if (!reader.Read())
+            {
                 throw ParseUtility.GenerateNoPropertyValueException(propName);
+            }
+
             switch (propName)
             {
                 case "asset":
@@ -871,7 +880,7 @@ public class MarginAccountApiClient : SapiClientBase
         };
 
         QueryBuilder qs = new QueryBuilder(261);
-        if (!String.IsNullOrWhiteSpace(crossAsset))
+        if (!string.IsNullOrWhiteSpace(crossAsset))
             qs.AddParameter("asset", CommonUtility.NormalizeSymbol(crossAsset));
         if (direction != null)
             qs.AddParameter("type", Format(direction.Value));
@@ -1097,7 +1106,7 @@ public class MarginAccountApiClient : SapiClientBase
         bool? isArchived = null)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(isolatedSymbol))
+        if (string.IsNullOrWhiteSpace(isolatedSymbol))
             throw new ArgumentNullException(nameof(isolatedSymbol));
         ValidateTransactionHistoryInterval(ref startTime, ref endTime);
         if (pageSize < 1 || pageSize > MaxResultPageSize)
@@ -1115,7 +1124,7 @@ public class MarginAccountApiClient : SapiClientBase
 
         QueryBuilder qs = new QueryBuilder(279);
         qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(isolatedSymbol));
-        if (!String.IsNullOrWhiteSpace(asset))
+        if (!string.IsNullOrWhiteSpace(asset))
         {
             qs.AddParameter("asset", CommonUtility.NormalizeSymbol(asset));
         }
@@ -1321,7 +1330,7 @@ public class MarginAccountApiClient : SapiClientBase
     /// <param name="quantity">The asset quantity to borrow.</param>
     public IDeferredQuery<long> PrepareBorrowAsset(string crossAsset, decimal quantity)
     {
-        if (String.IsNullOrWhiteSpace(crossAsset))
+        if (string.IsNullOrWhiteSpace(crossAsset))
             throw new ArgumentNullException(nameof(crossAsset));
         if (quantity <= 0.0m)
             throw new ArgumentOutOfRangeException(nameof(quantity));
@@ -1337,9 +1346,9 @@ public class MarginAccountApiClient : SapiClientBase
     /// <param name="quantity">The asset quantity to borrow.</param>
     public IDeferredQuery<long> PrepareBorrowAsset(string isolatedSymbol, string asset, decimal quantity)
     {
-        if (String.IsNullOrWhiteSpace(isolatedSymbol))
+        if (string.IsNullOrWhiteSpace(isolatedSymbol))
             throw new ArgumentNullException(nameof(isolatedSymbol));
-        if (String.IsNullOrWhiteSpace(asset))
+        if (string.IsNullOrWhiteSpace(asset))
             throw new ArgumentNullException(nameof(asset));
         if (quantity <= 0.0m)
             throw new ArgumentOutOfRangeException(nameof(quantity));
@@ -1389,7 +1398,7 @@ public class MarginAccountApiClient : SapiClientBase
     /// <param name="quantity">The asset quantity to repay.</param>
     public IDeferredQuery<long> PrepareRepayAsset(string crossAsset, decimal quantity)
     {
-        if (String.IsNullOrWhiteSpace(crossAsset))
+        if (string.IsNullOrWhiteSpace(crossAsset))
             throw new ArgumentNullException(nameof(crossAsset));
         if (quantity <= 0.0m)
             throw new ArgumentOutOfRangeException(nameof(quantity));
@@ -1405,9 +1414,9 @@ public class MarginAccountApiClient : SapiClientBase
     /// <param name="quantity">The asset quantity to repay.</param>
     public IDeferredQuery<long> PrepareRepayAsset(string isolatedSymbol, string asset, decimal quantity)
     {
-        if (String.IsNullOrWhiteSpace(isolatedSymbol))
+        if (string.IsNullOrWhiteSpace(isolatedSymbol))
             throw new ArgumentNullException(nameof(isolatedSymbol));
-        if (String.IsNullOrWhiteSpace(asset))
+        if (string.IsNullOrWhiteSpace(asset))
             throw new ArgumentNullException(nameof(asset));
         if (quantity <= 0.0m)
             throw new ArgumentOutOfRangeException(nameof(quantity));
@@ -1472,7 +1481,7 @@ public class MarginAccountApiClient : SapiClientBase
     public IDeferredQuery<LoanTransaction> PrepareGetBorrowRecord(
         string isolatedSymbol, string asset, long transactionId, bool? isArchived = null)
     {
-        if (String.IsNullOrWhiteSpace(isolatedSymbol))
+        if (string.IsNullOrWhiteSpace(isolatedSymbol))
             throw new ArgumentNullException(nameof(isolatedSymbol));
         return PrepareGetSingleBorrowRecord(asset, isolatedSymbol, transactionId, isArchived);
     }
@@ -1481,7 +1490,7 @@ public class MarginAccountApiClient : SapiClientBase
         string asset, string? isolatedSymbol, long transactionId, bool? isArchived)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(asset))
+        if (string.IsNullOrWhiteSpace(asset))
             throw new ArgumentNullException(nameof(asset));
 
         string relEndpoint = GetBorrowRecordEndpoint;
@@ -1566,7 +1575,7 @@ public class MarginAccountApiClient : SapiClientBase
         byte? pageSize = null,
         bool? isArchived = null)
     {
-        if (String.IsNullOrWhiteSpace(isolatedSymbol))
+        if (string.IsNullOrWhiteSpace(isolatedSymbol))
             throw new ArgumentNullException(nameof(isolatedSymbol));
 
         return PrepareGetBorrowRecordList(asset, isolatedSymbol, startTime, endTime, currentPage, pageSize, isArchived);
@@ -1582,7 +1591,7 @@ public class MarginAccountApiClient : SapiClientBase
         bool? isArchived)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(asset))
+        if (string.IsNullOrWhiteSpace(asset))
             throw new ArgumentNullException(nameof(asset));
         ValidateTransactionHistoryInterval(ref startTime, ref endTime);
         if (pageSize < 1 || pageSize > MaxResultPageSize)
@@ -1785,7 +1794,7 @@ public class MarginAccountApiClient : SapiClientBase
     public IDeferredQuery<RepayTransaction> PrepareGetRepayRecord(
         string isolatedSymbol, string asset, long transactionId, bool? isArchived = null)
     {
-        if (String.IsNullOrWhiteSpace(isolatedSymbol))
+        if (string.IsNullOrWhiteSpace(isolatedSymbol))
             throw new ArgumentNullException(nameof(isolatedSymbol));
         return PrepareGetSingleRepayRecord(asset, isolatedSymbol, transactionId, isArchived);
     }
@@ -1794,7 +1803,7 @@ public class MarginAccountApiClient : SapiClientBase
         string asset, string? isolatedSymbol, long transactionId, bool? isArchived)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(asset))
+        if (string.IsNullOrWhiteSpace(asset))
             throw new ArgumentNullException(nameof(asset));
 
         string relEndpoint = GetRepayRecordEndpoint;
@@ -1879,7 +1888,7 @@ public class MarginAccountApiClient : SapiClientBase
         byte? pageSize = null,
         bool? isArchived = null)
     {
-        if (String.IsNullOrWhiteSpace(isolatedSymbol))
+        if (string.IsNullOrWhiteSpace(isolatedSymbol))
             throw new ArgumentNullException(nameof(isolatedSymbol));
 
         return PrepareGetRepayRecordList(asset, isolatedSymbol, startTime, endTime, currentPage, pageSize, isArchived);
@@ -1895,7 +1904,7 @@ public class MarginAccountApiClient : SapiClientBase
         bool? isArchived)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(asset))
+        if (string.IsNullOrWhiteSpace(asset))
             throw new ArgumentNullException(nameof(asset));
         ValidateTransactionHistoryInterval(ref startTime, ref endTime);
         if (pageSize < 1 || pageSize > MaxResultPageSize)
@@ -2094,7 +2103,7 @@ public class MarginAccountApiClient : SapiClientBase
     /// <param name="crossAsset">The cross margin asset to get a borrow limit for.</param>
     public IDeferredQuery<BorrowLimitInfo> PrepareGetBorrowLimit(string crossAsset)
     {
-        if (String.IsNullOrWhiteSpace(crossAsset))
+        if (string.IsNullOrWhiteSpace(crossAsset))
             throw new ArgumentNullException(nameof(crossAsset));
 
         return PrepareGetBorrowLimitPrivate(crossAsset, null);
@@ -2119,9 +2128,9 @@ public class MarginAccountApiClient : SapiClientBase
     /// <param name="asset">The asset of the trading pair to get a borrow limit for.</param>
     public IDeferredQuery<BorrowLimitInfo> PrepareGetBorrowLimit(string isolatedSymbol, string asset)
     {
-        if (String.IsNullOrWhiteSpace(isolatedSymbol))
+        if (string.IsNullOrWhiteSpace(isolatedSymbol))
             throw new ArgumentNullException(nameof(isolatedSymbol));
-        if (String.IsNullOrWhiteSpace(asset))
+        if (string.IsNullOrWhiteSpace(asset))
             throw new ArgumentNullException(nameof(asset));
 
         return PrepareGetBorrowLimitPrivate(asset, isolatedSymbol);
@@ -2730,7 +2739,7 @@ public class MarginAccountApiClient : SapiClientBase
         OrderResponseType? orderResponseType)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
         if (price <= 0.0m)
             throw new ArgumentOutOfRangeException(nameof(price));
@@ -2742,7 +2751,7 @@ public class MarginAccountApiClient : SapiClientBase
             throw new ArgumentOutOfRangeException(nameof(quoteQuantity));
         if (icebergQuantity <= 0.0m)
             throw new ArgumentOutOfRangeException(nameof(icebergQuantity));
-        if (id != null && String.IsNullOrWhiteSpace(id))
+        if (id != null && string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("The specified custom ID is empty.", nameof(id));
 
         string relEndpoint = PostNewOrderEndpoint;
@@ -2879,14 +2888,14 @@ public class MarginAccountApiClient : SapiClientBase
         {
             const string objName = "post order response";
             int missingPropNum = validator.GetMissingPropertyNumber();
-            switch (missingPropNum)
+            throw missingPropNum switch
             {
-                case 0: throw ParseUtility.GenerateMissingPropertyException(objName, "symbol");
-                case 1: throw ParseUtility.GenerateMissingPropertyException(objName, "order ID");
-                case 2: throw ParseUtility.GenerateMissingPropertyException(objName, "is isolated");
-                case 3: throw ParseUtility.GenerateMissingPropertyException(objName, "transaction time");
-                default: throw ParseUtility.GenerateMissingPropertyException(objName, $"unknown ({missingPropNum})");
-            }
+                0 => ParseUtility.GenerateMissingPropertyException(objName, "symbol"),
+                1 => ParseUtility.GenerateMissingPropertyException(objName, "order ID"),
+                2 => ParseUtility.GenerateMissingPropertyException(objName, "is isolated"),
+                3 => ParseUtility.GenerateMissingPropertyException(objName, "transaction time"),
+                _ => ParseUtility.GenerateMissingPropertyException(objName, $"unknown ({missingPropNum})"),
+            };
         }
 
         return response;
@@ -3124,7 +3133,7 @@ public class MarginAccountApiClient : SapiClientBase
     /// <param name="orderId">A global numerical identifier of the order to cancel.</param>
     public IDeferredQuery<MarginOrder> PrepareCancelOrder(string symbol, bool isIsolated, long orderId)
     {
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
 
         return PrepareCancelOrder(symbol, isIsolated, orderId, null, null);
@@ -3150,9 +3159,9 @@ public class MarginAccountApiClient : SapiClientBase
     /// <param name="clientOrderId">An original custom identifier of the order to cancel.</param>
     public IDeferredQuery<MarginOrder> PrepareCancelOrder(string symbol, bool isIsolated, string clientOrderId)
     {
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
-        if (String.IsNullOrWhiteSpace(clientOrderId))
+        if (string.IsNullOrWhiteSpace(clientOrderId))
             throw new ArgumentNullException(nameof(clientOrderId));
 
         return PrepareCancelOrder(symbol, isIsolated, null, clientOrderId, null);
@@ -3200,7 +3209,7 @@ public class MarginAccountApiClient : SapiClientBase
                 "origClientOrderId",
                 origClientOrderId ?? throw new ArgumentNullException(nameof(origClientOrderId)));
         }
-        if (!String.IsNullOrEmpty(newClientOrderId))
+        if (!string.IsNullOrEmpty(newClientOrderId))
         {
             qs.AddParameter("newClientOrderId", newClientOrderId);
         }
@@ -3222,7 +3231,7 @@ public class MarginAccountApiClient : SapiClientBase
     public IDeferredQuery<List<MarginOrder>> PrepareCancelAllOrders(string symbol, bool isIsolated)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
 
         string relEndpoint = DeleteAllOpenOrdersOnSymbolEndpoint;
@@ -3266,7 +3275,7 @@ public class MarginAccountApiClient : SapiClientBase
     /// <param name="orderId">The unique identifier of the order to fetch.</param>
     public IDeferredQuery<MarginOrder> PrepareGetOrder(string symbol, bool isIsolated, long orderId)
     {
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
 
         return PrepareGetOrder(symbol, isIsolated, orderId, null);
@@ -3282,7 +3291,7 @@ public class MarginAccountApiClient : SapiClientBase
     /// <param name="clientOrderId">The original custom identifier of the order to fetch.</param>
     public IDeferredQuery<MarginOrder> PrepareGetOrder(string symbol, bool isIsolated, string clientOrderId)
     {
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
 
         return PrepareGetOrder(symbol, isIsolated, null, clientOrderId);
@@ -3342,7 +3351,7 @@ public class MarginAccountApiClient : SapiClientBase
         int? limit = null)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
         {
             throw new ArgumentNullException(nameof(symbol));
         }
@@ -3434,12 +3443,12 @@ public class MarginAccountApiClient : SapiClientBase
         ThrowIfNotRunning();
         if (isIsolated)
         {
-            if (String.IsNullOrWhiteSpace(symbol))
+            if (string.IsNullOrWhiteSpace(symbol))
                 throw new ArgumentNullException(nameof(symbol));
         }
         else
         {
-            if (String.IsNullOrEmpty(symbol))
+            if (string.IsNullOrEmpty(symbol))
                 symbol = null;
         }
         
@@ -3558,7 +3567,7 @@ public class MarginAccountApiClient : SapiClientBase
         int? limit = null)
     {
         ThrowIfNotRunning();
-        if (String.IsNullOrWhiteSpace(symbol))
+        if (string.IsNullOrWhiteSpace(symbol))
             throw new ArgumentNullException(nameof(symbol));
         if (orderId < 0)
             throw new ArgumentOutOfRangeException(nameof(orderId));
@@ -3753,7 +3762,7 @@ public class MarginAccountApiClient : SapiClientBase
     /// <param name="isolatedSymbol">The symbol associated with the isolated margin account to get limit usage for.</param>
     public IDeferredQuery<List<RateLimiter>> PrepareGetOrderLimitUsage(string isolatedSymbol)
     {
-        if (String.IsNullOrWhiteSpace(isolatedSymbol))
+        if (string.IsNullOrWhiteSpace(isolatedSymbol))
             throw new ArgumentNullException(nameof(isolatedSymbol));
         return PrepareGetOrderLimitUsage(true, isolatedSymbol);
     }
@@ -3834,8 +3843,7 @@ public class MarginAccountApiClient : SapiClientBase
             catch (JsonException jExc)
             {
                 ParseUtility.SkipTillObjectEnd(ref reader, objDepth);
-                if (parseErrors == null)
-                    parseErrors = new List<JsonException>();
+                parseErrors ??= new List<JsonException>();
                 parseErrors.Add(jExc);
             }
         }

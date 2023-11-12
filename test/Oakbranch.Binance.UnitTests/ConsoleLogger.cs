@@ -6,29 +6,19 @@ namespace Oakbranch.Binance.UnitTests
 {
     public sealed class ConsoleLogger : ILogger
     {
-        #region Instance members
-
         public LogLevel Level { get; set; } = LogLevel.Info;
-
-        #endregion
-
-        #region Static methods
 
         private static int GetLevelPriority(LogLevel level)
         {
-            switch (level)
+            return level switch
             {
-                case LogLevel.Error: return 0;
-                case LogLevel.Warning: return 1;
-                case LogLevel.Info: return 2;
-                case LogLevel.Debug: return 3;
-                default: return int.MaxValue;
-            }
+                LogLevel.Error => 0,
+                LogLevel.Warning => 1,
+                LogLevel.Info => 2,
+                LogLevel.Debug => 3,
+                _ => int.MaxValue,
+            };
         }
-
-        #endregion
-
-        #region Instance methods
 
         public bool IsLevelEnabled(LogLevel level)
         {
@@ -43,7 +33,5 @@ namespace Oakbranch.Binance.UnitTests
             Console.WriteLine(msg);
             Debug.WriteLine(msg);
         }
-
-        #endregion
     }
 }

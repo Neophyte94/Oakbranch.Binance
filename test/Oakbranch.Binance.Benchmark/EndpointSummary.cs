@@ -5,8 +5,6 @@ namespace Oakbranch.Binance.Benchmark
 {
     public class EndpointSummary
     {
-        #region Instance members
-
         public readonly string Endpoint;
         public readonly List<TimeSpan> ShortQueryTests = new List<TimeSpan>();
         public readonly List<TimeSpan> MediumQueryTests = new List<TimeSpan>();
@@ -16,18 +14,10 @@ namespace Oakbranch.Binance.Benchmark
         public TimeSpan? MediumQueryAvgDuration => GetAverageDuration(MediumQueryTests);
         public TimeSpan? LongQueryAvgDuration => GetAverageDuration(LongQueryTests);
 
-        #endregion
-
-        #region Instance constructors
-        
         public EndpointSummary(string endpoint)
         {
             Endpoint = endpoint;
         }
-
-        #endregion
-
-        #region Static methods
 
         private static TimeSpan? GetAverageDuration(List<TimeSpan> tests)
         {
@@ -42,7 +32,5 @@ namespace Oakbranch.Binance.Benchmark
 
             return new TimeSpan?(new TimeSpan((long)sum / tests.Count));
         }
-
-        #endregion
     }
 }

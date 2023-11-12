@@ -8,8 +8,6 @@ namespace Oakbranch.Binance.Exceptions
     /// </summary>
     public class QueryException : Exception
     {
-        #region Instance members
-
         public FailureReason Reason { get; }
 
         public override string Message
@@ -28,10 +26,6 @@ namespace Oakbranch.Binance.Exceptions
             }
         }
 
-        #endregion
-
-        #region Instance constructors
-
         public QueryException(FailureReason reason) : this(reason, null)
         { }
 
@@ -44,7 +38,5 @@ namespace Oakbranch.Binance.Exceptions
         {
             Reason = FailureReason.Other;
         }
-
-        #endregion
     }
 }
