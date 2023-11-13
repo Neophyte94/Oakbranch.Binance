@@ -9,6 +9,7 @@ using Oakbranch.Common.Logging;
 using Oakbranch.Binance.Filters.Exchange;
 using Oakbranch.Binance.Filters.Symbol;
 using Oakbranch.Binance.RateLimits;
+using Oakbranch.Binance.Utility;
 
 namespace Oakbranch.Binance.Futures.CoinM;
 

@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Oakbranch.Binance.RateLimits;
+using Oakbranch.Binance.Utility;
 using Oakbranch.Common.Logging;
 
 namespace Oakbranch.Binance.Margin;

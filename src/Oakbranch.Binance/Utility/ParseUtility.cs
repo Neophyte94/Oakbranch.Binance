@@ -5,7 +5,7 @@ using System.Text.Json;
 using Oakbranch.Binance.Filters.Exchange;
 using Oakbranch.Binance.Filters.Symbol;
 
-namespace Oakbranch.Binance;
+namespace Oakbranch.Binance.Utility;
 
 internal static class ParseUtility
 {
@@ -612,7 +612,7 @@ internal static class ParseUtility
                     // The designation of the property is unknown, and it is not stored.
                     break;
                 case "avgPriceMins":
-                    uint mins = (uint)((long)pair.Value!);
+                    uint mins = (uint)(long)pair.Value!;
                     if (mins != 0) result.AvgPriceInterval = mins;
                     break;
                 default:
@@ -644,7 +644,7 @@ internal static class ParseUtility
                     ParseDecimal(pair.Key, pair.Value as string, out result.AskMultiplierDown);
                     break;
                 case "avgPriceMins":
-                    uint mins = (uint)((long)pair.Value!);
+                    uint mins = (uint)(long)pair.Value!;
                     if (mins != 0) result.AvgPriceInterval = mins;
                     break;
                 default:
@@ -696,7 +696,7 @@ internal static class ParseUtility
                     result.DoesApplyToMarket = (bool)pair.Value!;
                     break;
                 case "avgPriceMins":
-                    uint mins = (uint)((long)pair.Value!);
+                    uint mins = (uint)(long)pair.Value!;
                     if (mins != 0) result.AvgPriceInterval = mins;
                     break;
                 default:
@@ -728,7 +728,7 @@ internal static class ParseUtility
                     result.IsMaxAppliedToMarket = (bool)pair.Value!;
                     break;
                 case "avgPriceMins":
-                    uint mins = (uint)((long)pair.Value!);
+                    uint mins = (uint)(long)pair.Value!;
                     if (mins != 0) result.AvgPriceInterval = mins;
                     break;
                 default:
@@ -747,7 +747,7 @@ internal static class ParseUtility
         {
             result.Limit = pair.Key switch
             {
-                "limit" => (uint)((long)pair.Value!),
+                "limit" => (uint)(long)pair.Value!,
                 _ => throw new JsonException($"An unknown property \"{pair.Key}\" of the {result.Type} filter was encountered."),
             };
         }
@@ -791,7 +791,7 @@ internal static class ParseUtility
         {
             result.Limit = pair.Key switch
             {
-                "limit" or "maxNumOrders" => (uint)((long)pair.Value!),
+                "limit" or "maxNumOrders" => (uint)(long)pair.Value!,
                 _ => throw new JsonException($"An unknown property \"{pair.Key}\" of the {result.Type} filter was encountered."),
             };
         }
@@ -807,7 +807,7 @@ internal static class ParseUtility
         {
             result.Limit = pair.Key switch
             {
-                "limit" or "maxNumAlgoOrders" => (uint)((long)pair.Value!),
+                "limit" or "maxNumAlgoOrders" => (uint)(long)pair.Value!,
                 _ => throw new JsonException($"An unknown property \"{pair.Key}\" of the {result.Type} filter was encountered."),
             };
         }
@@ -823,7 +823,7 @@ internal static class ParseUtility
         {
             result.Limit = pair.Key switch
             {
-                "maxNumIcebergOrders" => (uint)((long)pair.Value!),
+                "maxNumIcebergOrders" => (uint)(long)pair.Value!,
                 _ => throw new JsonException($"An unknown property \"{pair.Key}\" of the {result.Type} filter was encountered."),
             };
         }
@@ -859,16 +859,16 @@ internal static class ParseUtility
             switch (pair.Key)
             {
                 case "minTrailingAboveDelta":
-                    result.MinTrailingAboveDelta = (uint)((long)pair.Value!);
+                    result.MinTrailingAboveDelta = (uint)(long)pair.Value!;
                     break;
                 case "maxTrailingAboveDelta":
-                    result.MaxTrailingAboveDelta = (uint)((long)pair.Value!);
+                    result.MaxTrailingAboveDelta = (uint)(long)pair.Value!;
                     break;
                 case "minTrailingBelowDelta":
-                    result.MinTrailingBelowDelta = (uint)((long)pair.Value!);
+                    result.MinTrailingBelowDelta = (uint)(long)pair.Value!;
                     break;
                 case "maxTrailingBelowDelta":
-                    result.MaxTrailingBelowDelta = (uint)((long)pair.Value!);
+                    result.MaxTrailingBelowDelta = (uint)(long)pair.Value!;
                     break;
                 default:
                     throw new JsonException($"An unknown property \"{pair.Key}\" of the {result.Type} filter was encountered.");

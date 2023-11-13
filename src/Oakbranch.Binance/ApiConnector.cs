@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Oakbranch.Common.Logging;
 using Oakbranch.Binance.Exceptions;
+using Oakbranch.Binance.Utility;
 
 namespace Oakbranch.Binance;
 

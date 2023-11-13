@@ -10,6 +10,7 @@ using Oakbranch.Binance.RateLimits;
 using Oakbranch.Binance.Filters.Symbol;
 using Oakbranch.Binance.Filters.Exchange;
 using Oakbranch.Binance.Exceptions;
+using Oakbranch.Binance.Utility;
 
 namespace Oakbranch.Binance.Spot;
 

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using Oakbranch.Common.Logging;
 using Oakbranch.Binance.RateLimits;
+using Oakbranch.Binance.Utility;
 
 namespace Oakbranch.Binance.Savings
 {

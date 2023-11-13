@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Oakbranch.Common.Logging;
 using Oakbranch.Binance.RateLimits;
+using Oakbranch.Binance.Utility;
 
 namespace Oakbranch.Binance
 {
