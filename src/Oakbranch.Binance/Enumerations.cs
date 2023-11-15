@@ -5,25 +5,6 @@ using Oakbranch.Binance.RateLimits;
 namespace Oakbranch.Binance
 {
     /// <summary>
-    /// Defines different stages of a web API client's lifespan.
-    /// </summary>
-    internal enum ClientState
-    {
-        /// <summary>
-        /// The client needs initialization to start working.
-        /// </summary>
-        Created,
-        /// <summary>
-        /// The client has been initialized and ready to work.
-        /// </summary>
-        Running,
-        /// <summary>
-        /// The client has been disposed.
-        /// </summary>
-        Disposed
-    }
-
-    /// <summary>
     /// Defines different HTTP methods.
     /// </summary>
     public enum HttpMethod

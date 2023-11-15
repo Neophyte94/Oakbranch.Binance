@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using System.Threading.Tasks;
 using System.Threading;
-using Oakbranch.Common.Logging;
+using System.Threading.Tasks;
 using Oakbranch.Binance.Exceptions;
 using Oakbranch.Binance.RateLimits;
 using Oakbranch.Binance.Utility;
+using Oakbranch.Common.Logging;
 
 namespace Oakbranch.Binance
 {
@@ -16,6 +16,17 @@ namespace Oakbranch.Binance
     /// </summary>
     public abstract class ApiClientBase : IDisposable
     {
+        #region Nested types
+
+        private enum ClientState
+        {
+            Created,
+            Running,
+            Disposed
+        }
+
+        #endregion
+
         #region Constants
 
         protected const string LogContextNameDefault = "Binance API client";
