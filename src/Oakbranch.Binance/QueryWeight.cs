@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Oakbranch.Binance
+﻿namespace Oakbranch.Binance
 {
     /// <summary>
     /// Represents a footprint of a query on a specific weight dimension of rate limits.

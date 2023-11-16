@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Oakbranch.Binance
+﻿namespace Oakbranch.Binance
 {
     internal delegate T ParseResponseHandler<out T>(
         byte[] data,

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Oakbranch.Binance
+﻿namespace Oakbranch.Binance
 {
     /// <summary>
     /// Represents settings of a rate limit on API calls.

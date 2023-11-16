@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -62,18 +61,6 @@ namespace Oakbranch.Binance
             return _executeHandler(_params, _weights, _parseHandler, _parseArgs, _headersToLimitsMap, ct);
         }
 
-        public override string ToString()
-        {
-            string text = $"Deferred query ({typeof(T).Name}): ";
-            if (_isDisposed) return text + "(Disposed)";
-
-            text += $"{_params.Method} {_params.BaseEndpoint}{_params.RelativeEndpoint}";
-            if (_params.QueryString != null)
-                text += "?" + _params.QueryString.ToQuery();
-
-            return text;
-        }
-
         private void ThrowIfDisposed()
         {
             if (_isDisposed)
@@ -101,6 +88,18 @@ namespace Oakbranch.Binance
                 _params = default;
                 _weights = null!;
             }
+        }
+
+        public override string ToString()
+        {
+            string text = $"Deferred query ({typeof(T).Name}): ";
+            if (_isDisposed) return text + "(Disposed)";
+
+            text += $"{_params.Method} {_params.BaseEndpoint}{_params.RelativeEndpoint}";
+            if (_params.QueryString != null)
+                text += "?" + _params.QueryString.ToQuery();
+
+            return text;
         }
 
         #endregion

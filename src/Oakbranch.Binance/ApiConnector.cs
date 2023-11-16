@@ -9,15 +9,15 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Oakbranch.Common.Logging;
 using Oakbranch.Binance.Exceptions;
 using Oakbranch.Binance.Utility;
+using Oakbranch.Common.Logging;
 
 namespace Oakbranch.Binance;
 
 /// <summary>
 /// Provides basic connection functions for Binance API, including authentication, errors handling and checking rate limits.
-/// <para>An instance must be initialized via <see cref="InitializeAsync"/> before being used.</para>
+/// <para>Implements the <see cref="IApiConnector"/> and <see cref="IDisposable"/> interfaces.</para>
 /// </summary>
 public sealed class ApiConnector : IApiConnector, IDisposable
 {
@@ -687,7 +687,11 @@ public sealed class ApiConnector : IApiConnector, IDisposable
         if (_isDisposed) return;
         _isDisposed = true;
 
-        Common.Utility.CommonUtility.Clear(ref _secretKey);
+        if (_secretKey is byte[] array)
+        {
+            _secretKey = null;
+            Array.Clear(array);
+        }
 
         if (releaseManaged)
         {
