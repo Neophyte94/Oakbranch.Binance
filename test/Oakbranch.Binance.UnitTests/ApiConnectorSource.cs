@@ -1,5 +1,8 @@
-﻿using System;
+﻿using System.IO;
 using System.Text;
+using Oakbranch.Binance.Abstractions;
+using Oakbranch.Binance.Core;
+using Oakbranch.Binance.Core.TimeProviders;
 
 namespace Oakbranch.Binance.UnitTests
 {

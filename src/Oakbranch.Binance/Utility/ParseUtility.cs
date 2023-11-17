@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json;
-using Oakbranch.Binance.Filters.Exchange;
-using Oakbranch.Binance.Filters.Symbol;
+using Oakbranch.Binance.Models;
+using Oakbranch.Binance.Models.Filters.Exchange;
+using Oakbranch.Binance.Models.Filters.Symbol;
 
 namespace Oakbranch.Binance.Utility;
 

@@ -6,8 +6,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Oakbranch.Common.Logging;
-using Oakbranch.Binance.RateLimits;
-using Oakbranch.Binance.Spot;
+using Oakbranch.Binance.Models.Spot;
+using Oakbranch.Binance.Clients;
+using Oakbranch.Binance.Core;
+using Oakbranch.Binance.Core.RateLimits;
+using Oakbranch.Binance.Abstractions;
 
 namespace Oakbranch.Binance.Benchmark
 {

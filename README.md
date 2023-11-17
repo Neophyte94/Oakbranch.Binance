@@ -38,56 +38,28 @@ Once your client is set up, you can:
 Below is an example that demonstrates the full initialization process and how to retrieve server time using a deferred query.
 
 ```csharp
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Oakbranch.Binance;
-using Oakbranch.Binance.RateLimits;
-using Oakbranch.Binance.Spot;
-
 public static async Task TestDemoQueryAsync(string apiKey, string secretKey = null, CancellationToken ct = default)
 {
-    // For testing SystemTimeProvider is sufficient, but for production ServerTimeProvider is recommended.
+    // For testing 'SystemTimeProvider' is sufficient, but for production 'ServerTimeProvider' is recommended.
     ITimeProvider timeProvider = new SystemTimeProvider();
     IRateLimitsRegistry rateLimits = new RateLimitsRegistry();
 
-    // Prepare variables for disposable objects.
-    IApiConnector connector = null;
-    SpotMarketApiClient client = null;
+    // Initialize a low-level HTTP connector with API keys granted by Binance.
+    using ApiConnector connector = new ApiConnector(apiKey, secretKey, timeProvider);
 
-    try
-    {
-        // Initialize a low-level HTTP connector with API keys granted by Binance.
-        connector = new ApiConnector(
-            apiKey: apiKey,
-            secretKey: secretKey,
-            timeProvider: timeProvider);
+    // Initialize a high-level web client for accessing Spot Market endpoints.
+    using SpotMarketApiClient client = new SpotMarketApiClient(connector, rateLimits);
+    await client.InitializeAsync(ct).ConfigureAwait(false);
 
-        // Initialize a high-level web client for accessing Spot Market endpoints.
-        client = new SpotMarketApiClient(
-            connector: connector,
-            limitsRegistry: rateLimits);
-        await client.InitializeAsync(ct).ConfigureAwait(false);
+    // Prepare a test web query for a deferred or immediate execution.
+    DateTime serverTime;
+    using IDeferredQuery<DateTime> query = client.PrepareCheckServerTime();
 
-        // Prepare a test web query for a deferred or immediate execution.
-        DateTime serverTime;
-        using (IDeferredQuery<DateTime> query = client.PrepareCheckServerTime())
-        {
-            // Call the query's execution whenever we are ready.
-            serverTime = await query.ExecuteAsync(ct).ConfigureAwait(false);
-        }
+    // Call the query's execution whenever we are ready.
+    serverTime = await query.ExecuteAsync(ct).ConfigureAwait(false);
 
-        // Use the result of the query.
-        Console.WriteLine($"The reported server time is {serverTime} (UTC).");
-    }
-    finally
-    {
-        client?.Dispose();
-        if (connector is IDisposable disposableConnector)
-        {
-            disposableConnector.Dispose();
-        }
-    }
+    // Use the result of the query.
+    Console.WriteLine($"The reported server time is {serverTime} (UTC).");
 }
 ```
 
@@ -106,7 +78,6 @@ While the abstraction `IApiConnector` allows any custom implementation of the we
 Therefore, it is strongly recommended to employ a precise implementation of `ITimeProvider`, such as the built-in `ServerTimeProvider` class. Below is a possible way to instantiate it using an already initialized web client. Note that for initialization purposes a simple implementation like `SystemTimeProvider` can be used in `ApiConnector`, and later replaced with a more accurate time provider.
 
 ```csharp
-
 public static async Task<ITimeProvider> CreateTimeProviderAsync(SpotMarketApiClient client, CancellationToken ct)
 {
     // Declare variables for the task.
@@ -114,21 +85,20 @@ public static async Task<ITimeProvider> CreateTimeProviderAsync(SpotMarketApiCli
     DateTime serverTime;
 
     // Create the server time query.
-    using (IDeferredQuery<DateTime> serverTimeQuery = client.PrepareCheckServerTime())
-    {
-        // Ensure the sufficient clearance in the current rate limit usage.
-        if (!client.LimitsRegistry.TestUsage(serverTimeQuery.Weights, out _))
-        {
-            // Wait till the limits are reset.
-            // In production, a more advanced waiting approach is recommended.
-            await Task.Delay(1000, ct).ConfigureAwait(false);
-        }
+    using IDeferredQuery<DateTime> serverTimeQuery = client.PrepareCheckServerTime();
 
-        // Execute the query.
-        pingTimer.Start();
-        serverTime = await serverTimeQuery.ExecuteAsync(ct).ConfigureAwait(false);
-        pingTimer.Stop();
+    // Ensure the sufficient clearance in the current rate limit usage.
+    if (!client.LimitsRegistry.TestUsage(serverTimeQuery.Weights, out _))
+    {
+        // Wait till the limits are reset.
+        // In production, a more advanced waiting approach is recommended.
+        await Task.Delay(1000, ct).ConfigureAwait(false);
     }
+
+    // Execute the query.
+    pingTimer.Start();
+    serverTime = await serverTimeQuery.ExecuteAsync(ct).ConfigureAwait(false);
+    pingTimer.Stop();
 
     // Create the time provider and return it.
     ITimeProvider timeProvider = new ServerTimeProvider(
@@ -136,19 +106,16 @@ public static async Task<ITimeProvider> CreateTimeProviderAsync(SpotMarketApiCli
         serverNow: serverTime + new TimeSpan(pingTimer.Elapsed.Ticks / 2));
     return timeProvider;
 }
-
 ```
 
 The precise time provider can be assigned to the existing instance of the `ApiConnector` class using the public setter of the `TimeProvider` property. Note that the `IApiConnector` interface itself only provides a getter for this property, as the means by which a connector acquires its time provider falls outside the scope of the abstraction.
 
 ```csharp
-
 ApiConnector connector = reference_to_existing_connector as ApiConnector;
 if (connector != null)
 {
     connector.TimeProvider = precise_time_provider;
 }
-
 ```
 
 ## License

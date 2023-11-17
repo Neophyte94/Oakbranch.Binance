@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using Oakbranch.Binance.Core;
 
 namespace Oakbranch.Binance.Utility;
 

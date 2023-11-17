@@ -1,4 +1,7 @@
-﻿using System;
+﻿
+using Oakbranch.Binance.Abstractions;
+using Oakbranch.Binance.Clients;
+using Oakbranch.Binance.Core;
 
 namespace Oakbranch.Binance.UnitTests
 {

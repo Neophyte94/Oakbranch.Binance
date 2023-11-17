@@ -1,4 +1,5 @@
 ﻿using System;
+using Oakbranch.Binance.Abstractions;
 
 namespace Oakbranch.Binance.Exceptions
 {

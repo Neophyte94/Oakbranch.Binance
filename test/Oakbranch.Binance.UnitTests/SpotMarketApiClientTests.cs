@@ -1,8 +1,11 @@
 ﻿using System;
 using NUnit.Framework.Internal;
 using Oakbranch.Common.Logging;
-using Oakbranch.Binance.RateLimits;
-using Oakbranch.Binance.Spot;
+using Oakbranch.Binance.Models;
+using Oakbranch.Binance.Models.Spot;
+using Oakbranch.Binance.Clients;
+using Oakbranch.Binance.Core.RateLimits;
+using Oakbranch.Binance.Abstractions;
 
 namespace Oakbranch.Binance.UnitTests
 {
