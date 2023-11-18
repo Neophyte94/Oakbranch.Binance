@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Oakbranch.Common.Logging;
+using Microsoft.Extensions.Logging;
 using Oakbranch.Binance.Utility;
 using Oakbranch.Binance.Models;
 using Oakbranch.Binance.Models.Margin;
@@ -152,7 +152,7 @@ namespace Oakbranch.Binance.Clients
             // Check the server status.
             if (status != SystemStatus.Normal)
             {
-                PostLogMessage(LogLevel.Warning, $"The reported status of the Binance server is \"{status}\".");
+                LogMessage(LogLevel.Warning, $"The reported status of the Binance server is \"{status}\".");
             }
 
             // Register or update SAPI rate limits in the registry.
@@ -315,7 +315,7 @@ namespace Oakbranch.Binance.Clients
                         reader.Skip();
                         break;
                     default:
-                        PostLogMessage(LogLevel.Warning, $"An unknown system status property \"{propName}\" was encountered.");
+                        LogMessage(LogLevel.Warning, $"An unknown system status property \"{propName}\" was encountered.");
                         reader.Skip();
                         break;
                 }

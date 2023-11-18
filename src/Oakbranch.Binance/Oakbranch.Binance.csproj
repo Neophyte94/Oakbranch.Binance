@@ -8,9 +8,7 @@
     <None Include="..\..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
     <PackageReference Include="System.Text.Json" Version="7.0.3" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\Oakbranch.Common\Oakbranch.Common\Oakbranch.Common.csproj" />
   </ItemGroup>
 </Project>

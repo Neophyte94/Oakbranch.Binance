@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Oakbranch.Common.Logging;
-using Oakbranch.Binance.Utility;
-using Oakbranch.Binance.Models;
+using Microsoft.Extensions.Logging;
+using Oakbranch.Binance.Abstractions;
 using Oakbranch.Binance.Core;
 using Oakbranch.Binance.Core.RateLimits;
-using Oakbranch.Binance.Abstractions;
+using Oakbranch.Binance.Models;
+using Oakbranch.Binance.Utility;
 
 namespace Oakbranch.Binance.Clients
 {
@@ -54,11 +54,13 @@ namespace Oakbranch.Binance.Clients
             IApiConnector connector,
             IRateLimitsRegistry limitsRegistry,
             string discriminativeEndpoint,
-            ILogger? logger = null) :
-            base(connector, limitsRegistry, logger)
+            ILogger? logger = null)
+            : base(connector, limitsRegistry, logger)
         {
             if (string.IsNullOrWhiteSpace(discriminativeEndpoint))
+            {
                 throw new ArgumentNullException(nameof(discriminativeEndpoint));
+            }
 
             DiscrimativeEndpoint = discriminativeEndpoint;
             LimitNameEndpointSpecifier = discriminativeEndpoint.Split('/')

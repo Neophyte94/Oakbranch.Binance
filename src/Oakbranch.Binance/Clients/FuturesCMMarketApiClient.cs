@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Oakbranch.Common.Logging;
+using Microsoft.Extensions.Logging;
 using Oakbranch.Binance.Utility;
 using Oakbranch.Binance.Models;
 using Oakbranch.Binance.Models.Futures;
@@ -100,7 +100,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     public FuturesCMMarketApiClient(
         IApiConnector connector,
         IRateLimitsRegistry limitsRegistry,
-        ILogger? logger = null)
+        ILogger<FuturesCMMarketApiClient>? logger = null)
         : base(connector, limitsRegistry, logger)
     {
         _dummyHeadersLimitsMap = new ReadOnlyDictionary<string, int>(new Dictionary<string, int>(0));
@@ -250,7 +250,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
                         }
                         catch (JsonException jExc)
                         {
-                            PostLogMessage(LogLevel.Warning, $"An exchange filter cannot be parsed: {jExc.Message}");
+                            LogMessage(LogLevel.Warning, $"An exchange filter cannot be parsed: {jExc.Message}");
                             ParseUtility.SkipTillObjectEnd(ref reader, objectDepth);
                         }
                     }
@@ -265,7 +265,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
                     reader.Skip();
                     break;
                 default:
-                    PostLogMessage(LogLevel.Warning,
+                    LogMessage(LogLevel.Warning,
                         $"An unknown exchange info property \"{propName}\" was encountered while parsing the response.");
                     reader.Skip();
                     break;
@@ -404,7 +404,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
                                 }
                                 catch (JsonException jExc)
                                 {
-                                    PostLogMessage(LogLevel.Warning, $"One of the symbol filters cannot be parsed: {jExc.Message}");
+                                    LogMessage(LogLevel.Warning, $"One of the symbol filters cannot be parsed: {jExc.Message}");
                                     ParseUtility.SkipTillObjectEnd(ref reader, filterDepth);
                                 }
                             }
@@ -451,7 +451,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
                             reader.Skip();
                             break;
                         default:
-                            PostLogMessage(
+                            LogMessage(
                                 LogLevel.Warning,
                                 $"An unknown symbol property \"{propName}\" was encountered.");
                             reader.Skip();
@@ -496,7 +496,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
             }
             catch (JsonException jExc)
             {
-                PostLogMessage(LogLevel.Warning, $"The symbol info \"{symbol.Symbol}\" cannot be parsed: {jExc.Message}");
+                LogMessage(LogLevel.Warning, $"The symbol info \"{symbol.Symbol}\" cannot be parsed: {jExc.Message}");
                 ParseUtility.SkipTillObjectEnd(ref reader, objectDepth);
             }
             finally

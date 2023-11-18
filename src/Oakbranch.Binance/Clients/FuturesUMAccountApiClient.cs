@@ -1,5 +1,4 @@
-﻿using System;
-using Oakbranch.Common.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Oakbranch.Binance.Abstractions;
 
 namespace Oakbranch.Binance.Clients;
@@ -15,7 +14,10 @@ public class FuturesUMAccountApiClient : FuturesUMClientBase
 
     #region Instance constructors
 
-    public FuturesUMAccountApiClient(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger? logger = null)
+    public FuturesUMAccountApiClient(
+        IApiConnector connector,
+        IRateLimitsRegistry limitsRegistry,
+        ILogger<FuturesUMAccountApiClient>? logger = null)
         : base(connector, limitsRegistry, logger)
     { }
 

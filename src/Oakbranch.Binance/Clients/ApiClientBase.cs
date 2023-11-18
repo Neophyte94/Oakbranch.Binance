@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Oakbranch.Binance.Abstractions;
+using Oakbranch.Binance.Core;
 using Oakbranch.Binance.Core.RateLimits;
 using Oakbranch.Binance.Exceptions;
 using Oakbranch.Binance.Models;
 using Oakbranch.Binance.Utility;
-using Oakbranch.Common.Logging;
 
-namespace Oakbranch.Binance.Core;
+namespace Oakbranch.Binance.Clients;
 
 /// <summary>
 /// Provides base functionality for high-level client classes built upon specific Binance API areas.
@@ -26,12 +27,6 @@ public abstract class ApiClientBase : IDisposable
         Running,
         Disposed
     }
-
-    #endregion
-
-    #region Constants
-
-    protected const string LogContextNameDefault = "Binance API client";
 
     #endregion
 
@@ -69,11 +64,6 @@ public abstract class ApiClientBase : IDisposable
     /// </summary>
     public bool IsDisposed => _state == ClientState.Disposed;
 
-    /// <summary>
-    /// Gets a string used for specifying the logging context of logs posted by this client.
-    /// </summary>
-    protected virtual string LogContextName => LogContextNameDefault;
-
     #endregion
 
     #region Instance constructors
@@ -85,7 +75,10 @@ public abstract class ApiClientBase : IDisposable
     /// <param name="limitsRegistry">The rate limits registry to use for checking and updating API rate limits.</param>
     /// <param name="logger">The logger to use for posting log messages.</param>
     /// <exception cref="ArgumentNullException"/>
-    internal ApiClientBase(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger? logger = null)
+    internal ApiClientBase(
+        IApiConnector connector,
+        IRateLimitsRegistry limitsRegistry,
+        ILogger? logger = null)
     {
         _connector = connector ?? throw new ArgumentNullException(nameof(connector));
         _limitsRegistry = limitsRegistry ?? throw new ArgumentNullException(nameof(limitsRegistry));
@@ -269,7 +262,7 @@ public abstract class ApiClientBase : IDisposable
     protected static int GenerateWeightDimensionId(string discriminativeEndpoint, RateLimitType limitType)
     {
         return unchecked(
-            -673990 * Common.Utility.CommonUtility.GetDeterministicHashCode(discriminativeEndpoint)
+            -673990 * CommonUtility.GetDeterministicHashCode(discriminativeEndpoint)
             + 307 * (int)limitType);
     }
 
@@ -357,15 +350,15 @@ public abstract class ApiClientBase : IDisposable
             {
                 await t.ConfigureAwait(false);
                 if (IsLogLevelEnabled(LogLevel.Debug))
-                    PostLogMessage(LogLevel.Debug, $"The initialization of the {GetType().Name} instance completed.");
+                    LogMessage(LogLevel.Debug, $"The initialization of the {GetType().Name} instance completed.");
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
-                PostLogMessage(LogLevel.Debug, $"The initialization of the {GetType().Name} instance was canceled.");
+                LogMessage(LogLevel.Debug, $"The initialization of the {GetType().Name} instance was canceled.");
             }
             catch (Exception exc)
             {
-                PostLogMessage(LogLevel.Error, $"The initialization of the {GetType().Name} instance failed:{exc}");
+                LogMessage(LogLevel.Error, $"The initialization of the {GetType().Name} instance failed:{exc}");
             }
             finally
             {
@@ -437,14 +430,14 @@ public abstract class ApiClientBase : IDisposable
                 else
                 {
                     RateLimitInfo limitInfo = _limitsRegistry[limitId];
-                    PostLogMessage(
+                    LogMessage(
                         LogLevel.Warning,
                         $"The usage value \"{pair.Value}\" for the limit {limitId} ({limitInfo.Name}) cannot be parsed.");
                 }
             }
             else
             {
-                PostLogMessage(LogLevel.Warning,
+                LogMessage(LogLevel.Warning,
                     $"Cannot determine the rate limit by the header name \"{pair.Key}\". " +
                     $"Perhaps the headers-limits map is incomplete ({headersToLimitsMap.Count} items).");
             }
@@ -502,7 +495,7 @@ public abstract class ApiClientBase : IDisposable
             }
             else if (rsp.Result.IsSuccessful)
             {
-                PostLogMessage(LogLevel.Warning,
+                LogMessage(LogLevel.Warning,
                     $"The web response contains the empty rate limit metrics. Perhaps the limit metrics map " +
                     $"has not been registered for the endpoint \"{queryParams.RelativeEndpoint}\".");
             }
@@ -547,18 +540,17 @@ public abstract class ApiClientBase : IDisposable
     /// otherwise, <see langword="false"/>.</returns>
     protected bool IsLogLevelEnabled(LogLevel level)
     {
-        return _logger != null && _logger.IsLevelEnabled(level);
+        return _logger != null && _logger.IsEnabled(level);
     }
 
     /// <summary>
-    /// Pushes a message into the client's logger at the specified log level,
-    /// using <see cref="LogContextName"/> as the logging context.
+    /// Pushes a message into the client's logger at the specified log level.
     /// </summary>
     /// <param name="level">The log severity level of the message.</param>
     /// <param name="message">The message to be logged.</param>
-    protected void PostLogMessage(LogLevel level, string message)
+    protected void LogMessage(LogLevel level, string message)
     {
-        _logger?.Log(level, LogContextName, message);
+        _logger?.Log(level, "{Message}", message);
     }
 
     /// <summary>
@@ -613,7 +605,7 @@ public abstract class ApiClientBase : IDisposable
         }
         catch (Exception exc)
         {
-            PostLogMessage(LogLevel.Error, $"The disposal of the {GetType().Name} instance failed:\r\n{exc}");
+            LogMessage(LogLevel.Error, $"The disposal of the {GetType().Name} instance failed:\r\n{exc}");
         }
 
         if (releaseManaged)

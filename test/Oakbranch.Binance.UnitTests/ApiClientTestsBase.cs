@@ -1,7 +1,6 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text;
-using Oakbranch.Common.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Oakbranch.Binance.UnitTests
 {
@@ -15,13 +14,10 @@ namespace Oakbranch.Binance.UnitTests
 
         #region Instance members
 
-        private readonly ILogger? _logger;
-        protected ILogger? Logger => _logger;
+        protected readonly ILogger? Logger;
 
         private readonly bool _areQueryResultsLogged;
         protected bool AreQueryResultsLogged => _areQueryResultsLogged;
-
-        protected abstract string LogContext { get; }
 
         #endregion
 
@@ -29,7 +25,7 @@ namespace Oakbranch.Binance.UnitTests
 
         public ApiClientTestsBase(ILogger? logger, bool areQueryResultsLogged)
         {
-            _logger = logger;
+            Logger = logger;
             _areQueryResultsLogged = areQueryResultsLogged;
         }
 
@@ -115,6 +111,12 @@ namespace Oakbranch.Binance.UnitTests
             return sb.ToString();
         }
 
+        protected static ILogger<T> CreateDefaultLogger<T>(LogLevel level)
+        {
+            using ConsoleLoggerFactory factory = new ConsoleLoggerFactory(level);
+            return factory.CreateLogger<T>();
+        }
+
         #endregion
 
         #region Instance methods
@@ -127,7 +129,7 @@ namespace Oakbranch.Binance.UnitTests
         /// <param name="message">The message to push.</param>
         protected void LogMessage(LogLevel level, string message)
         {
-            _logger?.Log(level, LogContext, message);
+            Logger?.Log(level, message);
         }
 
         /// <summary>
@@ -137,14 +139,14 @@ namespace Oakbranch.Binance.UnitTests
         /// <param name="item">The object to log.</param>
         protected void LogObject<T>(T? item)
         {
-            if (_logger == null)
+            if (Logger == null)
             {
                 return;
             }
 
             if (item == null)
             {
-                LogMessage(LogLevel.Info, NullObjectDescription);
+                LogMessage(LogLevel.Information, NullObjectDescription);
                 return;
             }
 
@@ -152,7 +154,7 @@ namespace Oakbranch.Binance.UnitTests
             GetPublicMembers(type, out FieldInfo[]? fields, out PropertyInfo[]? props);
             string desc = GenerateDescription(type, fields, props, item);
 
-            _logger?.Log(LogLevel.Info, LogContext, desc);
+            Logger?.Log(LogLevel.Information, desc);
         }
 
         /// <summary>
@@ -166,14 +168,14 @@ namespace Oakbranch.Binance.UnitTests
         /// </param>
         protected void LogCollection<T>(IEnumerable<T> items, int limit = -1)
         {
-            if (_logger == null)
+            if (Logger == null)
             {
                 return;
             }
 
             if (items == null)
             {
-                LogMessage(LogLevel.Info, NullObjectDescription);
+                LogMessage(LogLevel.Information, NullObjectDescription);
                 return;
             }
 
@@ -219,7 +221,7 @@ namespace Oakbranch.Binance.UnitTests
                 sb.AppendLine($"... (total: {counter})");
             }
 
-            LogMessage(LogLevel.Info, sb.ToString());
+            LogMessage(LogLevel.Information, sb.ToString());
         }
 
         #endregion

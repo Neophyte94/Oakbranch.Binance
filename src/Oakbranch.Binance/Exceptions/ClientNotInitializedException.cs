@@ -1,5 +1,5 @@
 ﻿using System;
-using Oakbranch.Binance.Core;
+using Oakbranch.Binance.Clients;
 
 namespace Oakbranch.Binance.Exceptions
 {

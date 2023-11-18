@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Oakbranch.Common.Logging;
+using Microsoft.Extensions.Logging;
 using Oakbranch.Binance.Exceptions;
 using Oakbranch.Binance.Utility;
 using Oakbranch.Binance.Models;
@@ -62,15 +62,12 @@ public class SpotMarketApiClient : ApiV3ClientBase
 
     #endregion
 
-    #region Instance members
-
-    protected override string LogContextName => "Binance SM API client";
-
-    #endregion
-
     #region Instance constructors
 
-    public SpotMarketApiClient(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger? logger = null)
+    public SpotMarketApiClient(
+        IApiConnector connector,
+        IRateLimitsRegistry limitsRegistry,
+        ILogger<SpotMarketApiClient>? logger = null)
         : base(connector, limitsRegistry, logger)
     { }
 
@@ -302,7 +299,7 @@ public class SpotMarketApiClient : ApiV3ClientBase
                         }
                         catch (JsonException jExc)
                         {
-                            PostLogMessage(LogLevel.Warning, $"An exchange filter cannot be parsed: {jExc.Message}");
+                            LogMessage(LogLevel.Warning, $"An exchange filter cannot be parsed: {jExc.Message}");
                             ParseUtility.SkipTillObjectEnd(ref reader, objectDepth);
                         }
                     }
@@ -319,7 +316,7 @@ public class SpotMarketApiClient : ApiV3ClientBase
                     validator.RegisterProperty(3);
                     break;
                 default:
-                    PostLogMessage(LogLevel.Warning,
+                    LogMessage(LogLevel.Warning,
                         $"An unknown exchange info property \"{propName}\" was encountered while parsing the response.");
                     reader.Skip();
                     break;
@@ -434,7 +431,7 @@ public class SpotMarketApiClient : ApiV3ClientBase
                         }
                         catch (JsonException jExc)
                         {
-                            PostLogMessage(LogLevel.Warning, $"One of the symbol filters cannot be parsed: {jExc.Message}");
+                            LogMessage(LogLevel.Warning, $"One of the symbol filters cannot be parsed: {jExc.Message}");
                             ParseUtility.SkipTillObjectEnd(ref reader, objectDepth);
                         }
                     }
@@ -453,7 +450,7 @@ public class SpotMarketApiClient : ApiV3ClientBase
                     }
                     catch (JsonException jExc)
                     {
-                        PostLogMessage(LogLevel.Warning, $"A symbol's allowed STP modes cannot be parsed: {jExc.Message}");
+                        LogMessage(LogLevel.Warning, $"A symbol's allowed STP modes cannot be parsed: {jExc.Message}");
                         ParseUtility.SkipTillArrayEnd(ref reader, arrayDepth);
                     }
                     break;
@@ -466,7 +463,7 @@ public class SpotMarketApiClient : ApiV3ClientBase
                     reader.Skip();
                     break;
                 default:
-                    PostLogMessage(
+                    LogMessage(
                         LogLevel.Warning,
                         $"An unknown symbol property \"{propName}\" was encountered.");
                     reader.Skip();
@@ -579,7 +576,7 @@ public class SpotMarketApiClient : ApiV3ClientBase
                 case "success":
                     break;
                 default:
-                    PostLogMessage(LogLevel.Warning,
+                    LogMessage(LogLevel.Warning,
                         $"An unknown products info property \"{propName}\" was encountered in the response.");
                     reader.Skip();
                     break;
@@ -690,7 +687,7 @@ public class SpotMarketApiClient : ApiV3ClientBase
                 case "sd":
                     break;
                 default:
-                    PostLogMessage(LogLevel.Warning,
+                    LogMessage(LogLevel.Warning,
                         $"An unknown product property \"{propName}\" was encountered " +
                         $"while parsing the product \"{product.Symbol}\".");
                     break;
@@ -1327,7 +1324,7 @@ public class SpotMarketApiClient : ApiV3ClientBase
                         ParseUtility.ParseDecimal(propName, reader.GetString(), out p);
                         break;
                     default:
-                        PostLogMessage(LogLevel.Warning, $"An unknown {objName} property \"{propName}\" was encountered.");
+                        LogMessage(LogLevel.Warning, $"An unknown {objName} property \"{propName}\" was encountered.");
                         reader.Skip();
                         break;
                 }

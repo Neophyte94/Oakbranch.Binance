@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Oakbranch.Common.Logging;
+using Microsoft.Extensions.Logging;
 using Oakbranch.Binance.Utility;
 using Oakbranch.Binance.Models;
 using Oakbranch.Binance.Core;
@@ -79,7 +79,10 @@ namespace Oakbranch.Binance.Clients
 
         #region Instance constructors
 
-        public FuturesCMClientBase(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger? logger = null)
+        public FuturesCMClientBase(
+            IApiConnector connector,
+            IRateLimitsRegistry limitsRegistry,
+            ILogger? logger = null)
             : base(connector, limitsRegistry, LimitsDiscrimativeEndpoint, logger)
         {
             _RESTEndpoint = s_RESTBaseEndpoints.First((bep) => bep.Type == NetworkType.Live);

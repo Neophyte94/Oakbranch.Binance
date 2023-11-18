@@ -1,11 +1,10 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
 using NUnit.Framework.Internal;
-using Oakbranch.Common.Logging;
-using Oakbranch.Binance.Models;
-using Oakbranch.Binance.Models.Spot;
+using Oakbranch.Binance.Abstractions;
 using Oakbranch.Binance.Clients;
 using Oakbranch.Binance.Core.RateLimits;
-using Oakbranch.Binance.Abstractions;
+using Oakbranch.Binance.Models;
+using Oakbranch.Binance.Models.Spot;
 
 namespace Oakbranch.Binance.UnitTests
 {
@@ -60,13 +59,12 @@ namespace Oakbranch.Binance.UnitTests
         private readonly SpotMarketApiClient _client;
         private readonly List<IDisposable> _cleanupTargets;
 
-        protected override string LogContext => "Spot Market Api Tester";
-
         #endregion
 
         #region Instance constructors
 
-        public SpotMarketApiClientTests(bool areResultsLogged) : base(new ConsoleLogger(), areResultsLogged)
+        public SpotMarketApiClientTests(bool areResultsLogged)
+            : base(CreateDefaultLogger<SpotMarketApiClientTests>(LogLevel.Information), areResultsLogged)
         {
             if (!ApiConnectorSource.TryReadApiKeysFromContainer(out string apiKey, out string? secretKey))
             {
@@ -77,7 +75,10 @@ namespace Oakbranch.Binance.UnitTests
             IApiConnector connector = apiConnFactory.Create();
             IRateLimitsRegistry limitsRegistry = new RateLimitsRegistry();
 
-            _client = new SpotMarketApiClient(connector, limitsRegistry, Logger);
+            _client = new SpotMarketApiClient(
+                connector,
+                limitsRegistry,
+                CreateDefaultLogger<SpotMarketApiClient>(LogLevel.Information));
 
             _cleanupTargets = new List<IDisposable>();
             if (connector is IDisposable dsp2)

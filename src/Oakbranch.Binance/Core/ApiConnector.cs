@@ -9,11 +9,11 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Oakbranch.Binance.Abstractions;
 using Oakbranch.Binance.Core.TimeProviders;
 using Oakbranch.Binance.Exceptions;
 using Oakbranch.Binance.Utility;
-using Oakbranch.Common.Logging;
 
 namespace Oakbranch.Binance.Core;
 
@@ -26,7 +26,6 @@ public sealed class ApiConnector : IApiConnector, IDisposable
     #region Constants
 
     private const string ApiKeyHeaderName = "X-MBX-APIKEY";
-    private const string LogContextName = "Binance API connector";
     public const int ApiKeyLength = 64;
     public const int SecretKeyLength = 64;
     public const ushort RequestWindowDefault = 5000;
@@ -206,8 +205,11 @@ public sealed class ApiConnector : IApiConnector, IDisposable
     /// <exception cref="ArgumentException">
     /// Thrown when the <paramref name="apiKey"/> parameter has an invalid length.
     /// </exception>
-    public ApiConnector(string apiKey, ITimeProvider? timeProvider = null, ILogger? logger = null) :
-        this(apiKey, null, timeProvider, logger)
+    public ApiConnector(
+        string apiKey,
+        ITimeProvider? timeProvider = null,
+        ILogger<ApiConnector>? logger = null)
+        : this(apiKey, null, timeProvider, logger)
     { }
 
     /// <summary>
@@ -235,7 +237,11 @@ public sealed class ApiConnector : IApiConnector, IDisposable
     /// <exception cref="ArgumentException">
     /// Thrown when either the <paramref name="apiKey"/> or the <paramref name="secretKey"/> parameter has an invalid length.
     /// </exception>
-    public ApiConnector(string apiKey, string? secretKey, ITimeProvider? timeProvider = null, ILogger? logger = null)
+    public ApiConnector(
+        string apiKey,
+        string? secretKey,
+        ITimeProvider? timeProvider = null,
+        ILogger<ApiConnector>? logger = null)
     {
         if (string.IsNullOrEmpty(apiKey))
         {
@@ -371,7 +377,7 @@ public sealed class ApiConnector : IApiConnector, IDisposable
 
             if (IsLogLevelEnabled(LogLevel.Debug))
             {
-                PostLogMessage(LogLevel.Debug, $"Sending the {query.Method} request: {fullEndpoint}");
+                LogMessage(LogLevel.Debug, $"Sending the {query.Method} request: {fullEndpoint}");
             }
 
             Task<HttpResponseMessage> rspTask = query.Method switch
@@ -404,7 +410,7 @@ public sealed class ApiConnector : IApiConnector, IDisposable
                 }
                 catch (Exception exc)
                 {
-                    PostLogMessage(
+                    LogMessage(
                         LogLevel.Error,
                         $"Failed to extract the rate limits usage info from the HTTP headers:\r\n{exc}");
                 }
@@ -424,28 +430,28 @@ public sealed class ApiConnector : IApiConnector, IDisposable
         }
         catch (TaskCanceledException) when (ct.IsCancellationRequested)
         {
-            PostLogMessage(LogLevel.Error, $"The web request \"{fullEndpoint}\" was cancelled by the caller.");
+            LogMessage(LogLevel.Error, $"The web request \"{fullEndpoint}\" was cancelled by the caller.");
             throw new OperationCanceledException(ct);
         }
         catch (TaskCanceledException) when (timeoutCts.IsCancellationRequested)
         {
-            PostLogMessage(LogLevel.Error, $"The web request \"{fullEndpoint}\" timed out.");
+            LogMessage(LogLevel.Error, $"The web request \"{fullEndpoint}\" timed out.");
             throw new QueryException(FailureReason.Timeout);
         }
         catch (HttpRequestException httpExc) when (httpExc.InnerException is WebException webExc)
         {
-            PostLogMessage(LogLevel.Error, $"The web request \"{fullEndpoint}\" failed because the server couldn't be reached.");
+            LogMessage(LogLevel.Error, $"The web request \"{fullEndpoint}\" failed because the server couldn't be reached.");
             throw new QueryException(FailureReason.ConnectionFailed);
         }
         catch (WebException wExc)
         {
-            PostLogMessage(LogLevel.Error, $"The web request \"{fullEndpoint}\" failed with the status \"{wExc.Status}\".");
+            LogMessage(LogLevel.Error, $"The web request \"{fullEndpoint}\" failed with the status \"{wExc.Status}\".");
             int statusCode = wExc.Response is HttpWebResponse webResponse ? (int)webResponse.StatusCode : 0;
             throw GenerateQueryException(statusCode, wExc.Message);
         }
         catch (Exception exc)
         {
-            PostLogMessage(LogLevel.Error, $"The web request \"{fullEndpoint}\" failed:\r\n{exc}");
+            LogMessage(LogLevel.Error, $"The web request \"{fullEndpoint}\" failed:\r\n{exc}");
             throw GenerateQueryException(exc);
         }
         finally
@@ -499,14 +505,14 @@ public sealed class ApiConnector : IApiConnector, IDisposable
         {
             if (_limitMetricsMapsDict.Count != 0)
             {
-                PostLogMessage(
+                LogMessage(
                     LogLevel.Debug,
                     "The limit metrics won't be returned because no limit metrics map " +
                     "has been registered in the API connector instance.");
             }
             else
             {
-                PostLogMessage(
+                LogMessage(
                     LogLevel.Debug,
                     $"None of {_limitMetricsMapsDict.Count} registered limit metrics maps " +
                     $"can be applied to the relative endpoint \"{relativeEndpoint}\".");
@@ -518,7 +524,7 @@ public sealed class ApiConnector : IApiConnector, IDisposable
         // Check whether the limit metrics is required for this endpoint.
         if (limitMetricsMap.Length == 0)
         {
-            PostLogMessage(
+            LogMessage(
                 LogLevel.Debug,
                 $"The limit metrics won't be returned because the limit metrics map " +
                 $"applied to the endpoint \"{relativeEndpoint}\" is empty.");
@@ -547,7 +553,7 @@ public sealed class ApiConnector : IApiConnector, IDisposable
                 }
                 else
                 {
-                    PostLogMessage(
+                    LogMessage(
                         LogLevel.Warning,
                         $"The HTTP header \"{key}\" associated with the limit metrics " +
                         $"for the endpoint \"{relativeEndpoint}\" contains no real values.");
@@ -557,7 +563,7 @@ public sealed class ApiConnector : IApiConnector, IDisposable
 
         if (extractedValues.Count == 0)
         {
-            PostLogMessage(
+            LogMessage(
                 LogLevel.Warning,
                 $"The HTTP response headers contain none of {limitMetricsMap.Length} keys " +
                 $"specified in the limit metrics map that is applied to the endpoint \"{relativeEndpoint}\".");
@@ -582,7 +588,7 @@ public sealed class ApiConnector : IApiConnector, IDisposable
             }
             else
             {
-                PostLogMessage(
+                LogMessage(
                     LogLevel.Error,
                     $"The retry after time cannot be retrieved from HTTP response headers. " +
                     $"The default delay will be returned.");
@@ -663,12 +669,12 @@ public sealed class ApiConnector : IApiConnector, IDisposable
     // Miscellaneous.
     private bool IsLogLevelEnabled(LogLevel level)
     {
-        return _logger != null && _logger.IsLevelEnabled(level);
+        return _logger != null && _logger.IsEnabled(level);
     }
 
-    private void PostLogMessage(LogLevel level, string message)
+    private void LogMessage(LogLevel level, string message)
     {
-        _logger?.Log(level, LogContextName, message);
+        _logger?.Log(level, "{Message}", message);
     }
 
     private void ThrowIfDisposed()

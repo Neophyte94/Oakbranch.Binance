@@ -180,5 +180,30 @@ internal static class CommonUtility
         }
     }
 
+    /// <summary>
+    /// Gets the deterministic hash code for the specified string value.
+    /// <para>The deterministic result is independent of the processor architecture of the executing machine.</para>
+    /// </summary>
+    /// <param name="value">The string value to calculate the hash code for.</param>
+    /// <returns>The calculated deterministic hash code for the input string.</returns>
+    public static int GetDeterministicHashCode(this string value)
+    {
+        unchecked
+        {
+            int hash1 = (2386 << 16) + 5690;
+            int hash2 = hash1;
+
+            for (int i = 0; i != value.Length; i += 2)
+            {
+                hash1 = ((hash1 << 5) + hash1) ^ value[i];
+                if (i == value.Length - 1)
+                    break;
+                hash2 = ((hash2 << 5) + hash2) ^ value[i + 1];
+            }
+
+            return hash1 + (hash2 * 92456655);
+        }
+    }
+
     #endregion
 }

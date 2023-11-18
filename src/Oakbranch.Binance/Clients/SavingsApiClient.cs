@@ -3,7 +3,7 @@ using System.Text.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Threading;
-using Oakbranch.Common.Logging;
+using Microsoft.Extensions.Logging;
 using Oakbranch.Binance.Utility;
 using Oakbranch.Binance.Models.Savings;
 using Oakbranch.Binance.Core;
@@ -36,12 +36,6 @@ namespace Oakbranch.Binance.Clients
         private const string GetRedemptionRecordEndpoint = "/sapi/v1/lending/union/redemptionRecord";
         private const string GetInterestHistoryEndpoint = "/sapi/v1/lending/union/interestHistory";
         private const string PostChangeFixedToFlexibleEndpoint = "/sapi/v1/lending/positionChanged";
-
-        #endregion
-
-        #region Instance members
-
-        protected override string LogContextName => "Binance Sv API client";
 
         #endregion
 
@@ -159,7 +153,7 @@ namespace Oakbranch.Binance.Clients
                         ParseUtility.ParseDouble(propName, reader.GetString(), out sai.TotalFlexibleAmountInUSDT);
                         break;
                     default:
-                        PostLogMessage(
+                        LogMessage(
                             LogLevel.Warning,
                             $"An unknown property \"{propName}\" of the savings account info was encountered.");
                         reader.Skip();
@@ -372,7 +366,7 @@ namespace Oakbranch.Binance.Clients
                             // These properties are obsolete and not stored.
                             break;
                         default:
-                            PostLogMessage(LogLevel.Warning,
+                            LogMessage(LogLevel.Warning,
                                 $"An unknown property \"{propName}\" of the flexible product position was encountered.");
                             reader.Skip();
                             break;
@@ -590,7 +584,7 @@ namespace Oakbranch.Binance.Clients
                             validator.RegisterProperty(3);
                             break;
                         default:
-                            PostLogMessage(LogLevel.Warning, $"An unknown interest record property \"{propName}\" was encountered.");
+                            LogMessage(LogLevel.Warning, $"An unknown interest record property \"{propName}\" was encountered.");
                             reader.Skip();
                             break;
                     }

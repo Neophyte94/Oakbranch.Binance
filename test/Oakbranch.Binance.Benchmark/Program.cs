@@ -5,12 +5,12 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Oakbranch.Common.Logging;
-using Oakbranch.Binance.Models.Spot;
+using Microsoft.Extensions.Logging;
+using Oakbranch.Binance.Abstractions;
 using Oakbranch.Binance.Clients;
 using Oakbranch.Binance.Core;
 using Oakbranch.Binance.Core.RateLimits;
-using Oakbranch.Binance.Abstractions;
+using Oakbranch.Binance.Models.Spot;
 
 namespace Oakbranch.Binance.Benchmark
 {
@@ -20,19 +20,20 @@ namespace Oakbranch.Binance.Benchmark
 
         static void Main()
         {
-            ApiConnector connector = null;
-            CancellationTokenSource cts = null;
+            ApiConnector? connector = null;
+            CancellationTokenSource? cts = null;
+
             try
             {
                 cts = new CancellationTokenSource();
-                ILogger logger = new ConsoleLogger();
+                ILoggerFactory loggerFactory = new ConsoleLoggerFactory(LogLevel.Trace);
 
-                (string, string)? keysSet = null;
+                (string, string?)? keysSet = null;
                 while (keysSet == null)
                 {
                     cts.Token.ThrowIfCancellationRequested();
 
-                    FileStream keyFileStream = TryOpenApiKeysContainer();
+                    FileStream? keyFileStream = TryOpenApiKeysContainer();
                     if (keyFileStream == null)
                     {
                         Console.WriteLine(
@@ -74,7 +75,8 @@ namespace Oakbranch.Binance.Benchmark
                 connector = new ApiConnector(keysSet.Value.Item1, keysSet.Value.Item2);
                 IRateLimitsRegistry limitsRegistry = new RateLimitsRegistry(limitCapacity: 8);
                 
-                Task testTask = TestEndpointsAsync(connector, limitsRegistry, logger, cts.Token);
+                Task testTask = TestEndpointsAsync(
+                    connector, limitsRegistry, loggerFactory.CreateLogger<SpotMarketApiClient>(), cts.Token);
                 Task inputTask = WaitForInputKeyAsync();
                 Console.WriteLine("The test has been started. Press any key to interrupt it.");
                 Console.WriteLine();
@@ -91,7 +93,7 @@ namespace Oakbranch.Binance.Benchmark
                 {
                     if (testTask.IsFaulted)
                     {
-                        Console.WriteLine($"The test failed:\r\n{testTask.Exception.InnerException}");
+                        Console.WriteLine($"The test failed:\r\n{testTask.Exception?.InnerException}");
                     }
                     else
                     {
@@ -119,14 +121,19 @@ namespace Oakbranch.Binance.Benchmark
         }
 
         private static async Task TestEndpointsAsync(
-            ApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger logger, CancellationToken ct)
+            ApiConnector connector,
+            IRateLimitsRegistry limitsRegistry,
+            ILogger<SpotMarketApiClient> logger,
+            CancellationToken ct)
         {
             if (connector == null)
+            {
                 throw new ArgumentNullException(nameof(connector));
-            if (connector.IsDisposed)
-                throw new ArgumentException("The specified API connector is disposed.");
+            }
             if (limitsRegistry == null)
+            {
                 throw new ArgumentNullException(nameof(limitsRegistry));
+            }
 
             using (SpotMarketApiClient client = new SpotMarketApiClient(connector, limitsRegistry, logger))
             {
@@ -195,7 +202,7 @@ namespace Oakbranch.Binance.Benchmark
             }
         }
 
-        private static FileStream TryOpenApiKeysContainer()
+        private static FileStream? TryOpenApiKeysContainer()
         {
             if (!File.Exists(ApiKeysContainerName))
             {
@@ -205,7 +212,7 @@ namespace Oakbranch.Binance.Benchmark
             return new FileStream(ApiKeysContainerName, FileMode.Open, FileAccess.Read, FileShare.Read);
         }
 
-        private static async Task<(string, string)> ReadApiKeysAsync(Stream inputStream, CancellationToken ct)
+        private static async Task<(string, string?)> ReadApiKeysAsync(Stream inputStream, CancellationToken ct)
         {
             using (StreamReader sr = new StreamReader(inputStream, Encoding.ASCII))
             {
@@ -215,7 +222,7 @@ namespace Oakbranch.Binance.Benchmark
                     throw new Exception("The specified stream is empty.");
                 }
 
-                string key = await sr.ReadLineAsync(ct).ConfigureAwait(false);
+                string? key = await sr.ReadLineAsync(ct).ConfigureAwait(false);
                 if (key == null || key.Length != 64)
                 {
                     throw new Exception(
@@ -223,7 +230,7 @@ namespace Oakbranch.Binance.Benchmark
                         $"The valid key is represented by a 64-character ASCII string.");
                 }
 
-                string secret;
+                string? secret;
                 if (!sr.EndOfStream)
                 {
                     ct.ThrowIfCancellationRequested();
@@ -252,7 +259,7 @@ namespace Oakbranch.Binance.Benchmark
         {
             return Task.Run(() =>
             {
-                string rsp = Console.ReadLine();
+                string? rsp = Console.ReadLine();
                 return String.Equals(rsp, "exit", StringComparison.InvariantCultureIgnoreCase);
             });
         }

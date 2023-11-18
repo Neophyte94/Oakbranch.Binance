@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Oakbranch.Binance.Abstractions;
 using Oakbranch.Binance.Core;
 using Oakbranch.Binance.Models;
 using Oakbranch.Binance.Models.Margin;
 using Oakbranch.Binance.Utility;
-using Oakbranch.Common.Logging;
 
 namespace Oakbranch.Binance.Clients;
 
@@ -108,15 +108,12 @@ public class MarginAccountApiClient : SapiClientBase
 
     #endregion
 
-    #region Instance members
-
-    protected override string LogContextName => "Binance MA API client";
-
-    #endregion
-
     #region Instance constructors
 
-    public MarginAccountApiClient(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger? logger)
+    public MarginAccountApiClient(
+        IApiConnector connector,
+        IRateLimitsRegistry limitsRegistry,
+        ILogger<MarginAccountApiClient>? logger)
         : base(connector, limitsRegistry, logger)
     { }
 
@@ -624,7 +621,7 @@ public class MarginAccountApiClient : SapiClientBase
                     rsp.TotalNetAssetOfBTC = tna;
                     break;
                 default:
-                    PostLogMessage(
+                    LogMessage(
                         LogLevel.Warning,
                         $"An unknown property \"{propName}\" of the isolated margin accounts summary was encountered.");
                     reader.Skip();
@@ -714,7 +711,7 @@ public class MarginAccountApiClient : SapiClientBase
                         validator.RegisterProperty(10);
                         break;
                     default:
-                        PostLogMessage(LogLevel.Warning, $"An unknown isolated symbol acc property \"{propName}\" was encountered.");
+                        LogMessage(LogLevel.Warning, $"An unknown isolated symbol acc property \"{propName}\" was encountered.");
                         reader.Skip();
                         break;
                 }
@@ -1019,7 +1016,7 @@ public class MarginAccountApiClient : SapiClientBase
                                     reader.Skip(); // The property is not stored.
                                     break;
                                 default:
-                                    PostLogMessage(
+                                    LogMessage(
                                         LogLevel.Warning,
                                         $"An unknown property \"{propName}\" of the cross margin transfer was encountered.");
                                     reader.Skip();
@@ -1057,7 +1054,7 @@ public class MarginAccountApiClient : SapiClientBase
                     break;
 
                 default:
-                    PostLogMessage(
+                    LogMessage(
                         LogLevel.Warning,
                         $"An unknown property \"{outerPropName}\" of the cross margin transfer list was encountered.");
                     reader.Skip();
@@ -1271,7 +1268,7 @@ public class MarginAccountApiClient : SapiClientBase
                                     reader.Skip(); // The property is not stored.
                                     break;
                                 default:
-                                    PostLogMessage(
+                                    LogMessage(
                                         LogLevel.Warning,
                                         $"An unknown property \"{propName}\" of the cross margin transfer was encountered.");
                                     reader.Skip();
@@ -1310,7 +1307,7 @@ public class MarginAccountApiClient : SapiClientBase
                     break;
 
                 default:
-                    PostLogMessage(
+                    LogMessage(
                         LogLevel.Warning,
                         $"An unknown property \"{outerPropName}\" of the isolated margin transfer list was encountered.");
                     reader.Skip();
@@ -1721,7 +1718,7 @@ public class MarginAccountApiClient : SapiClientBase
                                     // The property is not stored.
                                     break;
                                 default:
-                                    PostLogMessage(
+                                    LogMessage(
                                         LogLevel.Warning,
                                         $"An unknown borrow record property \"{propName}\" was encountered.");
                                     reader.Skip();
@@ -1761,7 +1758,7 @@ public class MarginAccountApiClient : SapiClientBase
                     break;
 
                 default:
-                    PostLogMessage(
+                    LogMessage(
                         LogLevel.Warning,
                         $"An unknown property \"{outerPropName}\" was encountered in the borrow records response.");
                     reader.Skip();
@@ -2043,7 +2040,7 @@ public class MarginAccountApiClient : SapiClientBase
                                     // The property is not stored.
                                     break;
                                 default:
-                                    PostLogMessage(
+                                    LogMessage(
                                         LogLevel.Warning,
                                         $"An unknown repay record property \"{propName}\" was encountered.");
                                     reader.Skip();
@@ -2086,7 +2083,7 @@ public class MarginAccountApiClient : SapiClientBase
                     break;
 
                 default:
-                    PostLogMessage(
+                    LogMessage(
                         LogLevel.Warning,
                         $"An unknown property \"{outerPropName}\" was encountered in the repay records response.");
                     reader.Skip();
@@ -2880,7 +2877,7 @@ public class MarginAccountApiClient : SapiClientBase
                     validator.RegisterProperty(3);
                     break;
                 default:
-                    PostLogMessage(
+                    LogMessage(
                         LogLevel.Warning,
                         $"An unknown property \"{propName}\" of the post order response was encountered.");
                     reader.Skip();
@@ -2982,7 +2979,7 @@ public class MarginAccountApiClient : SapiClientBase
                     validator.RegisterProperty(7);
                     break;
                 default:
-                    PostLogMessage(
+                    LogMessage(
                         LogLevel.Warning,
                         $"An unknown property \"{propName}\" of the post order response was encountered.");
                     reader.Skip();
@@ -3096,7 +3093,7 @@ public class MarginAccountApiClient : SapiClientBase
                     response.Fills = ParseUtility.ParseOrderPartialFills(ref reader);
                     break;
                 default:
-                    PostLogMessage(
+                    LogMessage(
                         LogLevel.Warning,
                         $"An unknown property \"{propName}\" of the post order response was encountered.");
                     reader.Skip();
@@ -3865,7 +3862,7 @@ public class MarginAccountApiClient : SapiClientBase
             {
                 foreach (JsonException jExc in parseErrors)
                 {
-                    PostLogMessage(LogLevel.Warning, $"Parsing a margin pair failed:\r\n{jExc}");
+                    LogMessage(LogLevel.Warning, $"Parsing a margin pair failed:\r\n{jExc}");
                 }
             }
         }
@@ -3916,7 +3913,7 @@ public class MarginAccountApiClient : SapiClientBase
                     validator.RegisterProperty(3);
                     break;
                 default:
-                    PostLogMessage(
+                    LogMessage(
                         LogLevel.Warning,
                         $"An unknown property \"{propName}\" of the " +
                         (isIsolated ? "isolated" : "cross") + " margin pair was encountered.");
@@ -3993,7 +3990,7 @@ public class MarginAccountApiClient : SapiClientBase
                     // The property is not stored.
                     break;
                 default:
-                    PostLogMessage(
+                    LogMessage(
                         LogLevel.Warning,
                         $"An unknown transaction response property \"{propName}\" was encountered.");
                     reader.Skip();
@@ -4126,7 +4123,7 @@ public class MarginAccountApiClient : SapiClientBase
                     order.AccountId = reader.GetInt64();
                     break;
                 default:
-                    PostLogMessage(
+                    LogMessage(
                         LogLevel.Warning,
                         $"An unknown order property \"{propName}\" was encountered.");
                     reader.Skip();

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Oakbranch.Common.Logging;
+using Microsoft.Extensions.Logging;
 using Oakbranch.Binance.Abstractions;
 
 namespace Oakbranch.Binance.Core.RateLimits;
@@ -29,11 +29,17 @@ public sealed class RateLimitsRegistry : IRateLimitsRegistry
                 if (value != null)
                 {
                     if (value == this)
+                    {
                         throw new ArgumentException("The specified next node is the current node itself.");
+                    }
                     if (value.Current == Current)
+                    {
                         throw new ArgumentException("The next node cannot point to the same instance as the current node.");
+                    }
                     if (value.Next == this)
+                    {
                         throw new ArgumentException("The next node of the specified next node points to the current node.");
+                    }
                 }
 
                 _next = value;
@@ -79,7 +85,9 @@ public sealed class RateLimitsRegistry : IRateLimitsRegistry
     public RateLimitsRegistry(int limitCapacity = 32)
     {
         if (limitCapacity < 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(limitCapacity));
+        }
 
         _idToLimitDict = new Dictionary<int, LimitCounter>(limitCapacity);
         _dimensionToLimitsDict = new Dictionary<int, LimitNode>(limitCapacity);

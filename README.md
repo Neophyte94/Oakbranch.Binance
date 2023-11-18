@@ -17,7 +17,6 @@ Oakbranch.Binance is a .NET library that provides high-level access to the Binan
 ### Prerequisites
 
 - .NET 7.0 or later.
-- [Oakbranch.Common](https://github.com/Neophyte94/Oakbranch.Common): An open-source .NET library of helper methods (used as a dependency).
 
 ### Usage
 

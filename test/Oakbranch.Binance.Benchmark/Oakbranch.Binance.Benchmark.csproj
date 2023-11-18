@@ -2,12 +2,15 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DefineConstants />
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Oakbranch.Common\Oakbranch.Common\Oakbranch.Common.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Oakbranch.Binance\Oakbranch.Binance.csproj" />
   </ItemGroup>
 </Project>

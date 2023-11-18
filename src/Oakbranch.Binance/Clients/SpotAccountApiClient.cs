@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Oakbranch.Binance.Abstractions;
 using Oakbranch.Binance.Core;
 using Oakbranch.Binance.Models;
 using Oakbranch.Binance.Models.Spot;
 using Oakbranch.Binance.Utility;
-using Oakbranch.Common.Logging;
 
 namespace Oakbranch.Binance.Clients;
 
@@ -43,15 +43,12 @@ public class SpotAccountApiClient : ApiV3ClientBase
 
     #endregion
 
-    #region Instance members
-
-    protected override string LogContextName => "Binance SA API client";
-
-    #endregion
-
     #region Instance constructors
 
-    public SpotAccountApiClient(IApiConnector connector, IRateLimitsRegistry limitsRegistry, ILogger? logger)
+    public SpotAccountApiClient(
+        IApiConnector connector,
+        IRateLimitsRegistry limitsRegistry,
+        ILogger<SpotAccountApiClient>? logger)
         : base(connector, limitsRegistry, logger)
     { }
 
@@ -265,7 +262,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
                     rsp.Permissions = ParseAccountPermissions(ref reader);
                     break;
                 default:
-                    PostLogMessage(LogLevel.Warning, $"An unknown account info property \"{propName}\" was encountered.");
+                    LogMessage(LogLevel.Warning, $"An unknown account info property \"{propName}\" was encountered.");
                     reader.Skip();
                     break;
             }
@@ -883,7 +880,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
                     validator.RegisterProperty(2);
                     break;
                 default:
-                    PostLogMessage(
+                    LogMessage(
                         LogLevel.Warning,
                         $"An unknown property \"{propName}\" of the post order response was encountered.");
                     reader.Skip();
@@ -996,7 +993,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
                         ParseUtility.GetNonEmptyString(ref reader, propName));
                     break;
                 default:
-                    PostLogMessage(
+                    LogMessage(
                         LogLevel.Warning,
                         $"An unknown property \"{propName}\" of the post order response was encountered.");
                     reader.Skip();
@@ -1114,7 +1111,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
                     response.Fills = ParseUtility.ParseOrderPartialFills(ref reader);
                     break;
                 default:
-                    PostLogMessage(
+                    LogMessage(
                         LogLevel.Warning,
                         $"An unknown property \"{propName}\" of the post order response was encountered.");
                     reader.Skip();
@@ -1884,7 +1881,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
                 case "origClientOrderId":
                     break;
                 default:
-                    PostLogMessage(
+                    LogMessage(
                         LogLevel.Warning,
                         $"An unknown order property \"{propName}\" was encountered.");
                     reader.Skip();
