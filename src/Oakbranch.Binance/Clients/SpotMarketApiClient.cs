@@ -167,10 +167,14 @@ public class SpotMarketApiClient : ApiV3ClientBase
 
         string propName = ParseUtility.ReadNonEmptyPropertyName(ref reader);
         if (propName != "serverTime")
+        {
             throw new JsonException($"The server time property was expected but \"{propName}\" encountered.");
+        }
 
         if (!reader.Read() || reader.TokenType != JsonTokenType.Number)
+        {
             throw new JsonException($"The server time value (number) was expected but \"{reader.TokenType}\" encountered.");
+        }
         long ms = reader.GetInt64();
 
         ParseUtility.ReadObjectEnd(ref reader);
@@ -711,7 +715,9 @@ public class SpotMarketApiClient : ApiV3ClientBase
     {
         ThrowIfNotRunning();
         if (string.IsNullOrWhiteSpace(symbol))
+        {
             throw new ArgumentNullException(nameof(symbol));
+        }
 
         QueryWeight[] weights = new QueryWeight[]
         {
@@ -849,7 +855,7 @@ public class SpotMarketApiClient : ApiV3ClientBase
     /// <para>If not specified, the default value <see cref="DefaultTradesQueryLimit"/> (500) is used.</para>
     /// </param>
     /// <param name="startTime">Time to fetch aggregate trades from (inclusive).</param>
-    /// <param name="endTime">Time to fetch aggregate trades until (inclusive)..</param>
+    /// <param name="endTime">Time to fetch aggregate trades until (inclusive).</param>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentOutOfRangeException"/>
@@ -863,11 +869,17 @@ public class SpotMarketApiClient : ApiV3ClientBase
     {
         ThrowIfNotRunning();
         if (string.IsNullOrWhiteSpace(symbol))
+        {
             throw new ArgumentNullException(nameof(symbol));
+        }
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
+        {
             throw new ArgumentException($"The specified period [{startTime} - {endTime}] is invalid.");
+        }
         if (limit != null && (limit < 1 || limit > MaxTradesQueryLimit))
+        {
             throw new ArgumentOutOfRangeException(nameof(limit));
+        }
 
         QueryWeight[] weights = new QueryWeight[]
         {
@@ -935,9 +947,13 @@ public class SpotMarketApiClient : ApiV3ClientBase
     {
         ThrowIfNotRunning();
         if (string.IsNullOrWhiteSpace(symbol))
+        {
             throw new ArgumentNullException(nameof(symbol));
+        }
         if (limit != null && (limit < 1 || limit > MaxTradesQueryLimit))
+        {
             throw new ArgumentOutOfRangeException(nameof(limit));
+        }
 
         QueryWeight[] weights = new QueryWeight[]
         {
@@ -1081,11 +1097,11 @@ public class SpotMarketApiClient : ApiV3ClientBase
     /// </summary>
     /// <param name="symbol">A symbol to get candlestick data for.</param>
     /// <param name="limit">
-    /// The maximum number of candlesticks to fetch.
+    /// The maximum number of candlesticks to fetch (optional).
     /// <para>The maximum value is <see cref="MaxKlinesQueryLimit"/> (1000).</para>
     /// <para>If not specified, the default value <see cref="DefaultKlinesQueryLimit"/> (500) is used.</para></param>
-    /// <param name="startTime">Time to fetch data from (inclusive).</param>
-    /// <param name="endTime">Time to fetch data prior to (inclusive).</param>
+    /// <param name="startTime">The time to fetch candlesticks from, based on their opening time (inclusive, optional).</param>
+    /// <param name="endTime">The time to fetch candlesticks prior to, based on their opening time (inclusive, optional).</param>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="ArgumentOutOfRangeException"/>
     /// <exception cref="ArgumentException"/>
@@ -1100,11 +1116,17 @@ public class SpotMarketApiClient : ApiV3ClientBase
     {
         ThrowIfNotRunning();
         if (string.IsNullOrWhiteSpace(symbol))
+        {
             throw new ArgumentNullException(nameof(symbol));
+        }
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
+        {
             throw new ArgumentException($"The specified period [{startTime} - {endTime}] is invalid.");
+        }
         if (limit != null && (limit < 1 || limit > MaxKlinesQueryLimit))
+        {
             throw new ArgumentOutOfRangeException(nameof(limit));
+        }
 
         QueryWeight[] weights = new QueryWeight[]
         {

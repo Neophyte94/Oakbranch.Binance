@@ -524,9 +524,13 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     {
         ThrowIfNotRunning();
         if (string.IsNullOrWhiteSpace(symbol))
+        {
             throw new ArgumentNullException(nameof(symbol));
+        }
         if (limit < 1 || limit > MaxTradesQueryLimit)
+        {
             throw new ArgumentOutOfRangeException(nameof(limit));
+        }
 
         QueryWeight[] weights = new QueryWeight[]
         {
@@ -713,11 +717,17 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     {
         ThrowIfNotRunning();
         if (string.IsNullOrWhiteSpace(symbol))
+        {
             throw new ArgumentNullException(nameof(symbol));
+        }
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
+        {
             throw new ArgumentException($"The specified period [{startTime} - {endTime}] is invalid.");
+        }
         if (limit < 1 || limit > MaxTradesQueryLimit)
+        {
             throw new ArgumentOutOfRangeException(nameof(limit));
+        }
 
         QueryWeight[] weights = new QueryWeight[]
         {
@@ -840,8 +850,8 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     /// The most weight-efficient value is 499 items per query.</para>
     /// </summary>
     /// <param name="symbol">The futures contract symbol to get candlestick data for.</param>
-    /// <param name="startTime">The time to fetch data from (inclusive).</param>
-    /// <param name="endTime">The time to fetch data prior to (inclusive).</param>
+    /// <param name="startTime">The time to fetch candlesticks from, based on their opening time (inclusive, optional).</param>
+    /// <param name="endTime">The time to fetch candlesticks prior to, based on their opening time (inclusive, optional).</param>
     /// <param name="limit">
     /// The maximum number of candlesticks to fetch.
     /// <para>The maximum value is <see cref="MaxKlinesQueryLimit"/> (1500).</para>
@@ -856,11 +866,17 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     {
         ThrowIfNotRunning();
         if (string.IsNullOrWhiteSpace(symbol))
+        {
             throw new ArgumentNullException(nameof(symbol));
+        }
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
+        {
             throw new ArgumentException($"The specified period [{startTime} - {endTime}] is invalid.");
+        }
         if (limit != null && (limit < 1 || limit > MaxKlinesQueryLimit))
+        {
             throw new ArgumentOutOfRangeException(nameof(limit));
+        }
 
         QueryBuilder qs = new QueryBuilder(109);
         qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
@@ -911,8 +927,8 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     /// </summary>
     /// <param name="pair">The underlying trading pair of the futures contract to get candlestick data for.</param>
     /// <param name="contractType">The type of the futures contract to get candlestick data for.</param>
-    /// <param name="startTime">The time to fetch data from (inclusive).</param>
-    /// <param name="endTime">The time to fetch data prior to (inclusive).</param>
+    /// <param name="startTime">The time to fetch candlesticks from, based on their opening time (inclusive, optional).</param>
+    /// <param name="endTime">The time to fetch candlesticks prior to, based on their opening time (inclusive, optional).</param>
     /// <param name="limit">
     /// The maximum number of candlesticks to fetch.
     /// <para>The maximum value is <see cref="MaxKlinesQueryLimit"/> (1500).</para>
@@ -928,11 +944,17 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     {
         ThrowIfNotRunning();
         if (string.IsNullOrWhiteSpace(pair))
+        {
             throw new ArgumentNullException(nameof(pair));
+        }
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
+        {
             throw new ArgumentException($"The specified period [{startTime} - {endTime}] is invalid.");
+        }
         if (limit != null && (limit < 1 || limit > MaxKlinesQueryLimit))
+        {
             throw new ArgumentOutOfRangeException(nameof(limit));
+        }
 
         QueryBuilder qs = new QueryBuilder(109);
         qs.AddParameter("pair", CommonUtility.NormalizeSymbol(pair));
@@ -1005,16 +1027,25 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     {
         ThrowIfNotRunning();
         if (string.IsNullOrWhiteSpace(pair))
+        {
             throw new ArgumentNullException(nameof(pair));
+        }
         if (startTime != null && endTime != null)
         {
             if (endTime.Value < startTime.Value)
+            {
                 throw new ArgumentException($"The specified period [{startTime} - {endTime}] is invalid.");
+            }
             if ((endTime.Value - startTime.Value).Ticks > MaxIndexPriceLookupInterval)
+            {
                 throw new ArgumentException($"The specified lookup period ({(endTime.Value - startTime.Value).TotalDays:0.0} days) is too large.");
+
+            }
         }
         if (limit != null && (limit < 1 || limit > MaxKlinesQueryLimit))
+        {
             throw new ArgumentOutOfRangeException(nameof(limit));
+        }
 
         QueryBuilder qs = new QueryBuilder(109);
         qs.AddParameter("pair", CommonUtility.NormalizeSymbol(pair));
@@ -1042,8 +1073,12 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     /// The most weight-efficient value is 499 items per query.</para>
     /// </summary>
     public Task<List<Candlestick>> GetIndexPriceKlinesAsync(
-        string pair, KlineInterval interval,
-        DateTime? startTime = null, DateTime? endTime = null, int? limit = null, CancellationToken ct = default)
+        string pair,
+        KlineInterval interval,
+        DateTime? startTime = null,
+        DateTime? endTime = null,
+        int? limit = null,
+        CancellationToken ct = default)
     {
         using (IDeferredQuery<List<Candlestick>> query =
             PrepareGetIndexPriceKlines(pair, interval, startTime, endTime, limit))
@@ -1060,24 +1095,33 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     /// The most weight-efficient value is 499 items per query.</para>
     /// </summary>
     /// <param name="symbol">The futures contract symbol to get candlestick data for.</param>
-    /// <param name="startTime">The time to fetch data from (inclusive).</param>
-    /// <param name="endTime">The time to fetch data prior to (inclusive).</param>
+    /// <param name="startTime">The time to fetch candlesticks from, based on their opening time (inclusive, optional).</param>
+    /// <param name="endTime">The time to fetch candlesticks prior to, based on their opening time (inclusive, optional).</param>
     /// <param name="limit">
     /// The maximum number of candlesticks to fetch.
     /// <para>The maximum value is <see cref="MaxKlinesQueryLimit"/> (1500).</para>
     /// <para>If not specified, the default value <see cref="DefaultKlinesQueryLimit"/> (500) is used.</para>
     /// </param>
     public IDeferredQuery<List<Candlestick>> PrepareGetMarkPriceKlines(
-        string symbol, KlineInterval interval,
-        DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
+        string symbol,
+        KlineInterval interval,
+        DateTime? startTime = null,
+        DateTime? endTime = null,
+        int? limit = null)
     {
         ThrowIfNotRunning();
         if (string.IsNullOrWhiteSpace(symbol))
+        {
             throw new ArgumentNullException(nameof(symbol));
+        }
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
+        {
             throw new ArgumentException($"The specified period [{startTime} - {endTime}] is invalid.");
+        }
         if (limit != null && (limit < 1 || limit > MaxKlinesQueryLimit))
+        {
             throw new ArgumentOutOfRangeException(nameof(limit));
+        }
 
         QueryBuilder qs = new QueryBuilder(109);
         qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
@@ -1123,24 +1167,33 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     /// The most weight-efficient value is 499 items per query.</para>
     /// </summary>
     /// <param name="symbol">The futures contract symbol to get candlestick data for.</param>
-    /// <param name="startTime">The time to fetch data from (inclusive).</param>
-    /// <param name="endTime">The time to fetch data prior to (inclusive).</param>
+    /// <param name="startTime">The time to fetch candlesticks from, based on their opening time (inclusive, optional).</param>
+    /// <param name="endTime">The time to fetch candlesticks prior to, based on their opening time (inclusive, optional).</param>
     /// <param name="limit">
     /// The maximum number of candlesticks to fetch.
     /// <para>The maximum value is <see cref="MaxKlinesQueryLimit"/> (1500).</para>
     /// <para>If not specified, the default value <see cref="DefaultKlinesQueryLimit"/> (500) is used.</para>
     /// </param>
     public IDeferredQuery<List<Candlestick>> PrepareGetPremiumIndexKlines(
-        string symbol, KlineInterval interval,
-        DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
+        string symbol,
+        KlineInterval interval,
+        DateTime? startTime = null,
+        DateTime? endTime = null,
+        int? limit = null)
     {
         ThrowIfNotRunning();
         if (string.IsNullOrWhiteSpace(symbol))
+        {
             throw new ArgumentNullException(nameof(symbol));
+        }
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
+        {
             throw new ArgumentException($"The specified period [{startTime} - {endTime}] is invalid.");
+        }
         if (limit != null && (limit < 1 || limit > MaxKlinesQueryLimit))
+        {
             throw new ArgumentOutOfRangeException(nameof(limit));
+        }
 
         QueryBuilder qs = new QueryBuilder(109);
         qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
@@ -1217,7 +1270,9 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     {
         ThrowIfNotRunning();
         if (string.IsNullOrWhiteSpace(pair))
+        {
             throw new ArgumentNullException(nameof(pair));
+        }
 
         QueryWeight[] weights = new QueryWeight[]
         {
@@ -1269,7 +1324,9 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     {
         ThrowIfNotRunning();
         if (string.IsNullOrWhiteSpace(symbol))
+        {
             throw new ArgumentNullException(nameof(symbol));
+        }
 
         QueryWeight[] weights = new QueryWeight[]
         {
@@ -1436,11 +1493,17 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     {
         ThrowIfDisposed();
         if (string.IsNullOrWhiteSpace(symbol))
+        {
             throw new ArgumentNullException(nameof(symbol));
+        }
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
+        {
             throw new ArgumentException($"The specified time period [{startTime} ; {endTime}] is invalid.");
+        }
         if (limit < 1 || limit > MaxFundingHistoryQueryLimit)
+        {
             throw new ArgumentOutOfRangeException(nameof(limit));
+        }
 
         QueryWeight[] weights = new QueryWeight[]
         {
@@ -1558,7 +1621,9 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     {
         ThrowIfNotRunning();
         if (string.IsNullOrWhiteSpace(symbol))
+        {
             throw new ArgumentNullException(nameof(symbol));
+        }
 
         QueryWeight[] weights = new QueryWeight[]
         {
@@ -1667,11 +1732,17 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     {
         ThrowIfDisposed();
         if (string.IsNullOrWhiteSpace(pair))
+        {
             throw new ArgumentNullException(nameof(pair));
+        }
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
+        {
             throw new ArgumentException($"The specified time period [{startTime} ; {endTime}] is invalid.");
+        }
         if (limit < 1 || limit > MaxMarketStatsQueryLimit)
+        {
             throw new ArgumentOutOfRangeException(nameof(limit));
+        }
 
         QueryBuilder qs = new QueryBuilder(110);
         qs.AddParameter("pair", CommonUtility.NormalizeSymbol(pair));
@@ -1795,16 +1866,25 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     /// <para>If not specified, the default value <see cref="DefaultMarketStatsQueryLimit"/> (30) is used.</para>
     /// </param>
     public IDeferredQuery<List<LongShortRatio>> PrepareGetTopAccountLongShortRatio(
-        string pair, StatsInterval interval,
-        DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
+        string pair,
+        StatsInterval interval,
+        DateTime? startTime = null,
+        DateTime? endTime = null,
+        int? limit = null)
     {
         ThrowIfDisposed();
         if (string.IsNullOrWhiteSpace(pair))
+        {
             throw new ArgumentNullException(nameof(pair));
+        }
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
+        {
             throw new ArgumentException($"The specified time period [{startTime} ; {endTime}] is invalid.");
+        }
         if (limit < 1 || limit > MaxMarketStatsQueryLimit)
+        {
             throw new ArgumentOutOfRangeException(nameof(limit));
+        }
 
         QueryBuilder qs = new QueryBuilder(83);
         qs.AddParameter("pair", CommonUtility.NormalizeSymbol(pair));
@@ -1853,16 +1933,25 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     /// <para>If not specified, the default value <see cref="DefaultMarketStatsQueryLimit"/> (30) is used.</para>
     /// </param>
     public IDeferredQuery<List<LongShortRatio>> PrepareGetTopPositionLongShortRatio(
-        string pair, StatsInterval interval,
-        DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
+        string pair,
+        StatsInterval interval,
+        DateTime? startTime = null,
+        DateTime? endTime = null,
+        int? limit = null)
     {
         ThrowIfDisposed();
         if (string.IsNullOrWhiteSpace(pair))
+        {
             throw new ArgumentNullException(nameof(pair));
+        }
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
+        {
             throw new ArgumentException($"The specified time period [{startTime} ; {endTime}] is invalid.");
+        }
         if (limit < 1 || limit > MaxMarketStatsQueryLimit)
+        {
             throw new ArgumentOutOfRangeException(nameof(limit));
+        }
 
         QueryBuilder qs = new QueryBuilder(83);
         qs.AddParameter("pair", CommonUtility.NormalizeSymbol(pair));
@@ -1887,8 +1976,12 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     /// <para>Note: only the data of the latest 30 days is available.</para>
     /// </summary>
     public Task<List<LongShortRatio>> GetTopPositionLongShortRatioAsync(
-        string pair, StatsInterval interval,
-        DateTime? startTime = null, DateTime? endTime = null, int? limit = null, CancellationToken ct = default)
+        string pair,
+        StatsInterval interval,
+        DateTime? startTime = null,
+        DateTime? endTime = null,
+        int? limit = null,
+        CancellationToken ct = default)
     {
         using (IDeferredQuery<List<LongShortRatio>> query =
             PrepareGetTopPositionLongShortRatio(pair, interval, startTime, endTime, limit))
@@ -1911,16 +2004,25 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     /// <para>If not specified, the default value <see cref="DefaultMarketStatsQueryLimit"/> (30) is used.</para>
     /// </param>
     public IDeferredQuery<List<LongShortRatio>> PrepareGetAllAccountLongShortRatio(
-        string pair, StatsInterval interval,
-        DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
+        string pair,
+        StatsInterval interval,
+        DateTime? startTime = null,
+        DateTime? endTime = null,
+        int? limit = null)
     {
         ThrowIfDisposed();
         if (string.IsNullOrWhiteSpace(pair))
+        {
             throw new ArgumentNullException(nameof(pair));
+        }
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
+        {
             throw new ArgumentException($"The specified time period [{startTime} ; {endTime}] is invalid.");
+        }
         if (limit < 1 || limit > MaxMarketStatsQueryLimit)
+        {
             throw new ArgumentOutOfRangeException(nameof(limit));
+        }
 
         QueryBuilder qs = new QueryBuilder(83);
         qs.AddParameter("pair", CommonUtility.NormalizeSymbol(pair));
@@ -1945,8 +2047,12 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     /// <para>Note: only the data of the latest 30 days is available.</para>
     /// </summary>
     public Task<List<LongShortRatio>> GetAllAccountLongShortRatioAsync(
-        string pair, StatsInterval interval,
-        DateTime? startTime = null, DateTime? endTime = null, int? limit = null, CancellationToken ct = default)
+        string pair,
+        StatsInterval interval,
+        DateTime? startTime = null,
+        DateTime? endTime = null,
+        int? limit = null,
+        CancellationToken ct = default)
     {
         using (IDeferredQuery<List<LongShortRatio>> query =
             PrepareGetAllAccountLongShortRatio(pair, interval, startTime, endTime, limit))
@@ -1975,16 +2081,26 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     /// <para>If not specified, the default value <see cref="DefaultMarketStatsQueryLimit"/> (30) is used.</para>
     /// </param>
     public IDeferredQuery<List<TakerVolume>> PrepareGetTakerVolume(
-        string pair, ContractType? contractType, StatsInterval interval,
-        DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
+        string pair,
+        ContractType? contractType,
+        StatsInterval interval,
+        DateTime? startTime = null,
+        DateTime? endTime = null,
+        int? limit = null)
     {
         ThrowIfDisposed();
         if (string.IsNullOrWhiteSpace(pair))
+        {
             throw new ArgumentNullException(nameof(pair));
+        }
         if (startTime != null && endTime != null && endTime.Value < startTime.Value)
+        {
             throw new ArgumentException($"The specified time period [{startTime} ; {endTime}] is invalid.");
+        }
         if (limit < 1 || limit > MaxMarketStatsQueryLimit)
+        {
             throw new ArgumentOutOfRangeException(nameof(limit));
+        }
 
         QueryBuilder qs = new QueryBuilder(110);
         qs.AddParameter("pair", CommonUtility.NormalizeSymbol(pair));
