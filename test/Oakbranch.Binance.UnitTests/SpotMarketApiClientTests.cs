@@ -23,34 +23,35 @@ namespace Oakbranch.Binance.UnitTests
 
         #region Static members
 
-        private static readonly DateTime ReferenceDateTime = new DateTime(2023, 11, 01);
+        private static readonly DateTime ReferenceDateTime = new DateTime(2023, 11, 18);
         private static readonly TimeSpan TimeErrorTolerance = new TimeSpan(TimeSpan.TicksPerHour);
 
-        public static object[] CorrectAggrTradePeriodCases
+        public static object?[] NullAndWhitespaceStringCases { get; } = new object?[]
         {
-            get
-            {
-                return new object[]
-                {
-                    new object?[] { ReferenceDateTime.AddHours(-1.0), null },
-                    new object?[] { ReferenceDateTime.AddDays(-1.0).AddHours(-1.0), ReferenceDateTime.AddDays(-1.0) },
-                    new object?[] { null, ReferenceDateTime.AddDays(-1.0) },
-                    new object?[] { ReferenceDateTime.AddYears(-1), null },
-                    new object?[] { ReferenceDateTime.AddHours(-1.0).AddSeconds(-1.0), ReferenceDateTime.AddHours(-1.0) }
-                };
-            }
-        }
-        public static object[] InvalidAggrTradePeriodCases
+            null,
+            string.Empty,
+            " "
+        };
+        public static object[] CorrectQueryPeriodCases { get; } = new object[]
         {
-            get
+            new object?[] { ReferenceDateTime.AddHours(-1.0), null },
+            new object?[] { ReferenceDateTime.AddDays(-1.0).AddHours(-1.25), ReferenceDateTime.AddDays(-1.0) },
+            new object?[] { null, ReferenceDateTime.AddDays(-1.0) },
+            new object?[] { ReferenceDateTime.AddYears(-1), null },
+            new object?[] { ReferenceDateTime.AddHours(-1.0).AddSeconds(-1.0), ReferenceDateTime.AddHours(-1.0) }
+        };
+        public static object[] InvalidQueryPeriodCases { get; } = new object[]
+        {
+            new object?[] { ReferenceDateTime, ReferenceDateTime.AddMilliseconds(-1.0), },
+            new object?[] { ReferenceDateTime.AddHours(-1.0), ReferenceDateTime.AddHours(-2.0), },
+        };
+        public static object[] AllKlineIntervalCases { get; } = Enum.GetValues<KlineInterval>()
+            .Select((i) =>
             {
-                return new object[]
-                {
-                    new object?[] { ReferenceDateTime, ReferenceDateTime.AddMilliseconds(-1.0), },
-                    new object?[] { ReferenceDateTime.AddHours(-1.0), ReferenceDateTime.AddHours(-2.0), },
-                };
-            }
-        }
+                (TimeSpan min, TimeSpan max) = TestHelper.ParseInterval(i.ToString());
+                return new object[] { i, min, max };
+            })
+            .ToArray();
 
         #endregion
 
@@ -242,9 +243,7 @@ namespace Oakbranch.Binance.UnitTests
             }
         }
 
-        [TestCase(null)]
-        [TestCase("")]
-        [TestCase(" ")]
+        [TestCaseSource(nameof(NullAndWhitespaceStringCases))]
         public void GetOldTrades_ThrowsArgumentNullException_WhenEmptySymbolSpecified(string symbol)
         {
             // Arrange.
@@ -255,7 +254,7 @@ namespace Oakbranch.Binance.UnitTests
         }
 
         // Get aggregate trades tests.
-        [TestCaseSource(nameof(CorrectAggrTradePeriodCases)), Retry(DefaultTestRetryLimit)]
+        [TestCaseSource(nameof(CorrectQueryPeriodCases)), Retry(DefaultTestRetryLimit)]
         public async Task GetAggregateTrades_ReturnsItemsWithinPeriod_WhenPeriodSpecified(DateTime? from, DateTime? to)
         {
             // Arrange.
@@ -273,11 +272,11 @@ namespace Oakbranch.Binance.UnitTests
             Assert.That(result, Is.Not.Null);
             if (from != null)
             {
-                Assert.That(result, Has.All.Matches((AggregateTrade at) => at.Timestamp >= from.Value));
+                Assert.That(result.Select((at) => at.Timestamp), Has.All.GreaterThanOrEqualTo(from.Value));
             }
             if (to != null)
             {
-                Assert.That(result, Has.All.Matches((AggregateTrade at) => at.Timestamp <= to.Value));
+                Assert.That(result.Select((at) => at.Timestamp), Has.All.LessThanOrEqualTo(to.Value));
             }
 
             if (AreQueryResultsLogged)
@@ -286,7 +285,17 @@ namespace Oakbranch.Binance.UnitTests
             }
         }
 
-        [TestCaseSource(nameof(InvalidAggrTradePeriodCases))]
+        [TestCaseSource(nameof(NullAndWhitespaceStringCases))]
+        public void GetAggregateTrades_ThrowsArgumentNullException_WhenEmptySymbolSpecified(string symbol)
+        {
+            // Arrange.
+            TestDelegate td = new TestDelegate(() => _client.PrepareGetAggregateTrades(symbol));
+
+            // Act & Assert.
+            Assert.That(td, Throws.ArgumentNullException);
+        }
+
+        [TestCaseSource(nameof(InvalidQueryPeriodCases))]
         public void GetAggregateTrades_ThrowsArgumentException_WhenInvalidPeriodSpecified(DateTime from, DateTime to)
         {
             // Arrange.
@@ -309,6 +318,105 @@ namespace Oakbranch.Binance.UnitTests
             TestDelegate td = new TestDelegate(() =>
                 _client.PrepareGetAggregateTrades(
                     symbol: DefaultSymbol,
+                    limit: limit));
+
+            // Act & Assert.
+            Assert.That(td, Throws.Exception.AssignableFrom<ArgumentOutOfRangeException>());
+        }
+
+        // Get candlestick data.
+        [TestCaseSource(nameof(CorrectQueryPeriodCases)), Retry(DefaultTestRetryLimit)]
+        public async Task GetCandlestickData_ReturnsItemsWithinPeriod_WhenPeriodSpecified(DateTime? from, DateTime? to)
+        {
+            // Arrange.
+            List<Candlestick> result;
+
+            // Act.
+            using IDeferredQuery<List<Candlestick>> query = _client.PrepareGetCandlestickData(
+                symbol: DefaultSymbol,
+                interval: KlineInterval.Hour1,
+                startTime: from,
+                endTime: to,
+                limit: null);
+            result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+            // Assert.
+            Assert.That(result, Is.Not.Null);
+            if (from != null)
+            {
+                Assert.That(result.Select((c) => c.OpenTime), Has.All.GreaterThanOrEqualTo(from.Value));
+            }
+            if (to != null)
+            {
+                Assert.That(result.Select((c) => c.OpenTime), Has.All.LessThanOrEqualTo(to.Value));
+            }
+
+            if (AreQueryResultsLogged)
+            {
+                LogCollection(result, 10);
+            }
+        }
+
+        [TestCaseSource(nameof(AllKlineIntervalCases)), Retry(DefaultTestRetryLimit)]
+        public async Task GetCandlestickData_ReturnsItemsOfExactTimeframe_WhenRequested(
+            KlineInterval interval, TimeSpan minSpan, TimeSpan maxSpan)
+        {
+            // Arrange.
+            List<Candlestick> result;
+
+            // Act.
+            using IDeferredQuery<List<Candlestick>> query = _client.PrepareGetCandlestickData(
+                symbol: DefaultSymbol,
+                interval: interval);
+            result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+            // Assert.
+            Assert.That(result, Is.Not.Null);
+            Assert.That(
+                result.Select((c) => c.CloseTime - c.OpenTime),
+                Has.All.InRange(minSpan, maxSpan));
+
+            if (AreQueryResultsLogged)
+            {
+                LogCollection(result, 10);
+            }
+        }
+
+        [TestCaseSource(nameof(NullAndWhitespaceStringCases))]
+        public void GetCandlestickData_ThrowsArgumentNullException_WhenEmptySymbolSpecified(string symbol)
+        {
+            // Arrange.
+            TestDelegate td = new TestDelegate(() => _client.PrepareGetCandlestickData(symbol, KlineInterval.Hour1));
+
+            // Act & Assert.
+            Assert.That(td, Throws.ArgumentNullException);
+        }
+
+        [TestCaseSource(nameof(InvalidQueryPeriodCases))]
+        public void GetCandlestickData_ThrowsArgumentException_WhenInvalidPeriodSpecified(DateTime from, DateTime to)
+        {
+            // Arrange.
+            TestDelegate td = new TestDelegate(() =>
+                _client.PrepareGetCandlestickData(
+                    symbol: DefaultSymbol,
+                    interval: KlineInterval.Hour1,
+                    startTime: from,
+                    endTime: to));
+
+            // Act & Assert.
+            Assert.That(td, Throws.ArgumentException);
+        }
+
+        [TestCase(0)]
+        [TestCase(-1)]
+        [TestCase(SpotMarketApiClient.MaxTradesQueryLimit + 1)]
+        public void GetCandlestickData_ThrowsArgumentOutOfRangeException_WhenInvalidLimitSpecified(int limit)
+        {
+            // Arrange.
+            TestDelegate td = new TestDelegate(() =>
+                _client.PrepareGetCandlestickData(
+                    symbol: DefaultSymbol,
+                    interval: KlineInterval.Hour1,
                     limit: limit));
 
             // Act & Assert.
