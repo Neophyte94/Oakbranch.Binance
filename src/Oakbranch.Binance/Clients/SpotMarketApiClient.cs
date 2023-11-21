@@ -1291,7 +1291,7 @@ public class SpotMarketApiClient : ApiV3ClientBase
         return new DeferredQuery<List<PriceTick>>(
             query: new QueryParams(HttpMethod.GET, RESTEndpoint.Url, GetSymbolPriceTickerEndpoint, qs, false),
             executeHandler: ExecuteQueryAsync,
-            parseHandler: ParsePriceTicksList,
+            parseHandler: ParsePriceTickList,
             parseArgs: symbols != null ? symbols.Length : null,
             weights: weights,
             headersToLimitsMap: HeadersToLimitsMap);
@@ -1313,56 +1313,84 @@ public class SpotMarketApiClient : ApiV3ClientBase
         }
     }
 
-    private List<PriceTick> ParsePriceTicksList(byte[] data, object? parseArgs = null)
+    private List<PriceTick> ParsePriceTickList(byte[] data, object? parseArgs = null)
     {
         List<PriceTick> results = new List<PriceTick>(
             parseArgs is int expectedCount ? expectedCount : ExpectedSymbolsCount);
         Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
 
-        ParseUtility.ReadArrayStart(ref reader);
-        while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+        if (!reader.Read())
         {
-            ParseUtility.EnsureObjectStartToken(ref reader);
-
-            const string objName = "price tick";
-            string? s = null;
-            decimal p = -1.0m;
-
-            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
-            {
-                string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
-
-                if (!reader.Read())
-                {
-                    throw ParseUtility.GenerateNoPropertyValueException(propName);
-                }
-
-                switch (propName)
-                {
-                    case "symbol":
-                        s = reader.GetString();
-                        break;
-                    case "price":
-                        ParseUtility.ParseDecimal(propName, reader.GetString(), out p);
-                        break;
-                    default:
-                        LogMessage(LogLevel.Warning, $"An unknown {objName} property \"{propName}\" was encountered.");
-                        reader.Skip();
-                        break;
-                }
-            }
-
-            // Check whether all key properties were provided.
-            if (s == null)
-                throw ParseUtility.GenerateMissingPropertyException(objName, "symbol");
-            else if (p == -1.0m)
-                throw ParseUtility.GenerateMissingPropertyException(objName, "price");
-
-            // Add the price tick to the results list.
-            results.Add(new PriceTick(s, p));
+            throw new JsonException(
+                $"An array's or object's start was expected, " +
+                $"but the end of the data was reached.");
         }
 
-        return results;
+        switch (reader.TokenType)
+        {
+            case JsonTokenType.StartArray:
+                while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+                {
+                    // Add the price tick to the results list.
+                    results.Add(ParseSinglePriceTick(ref reader));
+                }
+                return results;
+
+            case JsonTokenType.StartObject:
+                results.Add(ParseSinglePriceTick(ref reader));
+                return results;
+
+            default:
+                throw new JsonException(
+                    $"An array's or object's start was expected, " +
+                    $"but {reader.TokenType} was encountered.");
+        }
+    }
+
+    private PriceTick ParseSinglePriceTick(ref Utf8JsonReader reader)
+    {
+        ParseUtility.EnsureObjectStartToken(ref reader);
+
+        const string objName = "price tick";
+        string? s = null;
+        decimal p = -1.0m;
+
+        while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+        {
+            string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
+
+            if (!reader.Read())
+            {
+                throw ParseUtility.GenerateNoPropertyValueException(propName);
+            }
+
+            switch (propName)
+            {
+                case "symbol":
+                    s = reader.GetString();
+                    break;
+                case "price":
+                    ParseUtility.ParseDecimal(propName, reader.GetString(), out p);
+                    break;
+                default:
+                    LogMessage(LogLevel.Warning, $"An unknown {objName} property \"{propName}\" was encountered.");
+                    reader.Skip();
+                    break;
+            }
+        }
+
+        // Check whether all essential properties were provided.
+        if (s == null)
+        {
+            throw ParseUtility.GenerateMissingPropertyException(objName, "symbol");
+        }
+        else if (p == -1.0m)
+        {
+            throw ParseUtility.GenerateMissingPropertyException(objName, "price");
+        }
+
+        // Add the price tick to the results list.
+        return new PriceTick(s, p);
     }
 
     #endregion
