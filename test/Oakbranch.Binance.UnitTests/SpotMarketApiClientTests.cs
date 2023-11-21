@@ -423,6 +423,58 @@ namespace Oakbranch.Binance.UnitTests
             Assert.That(td, Throws.Exception.AssignableFrom<ArgumentOutOfRangeException>());
         }
 
+        // Get symbol price ticker.
+        [TestCase, Retry(DefaultTestRetryLimit)]
+        public async Task GetSymbolPriceTicker_ReturnsValidList_WhenDefaultParams()
+        {
+            // Arrange.
+            List<PriceTick> result;
+
+            // Act.
+            using IDeferredQuery<List<PriceTick>> query = _client.PrepareGetSymbolPriceTicker();
+            result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+            // Assert.
+            Assert.That(result, Is.Not.Null.And.Count.GreaterThan(0));
+
+            if (AreQueryResultsLogged)
+            {
+                LogObject(result);
+            }
+        }
+
+        [Retry(DefaultTestRetryLimit)]
+        [TestCase("BTCUSDT")]
+        [TestCase("btcusdt", "eThUsDt")]
+        public async Task GetSymbolPriceTicker_ReturnsExactCount_WhenExactSymbolsSpecified(params string[] symbols)
+        {
+            // Arrange.
+            List<PriceTick> result;
+
+            // Act.
+            using IDeferredQuery<List<PriceTick>> query = _client.PrepareGetSymbolPriceTicker(symbols);
+            result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+            // Assert.
+            Assert.That(result, Is.Not.Null.And.Count.EqualTo(symbols.Length));
+
+            if (AreQueryResultsLogged)
+            {
+                LogObject(result);
+            }
+        }
+
+        [TestCase(null)]
+        [TestCase("BTCUSDT", null)]
+        public void GetSymbolPriceTicker_ThrowsArgumentException_WhenNullSymbolSpecified(params string[] symbols)
+        {
+            // Arrange.
+            TestDelegate td = new TestDelegate(() => _client.PrepareGetSymbolPriceTicker(symbols));
+
+            // Act & Assert.
+            Assert.That(td, Throws.ArgumentException);
+        }
+
         #endregion
     }
 }
