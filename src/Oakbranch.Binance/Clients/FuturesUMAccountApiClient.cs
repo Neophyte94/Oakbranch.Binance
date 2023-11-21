@@ -8,7 +8,7 @@ namespace Oakbranch.Binance.Clients;
 /// </summary>
 public class FuturesUMAccountApiClient : FuturesUMClientBase
 {
-    #region Instance members
+    #region Instance props & fields
 
     #endregion
 

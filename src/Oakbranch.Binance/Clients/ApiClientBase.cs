@@ -30,7 +30,7 @@ public abstract class ApiClientBase : IDisposable
 
     #endregion
 
-    #region Instance members
+    #region Instance props & fields
 
     private IApiConnector _connector;
     /// <summary>

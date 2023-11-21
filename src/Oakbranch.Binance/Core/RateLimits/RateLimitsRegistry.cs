@@ -54,7 +54,7 @@ public sealed class RateLimitsRegistry : IRateLimitsRegistry
 
     #endregion
 
-    #region Instance members
+    #region Instance props & fields
 
     private readonly Dictionary<int, LimitCounter> _idToLimitDict;
     private readonly Dictionary<int, LimitNode> _dimensionToLimitsDict;

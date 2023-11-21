@@ -26,7 +26,7 @@ namespace Oakbranch.Binance.Clients
 
         #endregion
 
-        #region Static members
+        #region Static props & fields
 
         private static readonly ReadOnlyCollection<BaseEndpoint> s_RESTBaseEndpoints;
         /// <summary>
@@ -37,7 +37,7 @@ namespace Oakbranch.Binance.Clients
 
         #endregion
 
-        #region Instance members
+        #region Instance props & fields
 
         private BaseEndpoint _RESTEndpoint;
         /// <summary>

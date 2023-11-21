@@ -8,7 +8,7 @@ namespace Oakbranch.Binance.Core.TimeProviders;
 /// </summary>
 public class SystemTimeProvider : ITimeProvider
 {
-    #region Instance members
+    #region Instance props & fields
 
     public DateTime UtcNow => DateTime.UtcNow;
 

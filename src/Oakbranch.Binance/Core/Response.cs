@@ -8,7 +8,7 @@ namespace Oakbranch.Binance.Core;
 /// </summary>
 public class Response
 {
-    #region Instance members
+    #region Instance props & fields
 
     public readonly byte[] Content;
     public readonly List<KeyValuePair<string, string>> LimitsUsage;

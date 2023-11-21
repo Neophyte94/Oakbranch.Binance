@@ -26,7 +26,7 @@ public abstract class FuturesUMClientBase : SharedLimitsApiClientBase
 
     #endregion
 
-    #region Static members
+    #region Static props & fields
 
     private static readonly ReadOnlyCollection<BaseEndpoint> s_RESTBaseEndpoints;
     /// <summary>
@@ -37,7 +37,7 @@ public abstract class FuturesUMClientBase : SharedLimitsApiClientBase
 
     #endregion
 
-    #region Instance members
+    #region Instance props & fields
 
     private BaseEndpoint _RESTEndpoint;
     /// <summary>

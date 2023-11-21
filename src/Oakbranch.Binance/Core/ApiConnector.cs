@@ -36,7 +36,7 @@ public sealed class ApiConnector : IApiConnector, IDisposable
 
     #endregion
 
-    #region Instance members
+    #region Instance props & fields
 
     private readonly HttpClient _client;
     private byte[]? _secretKey;

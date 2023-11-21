@@ -8,7 +8,7 @@ namespace Oakbranch.Binance.Core;
 /// </summary>
 public readonly struct BaseEndpoint : IEquatable<BaseEndpoint>
 {
-    #region Instance members
+    #region Instance props & fields
 
     public readonly string Url;
     public readonly string Description;

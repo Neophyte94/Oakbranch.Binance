@@ -10,7 +10,7 @@ namespace Oakbranch.Binance.Core.TimeProviders;
 /// </summary>
 public class ServerTimeProvider : ITimeProvider
 {
-    #region Instance members
+    #region Instance props & fields
 
     private readonly Stopwatch _timeCounter;
     private readonly long _serverZoneOffset;

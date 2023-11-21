@@ -9,7 +9,7 @@ namespace Oakbranch.Binance.Core;
 
 internal sealed class DeferredQuery<T> : IDeferredQuery<T>
 {
-    #region Instance members
+    #region Instance props & fields
 
     private QueryParams _params;
     internal QueryParams Params => _params;

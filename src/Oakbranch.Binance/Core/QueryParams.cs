@@ -7,7 +7,7 @@ namespace Oakbranch.Binance.Core;
 /// </summary>
 public readonly struct QueryParams
 {
-    #region Instance members
+    #region Instance props & fields
 
     public readonly HttpMethod Method;
     public readonly string BaseEndpoint;

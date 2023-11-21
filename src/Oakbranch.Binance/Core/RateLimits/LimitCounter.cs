@@ -10,7 +10,7 @@ namespace Oakbranch.Binance.Core.RateLimits;
 /// </summary>
 public class LimitCounter
 {
-    #region Instance members
+    #region Instance props & fields
 
     /// <summary>
     /// Defines the identifier of a limit.

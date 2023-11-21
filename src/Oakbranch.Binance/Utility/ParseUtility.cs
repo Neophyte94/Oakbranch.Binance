@@ -10,7 +10,7 @@ namespace Oakbranch.Binance.Utility;
 
 internal static class ParseUtility
 {
-    #region Static members
+    #region Static props & fields
 
     public static JsonReaderOptions ReaderOptions { get; } = new JsonReaderOptions();
 

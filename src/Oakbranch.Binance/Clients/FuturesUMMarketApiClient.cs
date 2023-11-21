@@ -98,7 +98,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
 
     #endregion
 
-    #region Instance members
+    #region Instance props & fields
 
     private readonly ReadOnlyDictionary<string, int> _dummyHeadersLimitsMap;
 

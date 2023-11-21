@@ -10,7 +10,7 @@ namespace Oakbranch.Binance.Utility;
 
 internal static class CommonUtility
 {
-    #region Static members
+    #region Static props & fields
 
     public static readonly NumberFormatInfo NumberFormat;
 

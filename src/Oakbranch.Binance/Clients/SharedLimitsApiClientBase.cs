@@ -16,7 +16,7 @@ namespace Oakbranch.Binance.Clients
     /// </summary>
     public abstract class SharedLimitsApiClientBase : ApiClientBase
     {
-        #region Instance members
+        #region Instance props & fields
 
         /// <summary>
         /// Defines the endpoint used for identifying all rate limits used by the <see cref="SharedLimitsApiClientBase"/>'s endpoints.
