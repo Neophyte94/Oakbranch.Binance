@@ -8,7 +8,25 @@ namespace Oakbranch.Binance.UnitTests
     {
         #region Constants
 
+        protected const int GlobalSetUpTimeout = 10000; // in ms.
+        protected const int GlobalSetUpRetryLimit = 3;
+        protected const int DefaultTestTimeout = 10000; // in ms.
+        protected const int DefaultTestRetryLimit = 2;
         private const string NullObjectDescription = "(null)";
+
+        #endregion
+
+        #region Static members
+
+        protected static readonly DateTime ReferenceDateTime = new DateTime(2023, 11, 18);
+        protected static readonly TimeSpan UtcTimeErrorTolerance = new TimeSpan(5 * TimeSpan.TicksPerMinute);
+
+        public static object?[] NullAndWhitespaceStringCases { get; } = new object?[]
+        {
+            null,
+            string.Empty,
+            " "
+        };
 
         #endregion
 
