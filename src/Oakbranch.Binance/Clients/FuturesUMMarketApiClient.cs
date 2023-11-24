@@ -214,7 +214,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
 
         ParseUtility.ReadObjectStart(ref reader);
         FuturesExchangeInfo result = new FuturesExchangeInfo();
-        ParseSchemaValidator validator = new ParseSchemaValidator(5);
+        ParseSchemaValidator validator = new ParseSchemaValidator(4);
 
         while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
         {
@@ -232,10 +232,6 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
                     result.Timezone = TimeZoneInfo.FindSystemTimeZoneById(timezone);
                     validator.RegisterProperty(0);
                     break;
-                case "serverTime":
-                    result.ServerTime = CommonUtility.ConvertToDateTime(reader.GetInt64());
-                    validator.RegisterProperty(1);
-                    break;
                 case "rateLimits":
                     ParseUtility.EnsureArrayStartToken(ref reader);
                     List<RateLimiter> limits = new List<RateLimiter>(6);
@@ -244,7 +240,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
                         limits.Add(ParseRateLimiter(ref reader));
                     }
                     result.RateLimits = limits;
-                    validator.RegisterProperty(2);
+                    validator.RegisterProperty(1);
                     break;
                 case "exchangeFilters":
                     ParseUtility.EnsureArrayStartToken(ref reader);
@@ -267,11 +263,15 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
                     break;
                 case "assets":
                     result.Assets = ParseAssetInfoList(ref reader);
-                    validator.RegisterProperty(3);
+                    validator.RegisterProperty(2);
                     break;
                 case "symbols":
                     result.Symbols = ParseSymbolInfoList(ref reader);
-                    validator.RegisterProperty(4);
+                    validator.RegisterProperty(3);
+                    break;
+                case "serverTime":
+                    // The property is not stored.
+                    reader.Skip();
                     break;
                 case "futuresType":
                     // The property is not stored.
@@ -293,10 +293,9 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
             throw missingPropNum switch
             {
                 0 => ParseUtility.GenerateMissingPropertyException(objName, "timezone"),
-                1 => ParseUtility.GenerateMissingPropertyException(objName, "server time"),
-                2 => ParseUtility.GenerateMissingPropertyException(objName, "rate limits"),
-                3 => ParseUtility.GenerateMissingPropertyException(objName, "assets"),
-                4 => ParseUtility.GenerateMissingPropertyException(objName, "symbols"),
+                1 => ParseUtility.GenerateMissingPropertyException(objName, "rate limits"),
+                2 => ParseUtility.GenerateMissingPropertyException(objName, "assets"),
+                3 => ParseUtility.GenerateMissingPropertyException(objName, "symbols"),
                 _ => ParseUtility.GenerateMissingPropertyException(objName, $"unknown ({missingPropNum})"),
             };
         }
@@ -627,7 +626,8 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
     /// <para>If not specified, the default value <see cref="DefaultTradesQueryLimit"/> (500) is used.</para>
     /// </param>
     /// <param name="fromId">The ID of a trade to fetch from. If not specified, the recent trades are fetched.</param>
-    public IDeferredQuery<List<Trade>> PrepareGetOldTrades(string symbol, int? limit = null, long? fromId = null)
+    public IDeferredQuery<List<Trade>> PrepareGetOldTrades(
+        string symbol, int? limit = null, long? fromId = null)
     {
         ThrowIfNotRunning();
         if (string.IsNullOrWhiteSpace(symbol))
@@ -792,10 +792,14 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
     /// <para>Market trades that fill in 100ms with the same price and the same taking side will have the quantity aggregated.</para>
     /// </summary>
     /// <param name="symbol">The futures contract symbol to get trades for.</param>
-    /// <param name="startTime">The time to fetch aggregate trades from (inclusive).
-    /// If <paramref name="endTime"/> is specified too, the interval between these values must be less than one hour.</param>
-    /// <param name="endTime">The time to fetch aggregate trades until (inclusive).
-    /// The interval between start time and end time must be less than one hour.</param>
+    /// <param name="startTime">
+    /// The time to fetch aggregate trades from (inclusive).
+    /// <para>If <paramref name="endTime"/> is specified too, the interval between these values must be less than one hour.</para>
+    /// </param>
+    /// <param name="endTime">
+    /// The time to fetch aggregate trades until (inclusive).
+    /// <para>The interval between start time and end time must be less than one hour.</para>
+    /// </param>
     /// <param name="limit">
     /// The maximum number of trades to fetch.
     /// <para>The maximum value is <see cref="MaxTradesQueryLimit"/> (1000).</para>

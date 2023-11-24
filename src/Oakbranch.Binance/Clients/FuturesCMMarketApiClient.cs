@@ -203,7 +203,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     {
         Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
         FuturesExchangeInfo result = new FuturesExchangeInfo();
-        ParseSchemaValidator validator = new ParseSchemaValidator(4);
+        ParseSchemaValidator validator = new ParseSchemaValidator(3);
 
         ParseUtility.ReadObjectStart(ref reader);
 
@@ -223,10 +223,6 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
                     result.Timezone = TimeZoneInfo.FindSystemTimeZoneById(timezone);
                     validator.RegisterProperty(0);
                     break;
-                case "serverTime":
-                    result.ServerTime = CommonUtility.ConvertToDateTime(reader.GetInt64());
-                    validator.RegisterProperty(1);
-                    break;
                 case "rateLimits":
                     ParseUtility.EnsureArrayStartToken(ref reader);
                     List<RateLimiter> limits = new List<RateLimiter>(6);
@@ -235,7 +231,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
                         limits.Add(ParseRateLimiter(ref reader));
                     }
                     result.RateLimits = limits;
-                    validator.RegisterProperty(2);
+                    validator.RegisterProperty(1);
                     break;
                 case "exchangeFilters":
                     ParseUtility.EnsureArrayStartToken(ref reader);
@@ -258,7 +254,10 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
                     break;
                 case "symbols":
                     result.Symbols = ParseSymbolInfoList(ref reader);
-                    validator.RegisterProperty(3);
+                    validator.RegisterProperty(2);
+                    break;
+                case "serverTime":
+                    // The property is not stored.
                     break;
                 case "futuresType":
                     // The property is not stored.
@@ -280,9 +279,8 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
             throw missingPropNum switch
             {
                 0 => ParseUtility.GenerateMissingPropertyException(objName, "timezone"),
-                1 => ParseUtility.GenerateMissingPropertyException(objName, "server time"),
-                2 => ParseUtility.GenerateMissingPropertyException(objName, "rate limits"),
-                3 => ParseUtility.GenerateMissingPropertyException(objName, "symbols"),
+                1 => ParseUtility.GenerateMissingPropertyException(objName, "rate limits"),
+                2 => ParseUtility.GenerateMissingPropertyException(objName, "symbols"),
                 _ => ParseUtility.GenerateMissingPropertyException(objName, $"unknown ({missingPropNum})"),
             };
         }

@@ -467,9 +467,13 @@ public abstract class ApiClientBase : IDisposable
         CancellationToken ct)
     {
         if (queryParams.IsUndefined)
+        {
             throw new ArgumentNullException(nameof(queryParams));
+        }
         if (parseFunction == null)
+        {
             throw new ArgumentNullException(nameof(parseFunction));
+        }
 
         // Check the rate limits.
         ct.ThrowIfCancellationRequested();

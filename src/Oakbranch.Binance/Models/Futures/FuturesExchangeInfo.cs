@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Oakbranch.Binance.Models;
 
 namespace Oakbranch.Binance.Models.Futures
 {
@@ -11,12 +10,17 @@ namespace Oakbranch.Binance.Models.Futures
     {
         /// <summary>
         /// Defines the list of assets available on the exchange.
-        /// <para>The value is <c>Null</c> if it is not applicable to the exchange.</para>
+        /// <para>The value is <see langword="null"/> if it is not applicable to the exchange.</para>
         /// </summary>
         public List<AssetInfo>? Assets;
         /// <summary>
         /// Defines the list of symbols available on the exchange.
         /// </summary>
         public List<SymbolInfo>? Symbols;
+        [Obsolete("This property is not correctly reported by the server, and should not be used.")]
+        /// <summary>
+        /// A dummy field.
+        /// </summary>
+        public new DateTime ServerTime;
     }
 }
