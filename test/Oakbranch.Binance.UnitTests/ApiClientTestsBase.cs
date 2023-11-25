@@ -184,7 +184,7 @@ namespace Oakbranch.Binance.UnitTests
         /// The maximum number of elements to log. If the limit is reached, the log stack is ended with the ellipsis symbols.
         /// <para>Use the value -1 to log all elements in the collection.</para>
         /// </param>
-        protected void LogCollection<T>(IEnumerable<T> items, int limit = -1)
+        protected void LogCollection<T>(IEnumerable<T>? items, int limit = -1)
         {
             if (Logger == null)
             {

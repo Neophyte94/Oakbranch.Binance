@@ -118,7 +118,7 @@ public class SpotMarketApiClientTests : ApiClientTestsBase
         }
     }
 
-    // Check server time tests.
+    // Check server time.
     [Test, Retry(DefaultTestRetryLimit)]
     public async Task CheckServerTime_ReturnsValidTime_WhenDefaultParams()
     {
@@ -133,7 +133,7 @@ public class SpotMarketApiClientTests : ApiClientTestsBase
         Assert.That(result, Is.EqualTo(DateTime.UtcNow).Within(UtcTimeErrorTolerance));
     }
 
-    // Get exchange info tests.
+    // Get exchange info.
     [Test, Retry(DefaultTestRetryLimit)]
     public async Task GetExchangeInfo_ReturnsValidInstance_WhenDefaultParams()
     {
@@ -184,7 +184,7 @@ public class SpotMarketApiClientTests : ApiClientTestsBase
         }
     }
 
-    // Get old trades tests.
+    // Get old trades.
     [Test, Retry(DefaultTestRetryLimit)]
     public async Task GetOldTrades_ReturnsDefaultCount_WhenOnlySymbolSpecified()
     {
@@ -238,7 +238,7 @@ public class SpotMarketApiClientTests : ApiClientTestsBase
         Assert.That(td, Throws.ArgumentNullException);
     }
 
-    // Get aggregate trades tests.
+    // Get aggregate trades.
     [TestCaseSource(nameof(CorrectQueryPeriodCases)), Retry(DefaultTestRetryLimit)]
     public async Task GetAggregateTrades_ReturnsItemsWithinPeriod_WhenPeriodSpecified(DateTime? from, DateTime? to)
     {

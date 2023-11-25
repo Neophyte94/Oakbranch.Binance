@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using Oakbranch.Binance.Abstractions;
 using Oakbranch.Binance.Core;
 using Oakbranch.Binance.Core.TimeProviders;
@@ -12,30 +13,35 @@ namespace Oakbranch.Binance.UnitTests
 
         private sealed class BuiltInConnectorFactory : IApiConnectorFactory, IDisposable
         {
-            private string ApiKey;
-            private string? SecretKey;
+            private readonly ILoggerFactory _loggerFactory;
+            private string _apiKey;
+            private string? _secretKey;
 
             public BuiltInConnectorFactory(string apiKey, string? secretKey)
             {
-                ApiKey = apiKey;
-                SecretKey = secretKey;
+                _loggerFactory = new ConsoleLoggerFactory(DefaultLogLevel);
+                _apiKey = apiKey;
+                _secretKey = secretKey;
             }
 
             public IApiConnector Create()
             {
-                if (ApiKey == null)
+                if (_apiKey == null)
+                {
                     throw new ObjectDisposedException(GetType().Name);
+                }
                 return new ApiConnector(
-                    apiKey: ApiKey,
-                    secretKey: SecretKey,
+                    apiKey: _apiKey,
+                    secretKey: _secretKey,
                     timeProvider: new SystemTimeProvider(),
-                    logger: null);
+                    logger: _loggerFactory.CreateLogger<ApiConnector>());
             }
 
             public void Dispose()
             {
-                ApiKey = null!;
-                SecretKey = null;
+                _apiKey = null!;
+                _secretKey = null;
+                _loggerFactory.Dispose();
             }
         }
 
@@ -44,6 +50,7 @@ namespace Oakbranch.Binance.UnitTests
         #region Constants
 
         public const string KeyContainerPath = "TestApiKeys.ini";
+        private const LogLevel DefaultLogLevel = LogLevel.Debug;
 
         #endregion
 
