@@ -306,10 +306,36 @@ public class SpotMarketApiClientTests : ApiClientTestsBase
                 limit: limit));
 
         // Act & Assert.
-        Assert.That(td, Throws.Exception.AssignableFrom<ArgumentOutOfRangeException>());
+        Assert.That(td, Throws.TypeOf<ArgumentOutOfRangeException>());
     }
 
     // Get candlestick data.
+    [Retry(DefaultTestRetryLimit)]
+    [TestCase(1)]
+    [TestCase(SpotMarketApiClient.MaxKlinesQueryLimit)]
+    [TestCase(SpotMarketApiClient.MaxKlinesQueryLimit / 2 + 1)]
+    public async Task GetCandlestickData_ReturnsExactCount_WhenLimitSpecified(int limit)
+    {
+        // Arrange.
+        List<Candlestick> result;
+
+        // Act.
+        using IDeferredQuery<List<Candlestick>> query = _client.PrepareGetCandlestickData(
+            symbol: DefaultSymbol,
+            interval: KlineInterval.Hour1,
+            limit: limit);
+        result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result, Has.Count.EqualTo(limit));
+
+        if (AreQueryResultsLogged)
+        {
+            LogCollection(result, 10);
+        }
+    }
+
     [TestCaseSource(nameof(CorrectQueryPeriodCases)), Retry(DefaultTestRetryLimit)]
     public async Task GetCandlestickData_ReturnsItemsWithinPeriod_WhenPeriodSpecified(DateTime? from, DateTime? to)
     {
@@ -405,7 +431,7 @@ public class SpotMarketApiClientTests : ApiClientTestsBase
                 limit: limit));
 
         // Act & Assert.
-        Assert.That(td, Throws.Exception.AssignableFrom<ArgumentOutOfRangeException>());
+        Assert.That(td, Throws.TypeOf<ArgumentOutOfRangeException>());
     }
 
     // Get symbol price ticker.
