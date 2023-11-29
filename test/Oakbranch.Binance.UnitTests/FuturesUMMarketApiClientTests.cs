@@ -14,6 +14,7 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
     #region Constants
 
     private const string DefaultSymbol = "BTCUSDT";
+    private const ContractType DefaultContractType = ContractType.NextQuarter;
 
     #endregion
 
@@ -162,7 +163,7 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
         {
             LogObject(result);
             LogCollection(result.Symbols);
-            LogCollection(result.Assets);
+            LogCollection(result.Assets, 10);
         }
     }
 
@@ -407,9 +408,144 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
     {
         // Arrange.
         TestDelegate td = new TestDelegate(() =>
-            {
-                _client.PrepareGetSymbolPriceKlines(DefaultSymbol, KlineInterval.Hour1, limit: limit);
-            });
+            _client.PrepareGetSymbolPriceKlines(
+                symbol: DefaultSymbol,
+                interval: KlineInterval.Hour1,
+                limit: limit));
+
+        // Act & Assert.
+        Assert.That(td, Throws.TypeOf<ArgumentOutOfRangeException>());
+    }
+
+    // Get contract price klines.
+    [Retry(DefaultTestRetryLimit)]
+    [TestCase(1)]
+    [TestCase(FuturesUMMarketApiClient.MaxKlinesQueryLimit)]
+    [TestCase(FuturesUMMarketApiClient.MaxKlinesQueryLimit / 2 + 1)]
+    public async Task GetContractPriceKlines_ReturnsExactCount_WhenLimitSpecified(int limit)
+    {
+        // Arrange.
+        List<Candlestick> result;
+
+        // Act.
+        using IDeferredQuery<List<Candlestick>> query = _client.PrepareGetContractPriceKlines(
+            pair: DefaultSymbol,
+            contractType: DefaultContractType,
+            interval: KlineInterval.Hour1,
+            limit: limit);
+        result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result, Has.Count.EqualTo(limit));
+
+        if (AreQueryResultsLogged)
+        {
+            LogCollection(result, 10);
+        }
+    }
+
+    [TestCaseSource(nameof(CorrectQueryPeriodCases)), Retry(DefaultTestRetryLimit)]
+    public async Task GetContractPriceKlines_ReturnsItemsWithinPeriod_WhenPeriodSpecified(DateTime? from, DateTime? to)
+    {
+        // Arrange.
+        List<Candlestick> result;
+
+        // Act.
+        using IDeferredQuery<List<Candlestick>> query = _client.PrepareGetContractPriceKlines(
+            pair: DefaultSymbol,
+            contractType: DefaultContractType,
+            interval: KlineInterval.Hour1,
+            startTime: from,
+            endTime: to,
+            limit: null);
+        result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.That(result, Is.Not.Null);
+        if (from != null)
+        {
+            Assert.That(result.Select((c) => c.OpenTime), Has.All.GreaterThanOrEqualTo(from.Value));
+        }
+        if (to != null)
+        {
+            Assert.That(result.Select((c) => c.OpenTime), Has.All.LessThanOrEqualTo(to.Value));
+        }
+
+        if (AreQueryResultsLogged)
+        {
+            LogCollection(result, 10);
+        }
+    }
+
+    [TestCaseSource(nameof(AllKlineIntervalCases)), Retry(DefaultTestRetryLimit)]
+    public async Task GetContractPriceKlines_ReturnsItemsOfExactTimeframe_WhenRequested(
+        KlineInterval interval, TimeSpan minSpan, TimeSpan maxSpan)
+    {
+        // Arrange.
+        List<Candlestick> result;
+
+        // Act.
+        using IDeferredQuery<List<Candlestick>> query = _client.PrepareGetContractPriceKlines(
+            pair: DefaultSymbol,
+            contractType: DefaultContractType,
+            interval: interval);
+        result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.That(result, Is.Not.Null);
+        Assert.That(
+            result.Select((c) => c.CloseTime - c.OpenTime),
+            Has.All.InRange(minSpan, maxSpan));
+
+        if (AreQueryResultsLogged)
+        {
+            LogCollection(result, 10);
+        }
+    }
+
+    [TestCaseSource(nameof(NullAndWhitespaceStringCases))]
+    public void GetContractPriceKlines_ThrowsArgumentNullException_WhenEmptySymbolSpecified(string symbol)
+    {
+        // Arrange.
+        TestDelegate td = new TestDelegate(() =>
+            _client.PrepareGetContractPriceKlines(
+                pair: symbol,
+                contractType: DefaultContractType,
+                interval: KlineInterval.Hour1));
+
+        // Act & Assert.
+        Assert.That(td, Throws.ArgumentNullException);
+    }
+
+    [TestCaseSource(nameof(InvalidQueryPeriodCases))]
+    public void GetContractPriceKlines_ThrowsArgumentException_WhenInvalidPeriodSpecified(DateTime from, DateTime to)
+    {
+        // Arrange.
+        TestDelegate td = new TestDelegate(() =>
+            _client.PrepareGetContractPriceKlines(
+                pair: DefaultSymbol,
+                contractType: DefaultContractType,
+                interval: KlineInterval.Hour1,
+                startTime: from,
+                endTime: to));
+
+        // Act & Assert.
+        Assert.That(td, Throws.ArgumentException);
+    }
+
+    [TestCase(0)]
+    [TestCase(-1)]
+    [TestCase(FuturesUMMarketApiClient.MaxKlinesQueryLimit + 1)]
+    public void GetContractPriceKlines_ThrowsArgumentOutOfRangeException_WhenInvalidLimitSpecified(int limit)
+    {
+        // Arrange.
+        TestDelegate td = new TestDelegate(() =>
+            _client.PrepareGetContractPriceKlines(
+                pair: DefaultSymbol,
+                contractType: DefaultContractType,
+                interval: KlineInterval.Hour1,
+                limit: limit));
 
         // Act & Assert.
         Assert.That(td, Throws.TypeOf<ArgumentOutOfRangeException>());
