@@ -551,5 +551,389 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
         Assert.That(td, Throws.TypeOf<ArgumentOutOfRangeException>());
     }
 
+    // Get index price klines.
+    [Retry(DefaultTestRetryLimit)]
+    [TestCase(1)]
+    [TestCase(FuturesUMMarketApiClient.MaxKlinesQueryLimit)]
+    [TestCase(FuturesUMMarketApiClient.MaxKlinesQueryLimit / 2 + 1)]
+    public async Task GetIndexPriceKlines_ReturnsExactCount_WhenLimitSpecified(int limit)
+    {
+        // Arrange.
+        List<Candlestick> result;
+
+        // Act.
+        using IDeferredQuery<List<Candlestick>> query = _client.PrepareGetIndexPriceKlines(
+            pair: DefaultSymbol,
+            interval: KlineInterval.Hour1,
+            limit: limit);
+        result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result, Has.Count.EqualTo(limit));
+
+        if (AreQueryResultsLogged)
+        {
+            LogCollection(result, 10);
+        }
+    }
+
+    [TestCaseSource(nameof(CorrectQueryPeriodCases)), Retry(DefaultTestRetryLimit)]
+    public async Task GetIndexPriceKlines_ReturnsItemsWithinPeriod_WhenPeriodSpecified(DateTime? from, DateTime? to)
+    {
+        // Arrange.
+        List<Candlestick> result;
+
+        // Act.
+        using IDeferredQuery<List<Candlestick>> query = _client.PrepareGetIndexPriceKlines(
+            pair: DefaultSymbol,
+            interval: KlineInterval.Hour1,
+            startTime: from,
+            endTime: to,
+            limit: null);
+        result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.That(result, Is.Not.Null);
+        if (from != null)
+        {
+            Assert.That(result.Select((c) => c.OpenTime), Has.All.GreaterThanOrEqualTo(from.Value));
+        }
+        if (to != null)
+        {
+            Assert.That(result.Select((c) => c.OpenTime), Has.All.LessThanOrEqualTo(to.Value));
+        }
+
+        if (AreQueryResultsLogged)
+        {
+            LogCollection(result, 10);
+        }
+    }
+
+    [TestCaseSource(nameof(AllKlineIntervalCases)), Retry(DefaultTestRetryLimit)]
+    public async Task GetIndexPriceKlines_ReturnsItemsOfExactTimeframe_WhenRequested(
+        KlineInterval interval, TimeSpan minSpan, TimeSpan maxSpan)
+    {
+        // Arrange.
+        List<Candlestick> result;
+
+        // Act.
+        using IDeferredQuery<List<Candlestick>> query = _client.PrepareGetIndexPriceKlines(
+            pair: DefaultSymbol,
+            interval: interval);
+        result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.That(result, Is.Not.Null);
+        Assert.That(
+            result.Select((c) => c.CloseTime - c.OpenTime),
+            Has.All.InRange(minSpan, maxSpan));
+
+        if (AreQueryResultsLogged)
+        {
+            LogCollection(result, 10);
+        }
+    }
+
+    [TestCaseSource(nameof(NullAndWhitespaceStringCases))]
+    public void GetIndexPriceKlines_ThrowsArgumentNullException_WhenEmptySymbolSpecified(string symbol)
+    {
+        // Arrange.
+        TestDelegate td = new TestDelegate(() =>
+            _client.PrepareGetIndexPriceKlines(
+                pair: symbol,
+                interval: KlineInterval.Hour1));
+
+        // Act & Assert.
+        Assert.That(td, Throws.ArgumentNullException);
+    }
+
+    [TestCaseSource(nameof(InvalidQueryPeriodCases))]
+    public void GetIndexPriceKlines_ThrowsArgumentException_WhenInvalidPeriodSpecified(DateTime from, DateTime to)
+    {
+        // Arrange.
+        TestDelegate td = new TestDelegate(() =>
+            _client.PrepareGetIndexPriceKlines(
+                pair: DefaultSymbol,
+                interval: KlineInterval.Hour1,
+                startTime: from,
+                endTime: to));
+
+        // Act & Assert.
+        Assert.That(td, Throws.ArgumentException);
+    }
+
+    [TestCase(0)]
+    [TestCase(-1)]
+    [TestCase(FuturesUMMarketApiClient.MaxKlinesQueryLimit + 1)]
+    public void GetIndexPriceKlines_ThrowsArgumentOutOfRangeException_WhenInvalidLimitSpecified(int limit)
+    {
+        // Arrange.
+        TestDelegate td = new TestDelegate(() =>
+            _client.PrepareGetIndexPriceKlines(
+                pair: DefaultSymbol,
+                interval: KlineInterval.Hour1,
+                limit: limit));
+
+        // Act & Assert.
+        Assert.That(td, Throws.TypeOf<ArgumentOutOfRangeException>());
+    }
+
+    // Get mark price klines.
+    [Retry(DefaultTestRetryLimit)]
+    [TestCase(1)]
+    [TestCase(FuturesUMMarketApiClient.MaxKlinesQueryLimit)]
+    [TestCase(FuturesUMMarketApiClient.MaxKlinesQueryLimit / 2 + 1)]
+    public async Task GetMarkPriceKlines_ReturnsExactCount_WhenLimitSpecified(int limit)
+    {
+        // Arrange.
+        List<Candlestick> result;
+
+        // Act.
+        using IDeferredQuery<List<Candlestick>> query = _client.PrepareGetMarkPriceKlines(
+            symbol: DefaultSymbol,
+            interval: KlineInterval.Hour1,
+            limit: limit);
+        result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result, Has.Count.EqualTo(limit));
+
+        if (AreQueryResultsLogged)
+        {
+            LogCollection(result, 10);
+        }
+    }
+
+    [TestCaseSource(nameof(CorrectQueryPeriodCases)), Retry(DefaultTestRetryLimit)]
+    public async Task GetMarkPriceKlines_ReturnsItemsWithinPeriod_WhenPeriodSpecified(DateTime? from, DateTime? to)
+    {
+        // Arrange.
+        List<Candlestick> result;
+
+        // Act.
+        using IDeferredQuery<List<Candlestick>> query = _client.PrepareGetMarkPriceKlines(
+            symbol: DefaultSymbol,
+            interval: KlineInterval.Hour1,
+            startTime: from,
+            endTime: to,
+            limit: null);
+        result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.That(result, Is.Not.Null);
+        if (from != null)
+        {
+            Assert.That(result.Select((c) => c.OpenTime), Has.All.GreaterThanOrEqualTo(from.Value));
+        }
+        if (to != null)
+        {
+            Assert.That(result.Select((c) => c.OpenTime), Has.All.LessThanOrEqualTo(to.Value));
+        }
+
+        if (AreQueryResultsLogged)
+        {
+            LogCollection(result, 10);
+        }
+    }
+
+    [TestCaseSource(nameof(AllKlineIntervalCases)), Retry(DefaultTestRetryLimit)]
+    public async Task GetMarkPriceKlines_ReturnsItemsOfExactTimeframe_WhenRequested(
+        KlineInterval interval, TimeSpan minSpan, TimeSpan maxSpan)
+    {
+        // Arrange.
+        List<Candlestick> result;
+
+        // Act.
+        using IDeferredQuery<List<Candlestick>> query = _client.PrepareGetMarkPriceKlines(
+            symbol: DefaultSymbol,
+            interval: interval);
+        result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.That(result, Is.Not.Null);
+        Assert.That(
+            result.Select((c) => c.CloseTime - c.OpenTime),
+            Has.All.InRange(minSpan, maxSpan));
+
+        if (AreQueryResultsLogged)
+        {
+            LogCollection(result, 10);
+        }
+    }
+
+    [TestCaseSource(nameof(NullAndWhitespaceStringCases))]
+    public void GetMarkPriceKlines_ThrowsArgumentNullException_WhenEmptySymbolSpecified(string symbol)
+    {
+        // Arrange.
+        TestDelegate td = new TestDelegate(() =>
+            _client.PrepareGetMarkPriceKlines(
+                symbol: symbol,
+                interval: KlineInterval.Hour1));
+
+        // Act & Assert.
+        Assert.That(td, Throws.ArgumentNullException);
+    }
+
+    [TestCaseSource(nameof(InvalidQueryPeriodCases))]
+    public void GetMarkPriceKlines_ThrowsArgumentException_WhenInvalidPeriodSpecified(DateTime from, DateTime to)
+    {
+        // Arrange.
+        TestDelegate td = new TestDelegate(() =>
+            _client.PrepareGetMarkPriceKlines(
+                symbol: DefaultSymbol,
+                interval: KlineInterval.Hour1,
+                startTime: from,
+                endTime: to));
+
+        // Act & Assert.
+        Assert.That(td, Throws.ArgumentException);
+    }
+
+    [TestCase(0)]
+    [TestCase(-1)]
+    [TestCase(FuturesUMMarketApiClient.MaxKlinesQueryLimit + 1)]
+    public void GetMarkPriceKlines_ThrowsArgumentOutOfRangeException_WhenInvalidLimitSpecified(int limit)
+    {
+        // Arrange.
+        TestDelegate td = new TestDelegate(() =>
+            _client.PrepareGetMarkPriceKlines(
+                symbol: DefaultSymbol,
+                interval: KlineInterval.Hour1,
+                limit: limit));
+
+        // Act & Assert.
+        Assert.That(td, Throws.TypeOf<ArgumentOutOfRangeException>());
+    }
+
+    // Get premium index klines.
+    [Retry(DefaultTestRetryLimit)]
+    [TestCase(1)]
+    [TestCase(FuturesUMMarketApiClient.MaxKlinesQueryLimit)]
+    [TestCase(FuturesUMMarketApiClient.MaxKlinesQueryLimit / 2 + 1)]
+    public async Task GetPremiumIndexKlines_ReturnsExactCount_WhenLimitSpecified(int limit)
+    {
+        // Arrange.
+        List<Candlestick> result;
+
+        // Act.
+        using IDeferredQuery<List<Candlestick>> query = _client.PrepareGetPremiumIndexKlines(
+            symbol: DefaultSymbol,
+            interval: KlineInterval.Hour1,
+            limit: limit);
+        result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result, Has.Count.EqualTo(limit));
+
+        if (AreQueryResultsLogged)
+        {
+            LogCollection(result, 10);
+        }
+    }
+
+    [TestCaseSource(nameof(CorrectQueryPeriodCases)), Retry(DefaultTestRetryLimit)]
+    public async Task GetPremiumIndexKlines_ReturnsItemsWithinPeriod_WhenPeriodSpecified(DateTime? from, DateTime? to)
+    {
+        // Arrange.
+        List<Candlestick> result;
+
+        // Act.
+        using IDeferredQuery<List<Candlestick>> query = _client.PrepareGetPremiumIndexKlines(
+            symbol: DefaultSymbol,
+            interval: KlineInterval.Hour1,
+            startTime: from,
+            endTime: to,
+            limit: null);
+        result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.That(result, Is.Not.Null);
+        if (from != null)
+        {
+            Assert.That(result.Select((c) => c.OpenTime), Has.All.GreaterThanOrEqualTo(from.Value));
+        }
+        if (to != null)
+        {
+            Assert.That(result.Select((c) => c.OpenTime), Has.All.LessThanOrEqualTo(to.Value));
+        }
+
+        if (AreQueryResultsLogged)
+        {
+            LogCollection(result, 10);
+        }
+    }
+
+    [TestCaseSource(nameof(AllKlineIntervalCases)), Retry(DefaultTestRetryLimit)]
+    public async Task GetPremiumIndexKlines_ReturnsItemsOfExactTimeframe_WhenRequested(
+        KlineInterval interval, TimeSpan minSpan, TimeSpan maxSpan)
+    {
+        // Arrange.
+        List<Candlestick> result;
+
+        // Act.
+        using IDeferredQuery<List<Candlestick>> query = _client.PrepareGetPremiumIndexKlines(
+            symbol: DefaultSymbol,
+            interval: interval);
+        result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.That(result, Is.Not.Null);
+        Assert.That(
+            result.Select((c) => c.CloseTime - c.OpenTime),
+            Has.All.InRange(minSpan, maxSpan));
+
+        if (AreQueryResultsLogged)
+        {
+            LogCollection(result, 10);
+        }
+    }
+
+    [TestCaseSource(nameof(NullAndWhitespaceStringCases))]
+    public void GetPremiumIndexKlines_ThrowsArgumentNullException_WhenEmptySymbolSpecified(string symbol)
+    {
+        // Arrange.
+        TestDelegate td = new TestDelegate(() =>
+            _client.PrepareGetPremiumIndexKlines(
+                symbol: symbol,
+                interval: KlineInterval.Hour1));
+
+        // Act & Assert.
+        Assert.That(td, Throws.ArgumentNullException);
+    }
+
+    [TestCaseSource(nameof(InvalidQueryPeriodCases))]
+    public void GetPremiumIndexKlines_ThrowsArgumentException_WhenInvalidPeriodSpecified(DateTime from, DateTime to)
+    {
+        // Arrange.
+        TestDelegate td = new TestDelegate(() =>
+            _client.PrepareGetPremiumIndexKlines(
+                symbol: DefaultSymbol,
+                interval: KlineInterval.Hour1,
+                startTime: from,
+                endTime: to));
+
+        // Act & Assert.
+        Assert.That(td, Throws.ArgumentException);
+    }
+
+    [TestCase(0)]
+    [TestCase(-1)]
+    [TestCase(FuturesUMMarketApiClient.MaxKlinesQueryLimit + 1)]
+    public void GetPremiumIndexKlines_ThrowsArgumentOutOfRangeException_WhenInvalidLimitSpecified(int limit)
+    {
+        // Arrange.
+        TestDelegate td = new TestDelegate(() =>
+            _client.PrepareGetPremiumIndexKlines(
+                symbol: DefaultSymbol,
+                interval: KlineInterval.Hour1,
+                limit: limit));
+
+        // Act & Assert.
+        Assert.That(td, Throws.TypeOf<ArgumentOutOfRangeException>());
+    }
+
     #endregion
 }
