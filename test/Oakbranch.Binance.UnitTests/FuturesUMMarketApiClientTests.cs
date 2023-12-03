@@ -20,7 +20,7 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
 
     #region Static members
 
-    public static object[] CorrectQueryPeriodCases { get; } = new object[]
+    private static object[] CorrectQueryPeriodCases { get; } = new object[]
     {
         new object?[] { ReferenceDateTime.AddHours(-1.0), null },
         new object?[] { ReferenceDateTime.AddDays(-1.0).AddHours(-4.0), ReferenceDateTime.AddDays(-1.0) },
@@ -28,12 +28,12 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
         new object?[] { ReferenceDateTime.AddYears(-1), null },
         new object?[] { ReferenceDateTime.AddHours(-1.0).AddSeconds(-1.0), ReferenceDateTime.AddHours(-1.0) }
     };
-    public static object[] InvalidQueryPeriodCases { get; } = new object[]
+    private static object[] InvalidQueryPeriodCases { get; } = new object[]
     {
         new object?[] { ReferenceDateTime.AddHours(-1.0), ReferenceDateTime.AddHours(-2.0), },
         new object?[] { ReferenceDateTime, ReferenceDateTime.AddSeconds(-1.0), },
     };
-    public static object[] AllKlineIntervalCases { get; } = Enum.GetValues<KlineInterval>()
+    private static object[] AllKlineIntervalCases { get; } = Enum.GetValues<KlineInterval>()
         .Select((i) =>
         {
             (TimeSpan min, TimeSpan max) = TestHelper.ParseInterval(i.ToString());
@@ -162,7 +162,7 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
         if (AreQueryResultsLogged)
         {
             LogObject(result);
-            LogCollection(result.Symbols);
+            LogCollection(result.Symbols, -1);
             LogCollection(result.Assets, 10);
         }
     }
@@ -933,6 +933,106 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
 
         // Act & Assert.
         Assert.That(td, Throws.TypeOf<ArgumentOutOfRangeException>());
+    }
+
+    // Get premium info.
+    [Test, Retry(DefaultTestRetryLimit)]
+    public async Task GetPremiumInfo_ReturnsValidList_WhenDefaultParams()
+    {
+        // Act.
+        using IDeferredQuery<List<PremiumInfo>> query = _client.PrepareGetPremiumInfo();
+        List<PremiumInfo> result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.That(result, Is.Not.Null.And.Count.Not.Zero);
+
+        if (AreQueryResultsLogged)
+        {
+            LogCollection(result, 10);
+        }
+    }
+
+    [Retry(DefaultTestRetryLimit)]
+    [TestCase("BTCUSDT")]
+    [TestCase("btcusdt")]
+    [TestCase("eThUsDt")]
+    public async Task GetPremiumInfo_ReturnsValidInstance_WhenPerpetualSymbolSpecified(string symbol)
+    {
+        // Act.
+        using IDeferredQuery<PremiumInfo> query = _client.PrepareGetPremiumInfo(symbol);
+        PremiumInfo result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.Multiple(() =>
+        {
+            Assert.That(string.Equals(result.Symbol, symbol, StringComparison.InvariantCultureIgnoreCase));
+            Assert.That(result.Pair, Is.Not.Null.And.Not.Empty);
+            Assert.That(result.Timestamp, Is.Not.EqualTo(default(DateTime)));
+            Assert.That(result.InterestRate, Is.Not.Null);
+            Assert.That(result.NextFundingTime, Is.Not.Null);
+        });
+        
+        if (AreQueryResultsLogged)
+        {
+            LogObject(result);
+        }
+    }
+
+    [Test, Retry(DefaultTestRetryLimit)]
+    public async Task GetPremiumInfo_ReturnsValidInstance_WhenDeliverySymbolSpecified()
+    {
+        // Arrange.
+        DateTime now = DateTime.UtcNow;
+        int year = now.Year;
+        int month = now.Month;
+        if (month % 3 == 0)
+        {
+            if (now.Day >= 29)
+            {
+                month += 3;
+            }
+        }
+        if (month % 3 != 0)
+        {
+            month = (now.Month / 3 + 1) * 3;
+        }
+        if (month > 12)
+        {
+            ++year;
+            month -= 3;
+        }
+        DateTime quarterDelivery = new DateTime(year, month, 29);
+        string symbol = $"{DefaultSymbol}_{quarterDelivery:yyMMdd}";
+
+        // Act.
+        using IDeferredQuery<PremiumInfo> query = _client.PrepareGetPremiumInfo(symbol);
+        PremiumInfo result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.Multiple(() =>
+        {
+            Assert.That(string.Equals(result.Symbol, symbol, StringComparison.InvariantCultureIgnoreCase));
+            Assert.That(result.Pair, Is.Not.Null.And.Not.Empty);
+            Assert.That(result.Timestamp, Is.Not.EqualTo(default(DateTime)));
+            Assert.That(result.InterestRate, Is.Null);
+            Assert.That(result.NextFundingTime, Is.Null);
+        });
+
+        if (AreQueryResultsLogged)
+        {
+            LogObject(result);
+        }
+    }
+
+    [TestCaseSource(nameof(NullAndWhitespaceStringCases))]
+    public void GetPremiumInfo_ThrowsArgumentNullException_WhenEmptySymbolSpecified(string symbol)
+    {
+        // Arrange.
+        TestDelegate td = new TestDelegate(() =>
+            _client.PrepareGetPremiumInfo(symbol));
+
+        // Act & Assert.
+        Assert.That(td, Throws.ArgumentNullException);
     }
 
     #endregion
