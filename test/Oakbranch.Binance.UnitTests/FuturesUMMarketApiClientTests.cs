@@ -168,7 +168,7 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
     }
 
     // Get old trades.
-    [Test, Retry(DefaultTestRetryLimit)]
+    [Test, Retry(DefaultTestRetryLimit), Ignore("The endpoint is bugged.")]
     public async Task GetOldTrades_ReturnsDefaultCount_WhenOnlySymbolSpecified()
     {
         // Arrange.
@@ -192,6 +192,7 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
     [TestCase(1)]
     [TestCase(FuturesUMMarketApiClient.MaxTradesQueryLimit - 1)]
     [TestCase(FuturesUMMarketApiClient.MaxTradesQueryLimit)]
+    [Ignore("The endpoint is bugged.")]
     public async Task GetOldTrades_ReturnsExactCount_WhenSymbolAndLimitSpecified(int limit)
     {
         // Arrange.
@@ -211,7 +212,7 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
         }
     }
 
-    [TestCaseSource(nameof(NullAndWhitespaceStringCases))]
+    [TestCaseSource(nameof(NullAndWhitespaceStringCases)), Ignore("The endpoint is bugged.")]
     public void GetOldTrades_ThrowsArgumentNullException_WhenEmptySymbolSpecified(string symbol)
     {
         // Arrange.

@@ -506,7 +506,9 @@ public abstract class ApiClientBase : IDisposable
         }
 #if DEBUG
         if (_logger != null && _limitsRegistry is RateLimitsRegistry rlr)
+        {
             ((RateLimitsRegistry)_limitsRegistry).LogCurrentUsage(_logger);
+        }
 #endif
 
         // Parse the response content.

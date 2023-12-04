@@ -616,6 +616,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
     }
 
     // Get old trades.
+    [Obsolete("This API endpoint always returns failure response with the code -2015. Perhaps, it is bugged.")]
     /// <summary>
     /// Prepares a query for older market trades.
     /// </summary>
@@ -660,6 +661,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
             headersToLimitsMap: HeadersToLimitsMap);
     }
 
+    [Obsolete("This API endpoint always returns failure response with the code -2015. Perhaps, it is bugged.")]
     /// <summary>
     /// Gets older market trades.
     /// </summary>
@@ -1505,6 +1507,8 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
             };
         }
 
+        bool isPerpretualSymbol = nextFundTime != CommonUtility.ApiBaseDate || interestRate != 0.0m;
+
         return new PremiumInfo(
             symbol: symbol!,
             pair: symbol!,
@@ -1512,8 +1516,8 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
             indexPrice: indexPrice,
             estimatedSettlePrice: settlePrice,
             lastFundingRate: lastFundRate,
-            interestRate: interestRate,
-            nextFundingTime: nextFundTime,
+            interestRate: isPerpretualSymbol ? interestRate : null,
+            nextFundingTime: isPerpretualSymbol ? nextFundTime : null,
             timestamp: timestamp);
     }
 
