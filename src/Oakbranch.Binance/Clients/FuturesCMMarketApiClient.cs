@@ -1550,9 +1550,10 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
         List<FundingRate> resultList = new List<FundingRate>(
             parseArgs is int expectedCount ? expectedCount : DefaultFundingHistoryQueryLimit);
 
-        ParseSchemaValidator validator = new ParseSchemaValidator(3);
+        ParseSchemaValidator validator = new ParseSchemaValidator(4);
         string? symbol = null;
         decimal rate = 0.0m;
+        decimal markPrice = 0.0m;
         DateTime time = DateTime.MinValue;
 
         while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
@@ -1582,6 +1583,10 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
                         time = CommonUtility.ConvertToDateTime(reader.GetInt64());
                         validator.RegisterProperty(2);
                         break;
+                    case "markPrice":
+                        ParseUtility.ParseDecimal(propName, reader.GetString(), out markPrice);
+                        validator.RegisterProperty(3);
+                        break;
                     default:
                         throw ParseUtility.GenerateUnknownPropertyException(propName);
                 }
@@ -1597,12 +1602,13 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
                     0 => ParseUtility.GenerateMissingPropertyException(objName, "symbol"),
                     1 => ParseUtility.GenerateMissingPropertyException(objName, "rate"),
                     2 => ParseUtility.GenerateMissingPropertyException(objName, "time"),
+                    3 => ParseUtility.GenerateMissingPropertyException(objName, "mark price"),
                     _ => ParseUtility.GenerateMissingPropertyException(objName, $"unknown {missingPropNum}"),
                 };
             }
 
             // Add the trade to the results list.
-            resultList.Add(new FundingRate(symbol!, time, rate));
+            resultList.Add(new FundingRate(symbol!, time, rate, markPrice));
             validator.Reset();
         }
 

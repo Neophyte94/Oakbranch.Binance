@@ -83,6 +83,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
     private const string GetPremiumIndexKlinesEndpoint = "/fapi/v1/premiumIndexKlines";
     private const string GetPremiumInfoEndpoint = "/fapi/v1/premiumIndex";
     private const string GetFundingRateHistoryEndpoint = "/fapi/v1/fundingRate";
+    private const string GetFundingRateInfoEndpoint = "/fapi/v1/fundingInfo";
     private const string GetDailyPriceChangeStatsEndpoint = "/fapi/v1/ticker/24hr";
     private const string GetSymbolPriceTickerEndpoint = "/fapi/v1/ticker/price";
     private const string GetSymbolOrderBookTickerEndpoint = "/fapi/v1/ticker/bookTicker";
@@ -1609,9 +1610,10 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
         List<FundingRate> resultList = new List<FundingRate>(
             parseArgs is int expectedCount ? expectedCount : DefaultMarketStatsQueryLimit);
 
-        ParseSchemaValidator validator = new ParseSchemaValidator(3);
+        ParseSchemaValidator validator = new ParseSchemaValidator(4);
         string? symbol = null;
         decimal rate = 0.0m;
+        decimal markPrice = 0.0m;
         DateTime time = DateTime.MinValue;
 
         while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
@@ -1641,6 +1643,10 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
                         time = CommonUtility.ConvertToDateTime(reader.GetInt64());
                         validator.RegisterProperty(2);
                         break;
+                    case "markPrice":
+                        ParseUtility.ParseDecimal(propName, reader.GetString(), out markPrice);
+                        validator.RegisterProperty(3);
+                        break;
                     default:
                         throw ParseUtility.GenerateUnknownPropertyException(propName);
                 }
@@ -1656,12 +1662,13 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
                     0 => ParseUtility.GenerateMissingPropertyException(objName, "symbol"),
                     1 => ParseUtility.GenerateMissingPropertyException(objName, "rate"),
                     2 => ParseUtility.GenerateMissingPropertyException(objName, "time"),
+                    3 => ParseUtility.GenerateMissingPropertyException(objName, "mark price"),
                     _ => ParseUtility.GenerateMissingPropertyException(objName, $"unknown {missingPropNum}"),
                 };
             }
 
             // Add the trade to the results list.
-            resultList.Add(new FundingRate(symbol!, time, rate));
+            resultList.Add(new FundingRate(symbol!, time, rate, markPrice));
             validator.Reset();
         }
 
