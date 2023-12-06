@@ -1678,8 +1678,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
 
     // Get funding rate info.
     /// <summary>
-    /// Prepares a query for funding rate info for symbols that had 
-    /// FundingRateCap/ FundingRateFloor / fundingIntervalHours adjustment.
+    /// Prepares a query funding rate configurations of all perpetual symbols.
     /// </summary>
     public IDeferredQuery<List<FundingRateConfig>> PrepareGetFundingRateInfo()
     {
@@ -1699,6 +1698,9 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
             headersToLimitsMap: HeadersToLimitsMap);
     }
 
+    /// <summary>
+    /// Gets funding rate configurations of all perpetual symbols asynchronously.
+    /// </summary>
     public Task<List<FundingRateConfig>> GetGetFundingRateInfoAsync(CancellationToken ct = default)
     {
         using (IDeferredQuery<List<FundingRateConfig>> query = PrepareGetFundingRateInfo())

@@ -80,6 +80,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     private const string GetPremiumIndexKlinesEndpoint = "/dapi/v1/premiumIndexKlines";
     private const string GetPremiumInfoEndpoint = "/dapi/v1/premiumIndex";
     private const string GetFundingRateHistoryEndpoint = "/dapi/v1/fundingRate";
+    private const string GetFundingRateInfoEndpoint = "/dapi/v1/fundingInfo";
     private const string GetCurrentOpenInterestEndpoint = "/dapi/v1/openInterest";
     private const string GetOpenInterestHistoryEndpoint = "/futures/data/openInterestHist";
     private const string GetTopAccountLSRatioEndpoint = "/futures/data/topLongShortAccountRatio";
@@ -1609,6 +1610,111 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
 
             // Add the trade to the results list.
             resultList.Add(new FundingRate(symbol!, time, rate, markPrice));
+            validator.Reset();
+        }
+
+        // Return the result.
+        return resultList;
+    }
+
+    // Get funding rate info.
+    /// <summary>
+    /// Prepares a query for funding rate configurations of all perpetual symbols.
+    /// </summary>
+    public IDeferredQuery<List<FundingRateConfig>> PrepareGetFundingRateInfo()
+    {
+        ThrowIfDisposed();
+
+        QueryWeight[] weights = new QueryWeight[]
+        {
+            new QueryWeight(GetWeightDimensionId(RateLimitType.IP), 1),
+        };
+
+        return new DeferredQuery<List<FundingRateConfig>>(
+            query: new QueryParams(HttpMethod.GET, RESTEndpoint.Url, GetFundingRateInfoEndpoint, null, false),
+            executeHandler: ExecuteQueryAsync,
+            parseHandler: ParseFundingRateConfigList,
+            parseArgs: null,
+            weights: weights,
+            headersToLimitsMap: HeadersToLimitsMap);
+    }
+
+    /// <summary>
+    /// Gets funding rate configurations of all perpetual symbols asynchronously.
+    /// </summary>
+    public Task<List<FundingRateConfig>> GetGetFundingRateInfoAsync(CancellationToken ct = default)
+    {
+        using (IDeferredQuery<List<FundingRateConfig>> query = PrepareGetFundingRateInfo())
+        {
+            return query.ExecuteAsync(ct);
+        }
+    }
+
+    private List<FundingRateConfig> ParseFundingRateConfigList(byte[] data, object? parseArgs = null)
+    {
+        Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
+
+        ParseUtility.ReadArrayStart(ref reader);
+        List<FundingRateConfig> resultList = new(ExpectedSymbolsCount);
+
+        ParseSchemaValidator validator = new ParseSchemaValidator(4);
+        string? symbol = null;
+        decimal cap = 0.0m, floor = 0.0m;
+        int interval = -1;
+
+        while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+        {
+            ParseUtility.EnsureObjectStartToken(ref reader);
+
+            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+            {
+                string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
+
+                if (!reader.Read())
+                {
+                    throw ParseUtility.GenerateNoPropertyValueException(propName);
+                }
+
+                switch (propName)
+                {
+                    case "symbol":
+                        symbol = reader.GetString();
+                        validator.RegisterProperty(0);
+                        break;
+                    case "adjustedFundingRateCap":
+                        ParseUtility.ParseDecimal(propName, reader.GetString(), out cap);
+                        validator.RegisterProperty(1);
+                        break;
+                    case "adjustedFundingRateFloor":
+                        ParseUtility.ParseDecimal(propName, reader.GetString(), out floor);
+                        validator.RegisterProperty(2);
+                        break;
+                    case "fundingIntervalHours":
+                        interval = reader.GetInt32();
+                        validator.RegisterProperty(3);
+                        break;
+                    default:
+                        throw ParseUtility.GenerateUnknownPropertyException(propName);
+                }
+            }
+
+            // Check whether all the essential properties were provided.
+            if (!validator.IsComplete())
+            {
+                const string objName = "funding rate config";
+                int missingPropNum = validator.GetMissingPropertyNumber();
+                throw missingPropNum switch
+                {
+                    0 => ParseUtility.GenerateMissingPropertyException(objName, "symbol"),
+                    1 => ParseUtility.GenerateMissingPropertyException(objName, "funding rate cap"),
+                    2 => ParseUtility.GenerateMissingPropertyException(objName, "funding rate floor"),
+                    3 => ParseUtility.GenerateMissingPropertyException(objName, "funding interval"),
+                    _ => ParseUtility.GenerateMissingPropertyException(objName, $"unknown {missingPropNum}"),
+                };
+            }
+
+            // Add the trade to the results list.
+            resultList.Add(new FundingRateConfig(symbol!, cap, floor, interval));
             validator.Reset();
         }
 
