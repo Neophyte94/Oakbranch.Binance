@@ -309,6 +309,8 @@ public abstract class ApiClientBase : IDisposable
                 return new QueryException(FailureReason.BinanceInternalError);
             case -1021:
                 return new QueryException(FailureReason.RequestOutdated, error.Message);
+            case -2015: // Invalid API-key, IP, or permissions for action.
+                return new QueryException(FailureReason.Unauthorized, error.Message);
             case -3000:
                 return new QueryException(FailureReason.BinanceInternalError);
         }
