@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Oakbranch.Binance.Abstractions;
 using Oakbranch.Binance.Clients;
 using Oakbranch.Binance.Core.RateLimits;
@@ -13,7 +12,8 @@ public class FuturesCMMarketApiClientTests : ApiClientTestsBase
 {
     #region Constants
 
-    private const string DefaultSymbol = "BTCUSD";
+    private const string DefaultSymbol = "BTCUSD_PERP";
+    private const string DefaultPair = "BTCUSD";
     private const ContractType DefaultContractType = ContractType.NextQuarter;
 
     #endregion
@@ -155,8 +155,9 @@ public class FuturesCMMarketApiClientTests : ApiClientTestsBase
         Assert.Multiple(() =>
         {
             Assert.That(result.Symbols, Is.Not.Null.And.Count.GreaterThan(0));
-            Assert.That(result.Assets, Is.Not.Null.And.Count.GreaterThan(0));
             Assert.That(result.Timezone, Is.Not.Null);
+            Assert.That(result.ExchangeFilters, Is.Not.Null);
+            Assert.That(result.RateLimits, Is.Not.Null);
         });
 
         if (AreQueryResultsLogged)
@@ -431,7 +432,7 @@ public class FuturesCMMarketApiClientTests : ApiClientTestsBase
 
         // Act.
         using IDeferredQuery<List<Candlestick>> query = _client.PrepareGetContractPriceKlines(
-            pair: DefaultSymbol,
+            pair: DefaultPair,
             contractType: DefaultContractType,
             interval: KlineInterval.Hour1,
             limit: limit);
@@ -455,7 +456,7 @@ public class FuturesCMMarketApiClientTests : ApiClientTestsBase
 
         // Act.
         using IDeferredQuery<List<Candlestick>> query = _client.PrepareGetContractPriceKlines(
-            pair: DefaultSymbol,
+            pair: DefaultPair,
             contractType: DefaultContractType,
             interval: KlineInterval.Hour1,
             startTime: from,
@@ -489,7 +490,7 @@ public class FuturesCMMarketApiClientTests : ApiClientTestsBase
 
         // Act.
         using IDeferredQuery<List<Candlestick>> query = _client.PrepareGetContractPriceKlines(
-            pair: DefaultSymbol,
+            pair: DefaultPair,
             contractType: DefaultContractType,
             interval: interval);
         result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
@@ -507,12 +508,12 @@ public class FuturesCMMarketApiClientTests : ApiClientTestsBase
     }
 
     [TestCaseSource(nameof(NullAndWhitespaceStringCases))]
-    public void GetContractPriceKlines_ThrowsArgumentNullException_WhenEmptySymbolSpecified(string symbol)
+    public void GetContractPriceKlines_ThrowsArgumentNullException_WhenEmptyPairSpecified(string pair)
     {
         // Arrange.
         TestDelegate td = new TestDelegate(() =>
             _client.PrepareGetContractPriceKlines(
-                pair: symbol,
+                pair: pair,
                 contractType: DefaultContractType,
                 interval: KlineInterval.Hour1));
 
@@ -526,7 +527,7 @@ public class FuturesCMMarketApiClientTests : ApiClientTestsBase
         // Arrange.
         TestDelegate td = new TestDelegate(() =>
             _client.PrepareGetContractPriceKlines(
-                pair: DefaultSymbol,
+                pair: DefaultPair,
                 contractType: DefaultContractType,
                 interval: KlineInterval.Hour1,
                 startTime: from,
@@ -544,7 +545,7 @@ public class FuturesCMMarketApiClientTests : ApiClientTestsBase
         // Arrange.
         TestDelegate td = new TestDelegate(() =>
             _client.PrepareGetContractPriceKlines(
-                pair: DefaultSymbol,
+                pair: DefaultPair,
                 contractType: DefaultContractType,
                 interval: KlineInterval.Hour1,
                 limit: limit));
@@ -565,7 +566,7 @@ public class FuturesCMMarketApiClientTests : ApiClientTestsBase
 
         // Act.
         using IDeferredQuery<List<Candlestick>> query = _client.PrepareGetIndexPriceKlines(
-            pair: DefaultSymbol,
+            pair: DefaultPair,
             interval: KlineInterval.Hour1,
             limit: limit);
         result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
@@ -588,7 +589,7 @@ public class FuturesCMMarketApiClientTests : ApiClientTestsBase
 
         // Act.
         using IDeferredQuery<List<Candlestick>> query = _client.PrepareGetIndexPriceKlines(
-            pair: DefaultSymbol,
+            pair: DefaultPair,
             interval: KlineInterval.Hour1,
             startTime: from,
             endTime: to,
@@ -621,7 +622,7 @@ public class FuturesCMMarketApiClientTests : ApiClientTestsBase
 
         // Act.
         using IDeferredQuery<List<Candlestick>> query = _client.PrepareGetIndexPriceKlines(
-            pair: DefaultSymbol,
+            pair: DefaultPair,
             interval: interval);
         result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
 
@@ -638,12 +639,12 @@ public class FuturesCMMarketApiClientTests : ApiClientTestsBase
     }
 
     [TestCaseSource(nameof(NullAndWhitespaceStringCases))]
-    public void GetIndexPriceKlines_ThrowsArgumentNullException_WhenEmptySymbolSpecified(string symbol)
+    public void GetIndexPriceKlines_ThrowsArgumentNullException_WhenEmptyPairSpecified(string pair)
     {
         // Arrange.
         TestDelegate td = new TestDelegate(() =>
             _client.PrepareGetIndexPriceKlines(
-                pair: symbol,
+                pair: pair,
                 interval: KlineInterval.Hour1));
 
         // Act & Assert.
@@ -656,7 +657,7 @@ public class FuturesCMMarketApiClientTests : ApiClientTestsBase
         // Arrange.
         TestDelegate td = new TestDelegate(() =>
             _client.PrepareGetIndexPriceKlines(
-                pair: DefaultSymbol,
+                pair: DefaultPair,
                 interval: KlineInterval.Hour1,
                 startTime: from,
                 endTime: to));
@@ -673,7 +674,7 @@ public class FuturesCMMarketApiClientTests : ApiClientTestsBase
         // Arrange.
         TestDelegate td = new TestDelegate(() =>
             _client.PrepareGetIndexPriceKlines(
-                pair: DefaultSymbol,
+                pair: DefaultPair,
                 interval: KlineInterval.Hour1,
                 limit: limit));
 
