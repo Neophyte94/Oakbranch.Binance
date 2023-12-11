@@ -1055,9 +1055,9 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
     }
 
     [Retry(DefaultTestRetryLimit)]
-    [TestCase("BTCUSD_PERP")]
-    [TestCase("btcusd_perp")]
-    [TestCase("eThUsD_pErP")]
+    [TestCase("BTCUSDT")]
+    [TestCase("btcusdt")]
+    [TestCase("eThUsDt")]
     public async Task GetFundingRateHistory_ReturnsExactSymbol_WhenSymbolSpecified(string symbol)
     {
         // Act.
@@ -1068,7 +1068,7 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
         Assert.Multiple(() =>
         {
             Assert.That(result, Is.Not.Null.And.Count.Not.Zero);
-            Assert.That(result, Is.All.Matches((FundingRate r) => 
+            Assert.That(result, Has.All.Matches((FundingRate r) => 
                 string.Equals(r.Symbol, symbol, StringComparison.InvariantCultureIgnoreCase)));
         });
 
@@ -1076,6 +1076,49 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
         {
             LogObject(result);
         }
+    }
+
+    [TestCaseSource(nameof(CorrectQueryPeriodCases)), Retry(DefaultTestRetryLimit)]
+    public async Task GetFundingRateHistory_ReturnsItemsWithinPeriod_WhenPeriodSpecified(DateTime? from, DateTime? to)
+    {
+        // Arrange.
+        List<FundingRate> result;
+
+        // Act.
+        using IDeferredQuery<List<FundingRate>> query = _client.PrepareGetFundingRateHistory(
+            startTime: from,
+            endTime: to,
+            limit: null);
+        result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.That(result, Is.Not.Null);
+        if (from != null)
+        {
+            Assert.That(result.Select((c) => c.Time), Has.All.GreaterThanOrEqualTo(from.Value));
+        }
+        if (to != null)
+        {
+            Assert.That(result.Select((c) => c.Time), Has.All.LessThanOrEqualTo(to.Value));
+        }
+
+        if (AreQueryResultsLogged)
+        {
+            LogCollection(result, 10);
+        }
+    }
+
+    [TestCaseSource(nameof(InvalidQueryPeriodCases))]
+    public void GetFundingRateHistory_ThrowsArgumentException_WhenInvalidPeriodSpecified(DateTime from, DateTime to)
+    {
+        // Arrange.
+        TestDelegate td = new TestDelegate(() =>
+            _client.PrepareGetFundingRateHistory(
+                startTime: from,
+                endTime: to));
+
+        // Act & Assert.
+        Assert.That(td, Throws.ArgumentException);
     }
 
     #endregion

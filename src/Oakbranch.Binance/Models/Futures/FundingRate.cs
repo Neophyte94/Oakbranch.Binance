@@ -22,9 +22,9 @@ public readonly struct FundingRate
     /// <summary>
     /// Defines the mark price associated with this particular funding fee charge.
     /// </summary>
-    public readonly decimal MarkPrice;
+    public readonly decimal? MarkPrice;
 
-    public FundingRate(string symbol, DateTime time, decimal rate, decimal markPrice)
+    public FundingRate(string symbol, DateTime time, decimal rate, decimal? markPrice)
     {
         Symbol = symbol;
         Time = time;

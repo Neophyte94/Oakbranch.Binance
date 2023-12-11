@@ -1585,7 +1585,14 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
                         validator.RegisterProperty(2);
                         break;
                     case "markPrice":
-                        ParseUtility.ParseDecimal(propName, reader.GetString(), out markPrice);
+                        if (string.IsNullOrEmpty(reader.GetString()))
+                        {
+                            markPrice = 0.0m;
+                        }
+                        else
+                        {
+                            ParseUtility.ParseDecimal(propName, reader.GetString(), out markPrice);
+                        }
                         validator.RegisterProperty(3);
                         break;
                     default:
@@ -1609,7 +1616,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
             }
 
             // Add the trade to the results list.
-            resultList.Add(new FundingRate(symbol!, time, rate, markPrice));
+            resultList.Add(new FundingRate(symbol!, time, rate, markPrice != 0.0m ? markPrice : null));
             validator.Reset();
         }
 
