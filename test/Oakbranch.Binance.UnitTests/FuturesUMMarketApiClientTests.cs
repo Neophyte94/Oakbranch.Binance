@@ -1037,5 +1037,46 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
         Assert.That(td, Throws.ArgumentNullException);
     }
 
+    // Get funding rate history.
+    [Test, Retry(DefaultTestRetryLimit)]
+    public async Task GetFundingRateHistory_ReturnsValidList_WhenDefaultParams()
+    {
+        // Act.
+        using IDeferredQuery<List<FundingRate>> query = _client.PrepareGetFundingRateHistory();
+        List<FundingRate> result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.That(result, Is.Not.Null.And.Count.Not.Zero);
+
+        if (AreQueryResultsLogged)
+        {
+            LogCollection(result, 10);
+        }
+    }
+
+    [Retry(DefaultTestRetryLimit)]
+    [TestCase("BTCUSD_PERP")]
+    [TestCase("btcusd_perp")]
+    [TestCase("eThUsD_pErP")]
+    public async Task GetFundingRateHistory_ReturnsExactSymbol_WhenSymbolSpecified(string symbol)
+    {
+        // Act.
+        using IDeferredQuery<List<FundingRate>> query = _client.PrepareGetFundingRateHistory(symbol);
+        List<FundingRate> result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.Not.Null.And.Count.Not.Zero);
+            Assert.That(result, Is.All.Matches((FundingRate r) => 
+                string.Equals(r.Symbol, symbol, StringComparison.InvariantCultureIgnoreCase)));
+        });
+
+        if (AreQueryResultsLogged)
+        {
+            LogObject(result);
+        }
+    }
+
     #endregion
 }
