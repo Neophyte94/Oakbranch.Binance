@@ -1121,5 +1121,42 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
         Assert.That(td, Throws.ArgumentException);
     }
 
+    // Get funding rate info.
+    [Test, Retry(DefaultTestRetryLimit)]
+    public async Task GetFundingRateInfo_ReturnsValidList_WhenDefaultParams()
+    {
+        // Act.
+        using IDeferredQuery<List<FundingRateConfig>> query = _client.PrepareGetFundingRateInfo();
+        List<FundingRateConfig> result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.That(result, Is.Not.Null.And.Count.Not.Zero);
+
+        if (AreQueryResultsLogged)
+        {
+            LogCollection(result, 10);
+        }
+    }
+
+    // Get open interest.
+    [TestCase("BTCUSDT")]
+    [TestCase("btcusdt")]
+    [TestCase("eThUsDt")]
+    [Retry(DefaultTestRetryLimit)]
+    public async Task GetOpenInterest_ReturnsValidInstance_WhenSymbolSpecified(string symbol)
+    {
+        // Act.
+        using IDeferredQuery<OpenInterest> query = _client.PrepareGetOpenInterest(symbol);
+        OpenInterest result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.That(result.Timestamp, Is.EqualTo(DateTime.UtcNow).Within(UtcTimeErrorTolerance));
+
+        if (AreQueryResultsLogged)
+        {
+            LogObject(result);
+        }
+    }
+
     #endregion
 }
