@@ -1757,6 +1757,8 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
                         interval = reader.GetInt32();
                         validator.RegisterProperty(3);
                         break;
+                    case "disclaimer":
+                        break;
                     default:
                         throw ParseUtility.GenerateUnknownPropertyException(propName);
                 }
