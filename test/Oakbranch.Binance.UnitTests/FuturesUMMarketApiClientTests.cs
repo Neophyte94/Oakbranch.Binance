@@ -40,6 +40,19 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
             return new object[] { i, min, max };
         })
         .ToArray();
+    private static object[] AllStatsIntervalCases { get; } = Enum.GetValues<StatsInterval>()
+        .Select((i) =>
+        {
+            (TimeSpan min, TimeSpan max) = TestHelper.ParseInterval(i.ToString());
+            return new object[] { i, min, max };
+        })
+        .ToArray();
+    private static object[] SymbolCases { get; } = new object[]
+        {
+            "BTCUSDT",
+            "btcusdt",
+            "eThUsDt",
+        };
 
     #endregion
 
@@ -954,10 +967,7 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
         }
     }
 
-    [Retry(DefaultTestRetryLimit)]
-    [TestCase("BTCUSDT")]
-    [TestCase("btcusdt")]
-    [TestCase("eThUsDt")]
+    [TestCaseSource(nameof(SymbolCases)), Retry(DefaultTestRetryLimit)]
     public async Task GetPremiumInfo_ReturnsValidInstance_WhenPerpetualSymbolSpecified(string symbol)
     {
         // Act.
@@ -1054,10 +1064,7 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
         }
     }
 
-    [Retry(DefaultTestRetryLimit)]
-    [TestCase("BTCUSDT")]
-    [TestCase("btcusdt")]
-    [TestCase("eThUsDt")]
+    [TestCaseSource(nameof(SymbolCases)), Retry(DefaultTestRetryLimit)]
     public async Task GetFundingRateHistory_ReturnsExactSymbol_WhenSymbolSpecified(string symbol)
     {
         // Act.
@@ -1138,11 +1145,8 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
         }
     }
 
-    // Get open interest.
-    [TestCase("BTCUSDT")]
-    [TestCase("btcusdt")]
-    [TestCase("eThUsDt")]
-    [Retry(DefaultTestRetryLimit)]
+    // Get current open interest.
+    [TestCaseSource(nameof(SymbolCases)), Retry(DefaultTestRetryLimit)]
     public async Task GetOpenInterest_ReturnsValidInstance_WhenSymbolSpecified(string symbol)
     {
         // Act.
@@ -1155,6 +1159,51 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
         if (AreQueryResultsLogged)
         {
             LogObject(result);
+        }
+    }
+
+    // Get open interest history.
+    [TestCaseSource(nameof(SymbolCases)), Retry(DefaultTestRetryLimit)]
+    public async Task GetOpenInterestHistory_ReturnsValidList_WhenSymbolSpecified(string symbol)
+    {
+        // Act.
+        using IDeferredQuery<List<OpenInterest>> query = _client
+            .PrepareGetOpenInterestHistory(symbol, StatsInterval.Hour1);
+        List<OpenInterest> result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.That(result, Is.Not.Null.And.Count.Not.Zero);
+
+        if (AreQueryResultsLogged)
+        {
+            LogCollection(result, 10);
+        }
+    }
+
+    [TestCaseSource(nameof(AllStatsIntervalCases)), Retry(DefaultTestRetryLimit)]
+    public async Task GetOpenInterestHistory_ReturnsItemsWithExactTimeSpan_WhenIntervalSpecified(
+        StatsInterval interval, TimeSpan minSpan, TimeSpan maxSpan)
+    {
+        // Arrange.
+        List<OpenInterest> result;
+
+        // Act.
+        using IDeferredQuery<List<OpenInterest>> query = _client.PrepareGetOpenInterestHistory(
+            symbol: DefaultSymbol,
+            interval: interval);
+        result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+#pragma warning disable NUnit2045 // Use Assert.Multiple
+        Assert.That(result, Is.Not.Null.And.Count.GreaterThan(0));
+        Assert.That(
+            Enumerable.Range(0, result.Count - 1).Select((idx) => result[1].Timestamp - result[0].Timestamp),
+            Has.All.InRange(minSpan, maxSpan));
+#pragma warning restore NUnit2045
+
+        if (AreQueryResultsLogged)
+        {
+            LogCollection(result, 10);
         }
     }
 
