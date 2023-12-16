@@ -229,13 +229,13 @@ public class SpotMarketApiClientTests : ApiClientTestsBase
     }
 
     [TestCaseSource(nameof(NullAndWhitespaceStringCases))]
-    public void GetOldTrades_ThrowsArgumentNullException_WhenEmptySymbolSpecified(string symbol)
+    public void GetOldTrades_ThrowsArgumentException_WhenEmptySymbolSpecified(string symbol)
     {
         // Arrange.
         TestDelegate td = new TestDelegate(() => _client.PrepareGetOldTrades(symbol));
 
         // Act & Assert.
-        Assert.That(td, Throws.ArgumentNullException);
+        Assert.That(td, Throws.InstanceOf<ArgumentException>());
     }
 
     // Get aggregate trades.
@@ -271,13 +271,13 @@ public class SpotMarketApiClientTests : ApiClientTestsBase
     }
 
     [TestCaseSource(nameof(NullAndWhitespaceStringCases))]
-    public void GetAggregateTrades_ThrowsArgumentNullException_WhenEmptySymbolSpecified(string symbol)
+    public void GetAggregateTrades_ThrowsArgumentException_WhenEmptySymbolSpecified(string symbol)
     {
         // Arrange.
         TestDelegate td = new TestDelegate(() => _client.PrepareGetAggregateTrades(symbol));
 
         // Act & Assert.
-        Assert.That(td, Throws.ArgumentNullException);
+        Assert.That(td, Throws.InstanceOf<ArgumentException>());
     }
 
     [TestCaseSource(nameof(InvalidQueryPeriodCases))]
@@ -394,13 +394,13 @@ public class SpotMarketApiClientTests : ApiClientTestsBase
     }
 
     [TestCaseSource(nameof(NullAndWhitespaceStringCases))]
-    public void GetCandlestickData_ThrowsArgumentNullException_WhenEmptySymbolSpecified(string symbol)
+    public void GetCandlestickData_ThrowsArgumentException_WhenEmptySymbolSpecified(string symbol)
     {
         // Arrange.
         TestDelegate td = new TestDelegate(() => _client.PrepareGetCandlestickData(symbol, KlineInterval.Hour1));
 
         // Act & Assert.
-        Assert.That(td, Throws.ArgumentNullException);
+        Assert.That(td, Throws.InstanceOf<ArgumentException>());
     }
 
     [TestCaseSource(nameof(InvalidQueryPeriodCases))]

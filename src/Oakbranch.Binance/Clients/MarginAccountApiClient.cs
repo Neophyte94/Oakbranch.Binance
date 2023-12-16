@@ -868,9 +868,13 @@ public class MarginAccountApiClient : SapiClientBase
         ThrowIfNotRunning();
         ValidateTransactionHistoryInterval(ref startTime, ref endTime);
         if (pageSize < 1 || pageSize > MaxResultPageSize)
+        {
             throw new ArgumentOutOfRangeException(nameof(pageSize));
+        }
         if (currentPage < 1)
+        {
             throw new ArgumentOutOfRangeException(nameof(currentPage));
+        }
 
         string relEndpoint = GetCrossTransferHistoryEndpoint;
         RegisterRateLimitsIfNotExist(relEndpoint, RateLimitType.IP);
@@ -1107,13 +1111,16 @@ public class MarginAccountApiClient : SapiClientBase
         bool? isArchived = null)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(isolatedSymbol))
-            throw new ArgumentNullException(nameof(isolatedSymbol));
+        isolatedSymbol.ThrowIfNullOrWhitespace();
         ValidateTransactionHistoryInterval(ref startTime, ref endTime);
         if (pageSize < 1 || pageSize > MaxResultPageSize)
+        {
             throw new ArgumentOutOfRangeException(nameof(pageSize));
+        }
         if (currentPage < 1)
+        {
             throw new ArgumentOutOfRangeException(nameof(currentPage));
+        }
 
         string relEndpoint = GetIsolatedTransferHistoryEndpoint;
         RegisterRateLimitsIfNotExist(relEndpoint, RateLimitType.IP);
@@ -1331,10 +1338,8 @@ public class MarginAccountApiClient : SapiClientBase
     /// <param name="quantity">The asset quantity to borrow.</param>
     public IDeferredQuery<long> PrepareBorrowAsset(string crossAsset, decimal quantity)
     {
-        if (string.IsNullOrWhiteSpace(crossAsset))
-            throw new ArgumentNullException(nameof(crossAsset));
-        if (quantity <= 0.0m)
-            throw new ArgumentOutOfRangeException(nameof(quantity));
+        crossAsset.ThrowIfNullOrWhitespace();
+        quantity.ThrowIfLessOrEqualToZero();
 
         return PrepareBorrowAsset(false, null, crossAsset, quantity);
     }
@@ -1347,12 +1352,9 @@ public class MarginAccountApiClient : SapiClientBase
     /// <param name="quantity">The asset quantity to borrow.</param>
     public IDeferredQuery<long> PrepareBorrowAsset(string isolatedSymbol, string asset, decimal quantity)
     {
-        if (string.IsNullOrWhiteSpace(isolatedSymbol))
-            throw new ArgumentNullException(nameof(isolatedSymbol));
-        if (string.IsNullOrWhiteSpace(asset))
-            throw new ArgumentNullException(nameof(asset));
-        if (quantity <= 0.0m)
-            throw new ArgumentOutOfRangeException(nameof(quantity));
+        isolatedSymbol.ThrowIfNullOrWhitespace();
+        asset.ThrowIfNullOrWhitespace();
+        quantity.ThrowIfLessOrEqualToZero();
 
         return PrepareBorrowAsset(true, isolatedSymbol, asset, quantity);
     }
@@ -1373,7 +1375,8 @@ public class MarginAccountApiClient : SapiClientBase
         qs.AddParameter("asset", CommonUtility.NormalizeSymbol(asset));
         if (isIsolated)
         {
-            symbol = CommonUtility.NormalizeSymbol(symbol ?? throw new ArgumentNullException(nameof(symbol)));
+            symbol!.ThrowIfNullOrWhitespace();
+            symbol = CommonUtility.NormalizeSymbol(symbol);
             qs.AddParameter("isIsolated", true);
             qs.AddParameter("symbol", symbol);
         }
@@ -1399,10 +1402,8 @@ public class MarginAccountApiClient : SapiClientBase
     /// <param name="quantity">The asset quantity to repay.</param>
     public IDeferredQuery<long> PrepareRepayAsset(string crossAsset, decimal quantity)
     {
-        if (string.IsNullOrWhiteSpace(crossAsset))
-            throw new ArgumentNullException(nameof(crossAsset));
-        if (quantity <= 0.0m)
-            throw new ArgumentOutOfRangeException(nameof(quantity));
+        crossAsset.ThrowIfNullOrWhitespace();
+        quantity.ThrowIfLessOrEqualToZero();
 
         return PrepareRepayAsset(false, null, crossAsset, quantity);
     }
@@ -1415,12 +1416,9 @@ public class MarginAccountApiClient : SapiClientBase
     /// <param name="quantity">The asset quantity to repay.</param>
     public IDeferredQuery<long> PrepareRepayAsset(string isolatedSymbol, string asset, decimal quantity)
     {
-        if (string.IsNullOrWhiteSpace(isolatedSymbol))
-            throw new ArgumentNullException(nameof(isolatedSymbol));
-        if (string.IsNullOrWhiteSpace(asset))
-            throw new ArgumentNullException(nameof(asset));
-        if (quantity <= 0.0m)
-            throw new ArgumentOutOfRangeException(nameof(quantity));
+        isolatedSymbol.ThrowIfNullOrWhitespace();
+        asset.ThrowIfNullOrWhitespace();
+        quantity.ThrowIfLessOrEqualToZero();
 
         return PrepareRepayAsset(true, isolatedSymbol, asset, quantity);
     }
@@ -1441,7 +1439,8 @@ public class MarginAccountApiClient : SapiClientBase
         qs.AddParameter("asset", CommonUtility.NormalizeSymbol(asset));
         if (isIsolated)
         {
-            symbol = CommonUtility.NormalizeSymbol(symbol ?? throw new ArgumentNullException(nameof(symbol)));
+            symbol!.ThrowIfNullOrWhitespace();
+            symbol = CommonUtility.NormalizeSymbol(symbol);
             qs.AddParameter("isIsolated", true);
             qs.AddParameter("symbol", symbol);
         }
@@ -1482,8 +1481,7 @@ public class MarginAccountApiClient : SapiClientBase
     public IDeferredQuery<LoanTransaction> PrepareGetBorrowRecord(
         string isolatedSymbol, string asset, long transactionId, bool? isArchived = null)
     {
-        if (string.IsNullOrWhiteSpace(isolatedSymbol))
-            throw new ArgumentNullException(nameof(isolatedSymbol));
+        isolatedSymbol.ThrowIfNullOrWhitespace();
         return PrepareGetSingleBorrowRecord(asset, isolatedSymbol, transactionId, isArchived);
     }
 
@@ -1491,8 +1489,7 @@ public class MarginAccountApiClient : SapiClientBase
         string asset, string? isolatedSymbol, long transactionId, bool? isArchived)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(asset))
-            throw new ArgumentNullException(nameof(asset));
+        asset.ThrowIfNullOrWhitespace();
 
         string relEndpoint = GetBorrowRecordEndpoint;
         RegisterRateLimitsIfNotExist(relEndpoint, RateLimitType.IP);
@@ -1576,9 +1573,7 @@ public class MarginAccountApiClient : SapiClientBase
         byte? pageSize = null,
         bool? isArchived = null)
     {
-        if (string.IsNullOrWhiteSpace(isolatedSymbol))
-            throw new ArgumentNullException(nameof(isolatedSymbol));
-
+        isolatedSymbol.ThrowIfNullOrWhitespace();
         return PrepareGetBorrowRecordList(asset, isolatedSymbol, startTime, endTime, currentPage, pageSize, isArchived);
     }
 
@@ -1592,13 +1587,16 @@ public class MarginAccountApiClient : SapiClientBase
         bool? isArchived)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(asset))
-            throw new ArgumentNullException(nameof(asset));
+        asset.ThrowIfNullOrWhitespace();
         ValidateTransactionHistoryInterval(ref startTime, ref endTime);
         if (pageSize < 1 || pageSize > MaxResultPageSize)
+        {
             throw new ArgumentOutOfRangeException(nameof(pageSize));
+        }
         if (currentPage < 1)
+        {
             throw new ArgumentOutOfRangeException(nameof(currentPage));
+        }
 
         string relEndpoint = GetBorrowRecordEndpoint;
         RegisterRateLimitsIfNotExist(relEndpoint, RateLimitType.IP);
@@ -1795,8 +1793,7 @@ public class MarginAccountApiClient : SapiClientBase
     public IDeferredQuery<RepayTransaction> PrepareGetRepayRecord(
         string isolatedSymbol, string asset, long transactionId, bool? isArchived = null)
     {
-        if (string.IsNullOrWhiteSpace(isolatedSymbol))
-            throw new ArgumentNullException(nameof(isolatedSymbol));
+        isolatedSymbol.ThrowIfNullOrWhitespace();
         return PrepareGetSingleRepayRecord(asset, isolatedSymbol, transactionId, isArchived);
     }
 
@@ -1804,8 +1801,7 @@ public class MarginAccountApiClient : SapiClientBase
         string asset, string? isolatedSymbol, long transactionId, bool? isArchived)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(asset))
-            throw new ArgumentNullException(nameof(asset));
+        asset.ThrowIfNullOrWhitespace();
 
         string relEndpoint = GetRepayRecordEndpoint;
         RegisterRateLimitsIfNotExist(relEndpoint, RateLimitType.IP);
@@ -1889,9 +1885,7 @@ public class MarginAccountApiClient : SapiClientBase
         byte? pageSize = null,
         bool? isArchived = null)
     {
-        if (string.IsNullOrWhiteSpace(isolatedSymbol))
-            throw new ArgumentNullException(nameof(isolatedSymbol));
-
+        isolatedSymbol.ThrowIfNullOrWhitespace();
         return PrepareGetRepayRecordList(asset, isolatedSymbol, startTime, endTime, currentPage, pageSize, isArchived);
     }
 
@@ -1905,13 +1899,16 @@ public class MarginAccountApiClient : SapiClientBase
         bool? isArchived)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(asset))
-            throw new ArgumentNullException(nameof(asset));
+        asset.ThrowIfNullOrWhitespace();
         ValidateTransactionHistoryInterval(ref startTime, ref endTime);
         if (pageSize < 1 || pageSize > MaxResultPageSize)
+        {
             throw new ArgumentOutOfRangeException(nameof(pageSize));
+        }
         if (currentPage < 1)
+        {
             throw new ArgumentOutOfRangeException(nameof(currentPage));
+        }
 
         string relEndpoint = GetRepayRecordEndpoint;
         RegisterRateLimitsIfNotExist(relEndpoint, RateLimitType.IP);
@@ -2104,9 +2101,7 @@ public class MarginAccountApiClient : SapiClientBase
     /// <param name="crossAsset">The cross margin asset to get a borrow limit for.</param>
     public IDeferredQuery<BorrowLimitInfo> PrepareGetBorrowLimit(string crossAsset)
     {
-        if (string.IsNullOrWhiteSpace(crossAsset))
-            throw new ArgumentNullException(nameof(crossAsset));
-
+        crossAsset.ThrowIfNullOrWhitespace();
         return PrepareGetBorrowLimitPrivate(crossAsset, null);
     }
 
@@ -2129,10 +2124,8 @@ public class MarginAccountApiClient : SapiClientBase
     /// <param name="asset">The asset of the trading pair to get a borrow limit for.</param>
     public IDeferredQuery<BorrowLimitInfo> PrepareGetBorrowLimit(string isolatedSymbol, string asset)
     {
-        if (string.IsNullOrWhiteSpace(isolatedSymbol))
-            throw new ArgumentNullException(nameof(isolatedSymbol));
-        if (string.IsNullOrWhiteSpace(asset))
-            throw new ArgumentNullException(nameof(asset));
+        isolatedSymbol.ThrowIfNullOrWhitespace();
+        asset.ThrowIfNullOrWhitespace();
 
         return PrepareGetBorrowLimitPrivate(asset, isolatedSymbol);
     }
@@ -2740,20 +2733,13 @@ public class MarginAccountApiClient : SapiClientBase
         OrderResponseType? orderResponseType)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(symbol))
-            throw new ArgumentNullException(nameof(symbol));
-        if (price <= 0.0m)
-            throw new ArgumentOutOfRangeException(nameof(price));
-        if (stopPrice <= 0.0m)
-            throw new ArgumentOutOfRangeException(nameof(stopPrice));
-        if (quantity <= 0.0m)
-            throw new ArgumentOutOfRangeException(nameof(quantity));
-        if (quoteQuantity <= 0.0m)
-            throw new ArgumentOutOfRangeException(nameof(quoteQuantity));
-        if (icebergQuantity <= 0.0m)
-            throw new ArgumentOutOfRangeException(nameof(icebergQuantity));
-        if (id != null && string.IsNullOrWhiteSpace(id))
-            throw new ArgumentException("The specified custom ID is empty.", nameof(id));
+        symbol.ThrowIfNullOrWhitespace();
+        price.ThrowIfLessOrEqualToZero();
+        stopPrice.ThrowIfLessOrEqualToZero();
+        quantity.ThrowIfLessOrEqualToZero();
+        quoteQuantity.ThrowIfLessOrEqualToZero();
+        icebergQuantity.ThrowIfLessOrEqualToZero();
+        id.ThrowIfEmptyOrWhitespace();
 
         string relEndpoint = PostNewOrderEndpoint;
         RegisterRateLimitsIfNotExist(relEndpoint, RateLimitType.UID);
@@ -3134,9 +3120,7 @@ public class MarginAccountApiClient : SapiClientBase
     /// <param name="orderId">A global numerical identifier of the order to cancel.</param>
     public IDeferredQuery<MarginOrder> PrepareCancelOrder(string symbol, bool isIsolated, long orderId)
     {
-        if (string.IsNullOrWhiteSpace(symbol))
-            throw new ArgumentNullException(nameof(symbol));
-
+        symbol.ThrowIfNullOrWhitespace();
         return PrepareCancelOrder(symbol, isIsolated, orderId, null, null);
     }
 
@@ -3160,10 +3144,8 @@ public class MarginAccountApiClient : SapiClientBase
     /// <param name="clientOrderId">An original custom identifier of the order to cancel.</param>
     public IDeferredQuery<MarginOrder> PrepareCancelOrder(string symbol, bool isIsolated, string clientOrderId)
     {
-        if (string.IsNullOrWhiteSpace(symbol))
-            throw new ArgumentNullException(nameof(symbol));
-        if (string.IsNullOrWhiteSpace(clientOrderId))
-            throw new ArgumentNullException(nameof(clientOrderId));
+        symbol.ThrowIfNullOrWhitespace();
+        clientOrderId.ThrowIfNullOrWhitespace();
 
         return PrepareCancelOrder(symbol, isIsolated, null, clientOrderId, null);
     }
@@ -3206,9 +3188,8 @@ public class MarginAccountApiClient : SapiClientBase
         }
         else
         {
-            qs.AddParameter(
-                "origClientOrderId",
-                origClientOrderId ?? throw new ArgumentNullException(nameof(origClientOrderId)));
+            origClientOrderId!.ThrowIfNullOrWhitespace();
+            qs.AddParameter("origClientOrderId", origClientOrderId);
         }
         if (!string.IsNullOrEmpty(newClientOrderId))
         {
@@ -3232,8 +3213,7 @@ public class MarginAccountApiClient : SapiClientBase
     public IDeferredQuery<List<MarginOrder>> PrepareCancelAllOrders(string symbol, bool isIsolated)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(symbol))
-            throw new ArgumentNullException(nameof(symbol));
+        symbol.ThrowIfNullOrWhitespace();
 
         string relEndpoint = DeleteAllOpenOrdersOnSymbolEndpoint;
         RegisterRateLimitsIfNotExist(relEndpoint, RateLimitType.IP);
@@ -3276,9 +3256,7 @@ public class MarginAccountApiClient : SapiClientBase
     /// <param name="orderId">The unique identifier of the order to fetch.</param>
     public IDeferredQuery<MarginOrder> PrepareGetOrder(string symbol, bool isIsolated, long orderId)
     {
-        if (string.IsNullOrWhiteSpace(symbol))
-            throw new ArgumentNullException(nameof(symbol));
-
+        symbol.ThrowIfNullOrWhitespace();
         return PrepareGetOrder(symbol, isIsolated, orderId, null);
     }
 
@@ -3292,9 +3270,7 @@ public class MarginAccountApiClient : SapiClientBase
     /// <param name="clientOrderId">The original custom identifier of the order to fetch.</param>
     public IDeferredQuery<MarginOrder> PrepareGetOrder(string symbol, bool isIsolated, string clientOrderId)
     {
-        if (string.IsNullOrWhiteSpace(symbol))
-            throw new ArgumentNullException(nameof(symbol));
-
+        symbol.ThrowIfNullOrWhitespace();
         return PrepareGetOrder(symbol, isIsolated, null, clientOrderId);
     }
 
@@ -3320,9 +3296,8 @@ public class MarginAccountApiClient : SapiClientBase
         }
         else
         {
-            qs.AddParameter(
-                "origClientOrderId",
-                origClientOrderId ?? throw new ArgumentNullException(nameof(origClientOrderId)));
+            origClientOrderId!.ThrowIfNullOrWhitespace();
+            qs.AddParameter("origClientOrderId", origClientOrderId);
         }
 
         return new DeferredQuery<MarginOrder>(
@@ -3352,10 +3327,9 @@ public class MarginAccountApiClient : SapiClientBase
         int? limit = null)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(symbol))
-        {
-            throw new ArgumentNullException(nameof(symbol));
-        }
+        symbol.ThrowIfNullOrWhitespace();
+        limit.ThrowIfInvalidLimit(500);
+
         if (startTime != null && endTime != null)
         {
             TimeSpan diff = endTime.Value - startTime.Value;
@@ -3370,10 +3344,6 @@ public class MarginAccountApiClient : SapiClientBase
                     $"({new TimeSpan(MaxAccountOrderLookupInterval).TotalHours} hours). " +
                     $"Check {nameof(MaxAccountOrderLookupInterval)}.");
             }
-        }
-        if (limit < 1 || limit > 500)
-        {
-            throw new ArgumentOutOfRangeException(nameof(limit));
         }
 
         string relEndpoint = GetAllOrdersEndpoint;
@@ -3444,13 +3414,14 @@ public class MarginAccountApiClient : SapiClientBase
         ThrowIfNotRunning();
         if (isIsolated)
         {
-            if (string.IsNullOrWhiteSpace(symbol))
-                throw new ArgumentNullException(nameof(symbol));
+            symbol!.ThrowIfNullOrWhitespace();
         }
         else
         {
             if (string.IsNullOrEmpty(symbol))
+            {
                 symbol = null;
+            }
         }
 
         string relEndpoint = GetOpenOrdersEndpoint;
@@ -3568,10 +3539,12 @@ public class MarginAccountApiClient : SapiClientBase
         int? limit = null)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(symbol))
-            throw new ArgumentNullException(nameof(symbol));
+        symbol.ThrowIfNullOrWhitespace();
+        limit.ThrowIfInvalidLimit(1000);
         if (orderId < 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(orderId));
+        }
         if (startTime != null && endTime != null)
         {
             TimeSpan diff = endTime.Value - startTime.Value;
@@ -3583,9 +3556,9 @@ public class MarginAccountApiClient : SapiClientBase
                     $"({new TimeSpan(MaxAccountTradeLookupInterval).TotalDays} days). Check {nameof(MaxAccountTradeLookupInterval)}.");
         }
         if (fromId < 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(fromId));
-        if (limit < 1 || limit > 1000)
-            throw new ArgumentOutOfRangeException(nameof(limit));
+        }
 
         string relEndpoint = GetAccountTradeListEndpoint;
         RegisterRateLimitsIfNotExist(relEndpoint, RateLimitType.IP);
@@ -3763,8 +3736,7 @@ public class MarginAccountApiClient : SapiClientBase
     /// <param name="isolatedSymbol">The symbol associated with the isolated margin account to get limit usage for.</param>
     public IDeferredQuery<List<RateLimiter>> PrepareGetOrderLimitUsage(string isolatedSymbol)
     {
-        if (string.IsNullOrWhiteSpace(isolatedSymbol))
-            throw new ArgumentNullException(nameof(isolatedSymbol));
+        isolatedSymbol.ThrowIfNullOrWhitespace();
         return PrepareGetOrderLimitUsage(true, isolatedSymbol);
     }
 

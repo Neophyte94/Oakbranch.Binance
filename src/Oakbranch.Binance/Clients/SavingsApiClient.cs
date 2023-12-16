@@ -237,8 +237,7 @@ namespace Oakbranch.Binance.Clients
         public IDeferredQuery<List<FlexibleProductPosition>> PrepareGetFlexibleProductPositions(string? asset = null)
         {
             ThrowIfNotRunning();
-            if (asset != null && string.IsNullOrWhiteSpace(asset))
-                throw new ArgumentNullException(nameof(asset));
+            asset.ThrowIfEmptyOrWhitespace();
 
             string relEndpoint = GetFlexibleProductPositionEndpoint;
             RegisterRateLimitsIfNotExist(relEndpoint, RateLimitType.IP);
@@ -462,8 +461,7 @@ namespace Oakbranch.Binance.Clients
             int? pageSize = null)
         {
             ThrowIfNotRunning();
-            if (asset != null && string.IsNullOrWhiteSpace(asset))
-                throw new ArgumentNullException(nameof(asset));
+            asset.ThrowIfEmptyOrWhitespace();
             if (startTime != null && endTime != null)
             {
                 TimeSpan diff = endTime.Value - startTime.Value;
@@ -475,9 +473,13 @@ namespace Oakbranch.Binance.Clients
                         $"({new TimeSpan(MaxInterestLookupInterval).TotalDays} days). Check {nameof(MaxInterestLookupInterval)}.");
             }
             if (currentPage < 1)
+            {
                 throw new ArgumentOutOfRangeException(nameof(currentPage));
+            }
             if (pageSize < 1 || pageSize > 100)
+            {
                 throw new ArgumentOutOfRangeException(nameof(pageSize));
+            }
 
             string relEndpoint = GetInterestHistoryEndpoint;
             RegisterRateLimitsIfNotExist(relEndpoint, RateLimitType.IP);

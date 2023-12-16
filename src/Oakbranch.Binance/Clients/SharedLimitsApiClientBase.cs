@@ -57,10 +57,7 @@ namespace Oakbranch.Binance.Clients
             ILogger? logger = null)
             : base(connector, limitsRegistry, logger)
         {
-            if (string.IsNullOrWhiteSpace(discriminativeEndpoint))
-            {
-                throw new ArgumentNullException(nameof(discriminativeEndpoint));
-            }
+            discriminativeEndpoint.ThrowIfNullOrWhitespace();
 
             DiscrimativeEndpoint = discriminativeEndpoint;
             LimitNameEndpointSpecifier = discriminativeEndpoint.Split('/')

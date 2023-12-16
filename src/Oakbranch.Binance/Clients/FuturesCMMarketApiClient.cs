@@ -522,14 +522,8 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     public IDeferredQuery<List<Trade>> PrepareGetOldTrades(string symbol, int? limit = null, long? fromId = null)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(symbol))
-        {
-            throw new ArgumentNullException(nameof(symbol));
-        }
-        if (limit < 1 || limit > MaxTradesQueryLimit)
-        {
-            throw new ArgumentOutOfRangeException(nameof(limit));
-        }
+        symbol.ThrowIfNullOrWhitespace();
+        limit.ThrowIfInvalidLimit(MaxTradesQueryLimit);
 
         QueryWeight[] weights = new QueryWeight[]
         {
@@ -715,18 +709,9 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
         string symbol, long? fromId = null, DateTime? startTime = null, DateTime? endTime = null, int? limit = null)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(symbol))
-        {
-            throw new ArgumentNullException(nameof(symbol));
-        }
-        if (startTime != null && endTime != null && endTime.Value < startTime.Value)
-        {
-            throw new ArgumentException($"The specified period [{startTime} - {endTime}] is invalid.");
-        }
-        if (limit < 1 || limit > MaxTradesQueryLimit)
-        {
-            throw new ArgumentOutOfRangeException(nameof(limit));
-        }
+        symbol.ThrowIfNullOrWhitespace();
+        limit.ThrowIfInvalidLimit(MaxTradesQueryLimit);
+        ExceptionUtility.ThrowIfInvalidPeriod(startTime, endTime);
 
         QueryWeight[] weights = new QueryWeight[]
         {
@@ -864,18 +849,9 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
         int? limit = null)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(symbol))
-        {
-            throw new ArgumentNullException(nameof(symbol));
-        }
-        if (startTime != null && endTime != null && endTime.Value < startTime.Value)
-        {
-            throw new ArgumentException($"The specified period [{startTime} - {endTime}] is invalid.");
-        }
-        if (limit != null && (limit < 1 || limit > MaxKlinesQueryLimit))
-        {
-            throw new ArgumentOutOfRangeException(nameof(limit));
-        }
+        symbol.ThrowIfNullOrWhitespace();
+        limit.ThrowIfInvalidLimit(MaxKlinesQueryLimit);
+        ExceptionUtility.ThrowIfInvalidPeriod(startTime, endTime);
 
         QueryBuilder qs = new QueryBuilder(109);
         qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
@@ -942,18 +918,9 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
         int? limit = null)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(pair))
-        {
-            throw new ArgumentNullException(nameof(pair));
-        }
-        if (startTime != null && endTime != null && endTime.Value < startTime.Value)
-        {
-            throw new ArgumentException($"The specified period [{startTime} - {endTime}] is invalid.");
-        }
-        if (limit != null && (limit < 1 || limit > MaxKlinesQueryLimit))
-        {
-            throw new ArgumentOutOfRangeException(nameof(limit));
-        }
+        pair.ThrowIfNullOrWhitespace();
+        limit.ThrowIfInvalidLimit(MaxKlinesQueryLimit);
+        ExceptionUtility.ThrowIfInvalidPeriod(startTime, endTime);
 
         QueryBuilder qs = new QueryBuilder(109);
         qs.AddParameter("pair", CommonUtility.NormalizeSymbol(pair));
@@ -1025,10 +992,9 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
         int? limit = null)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(pair))
-        {
-            throw new ArgumentNullException(nameof(pair));
-        }
+        pair.ThrowIfNullOrWhitespace();
+        limit.ThrowIfInvalidLimit(MaxKlinesQueryLimit);
+
         if (startTime != null && endTime != null)
         {
             if (endTime.Value < startTime.Value)
@@ -1040,10 +1006,6 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
                 throw new ArgumentException($"The specified lookup period ({(endTime.Value - startTime.Value).TotalDays:0.0} days) is too large.");
 
             }
-        }
-        if (limit != null && (limit < 1 || limit > MaxKlinesQueryLimit))
-        {
-            throw new ArgumentOutOfRangeException(nameof(limit));
         }
 
         QueryBuilder qs = new QueryBuilder(109);
@@ -1109,18 +1071,9 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
         int? limit = null)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(symbol))
-        {
-            throw new ArgumentNullException(nameof(symbol));
-        }
-        if (startTime != null && endTime != null && endTime.Value < startTime.Value)
-        {
-            throw new ArgumentException($"The specified period [{startTime} - {endTime}] is invalid.");
-        }
-        if (limit != null && (limit < 1 || limit > MaxKlinesQueryLimit))
-        {
-            throw new ArgumentOutOfRangeException(nameof(limit));
-        }
+        symbol.ThrowIfNullOrWhitespace();
+        limit.ThrowIfInvalidLimit(MaxKlinesQueryLimit);
+        ExceptionUtility.ThrowIfInvalidPeriod(startTime, endTime);
 
         QueryBuilder qs = new QueryBuilder(109);
         qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
@@ -1181,18 +1134,9 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
         int? limit = null)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(symbol))
-        {
-            throw new ArgumentNullException(nameof(symbol));
-        }
-        if (startTime != null && endTime != null && endTime.Value < startTime.Value)
-        {
-            throw new ArgumentException($"The specified period [{startTime} - {endTime}] is invalid.");
-        }
-        if (limit != null && (limit < 1 || limit > MaxKlinesQueryLimit))
-        {
-            throw new ArgumentOutOfRangeException(nameof(limit));
-        }
+        symbol.ThrowIfNullOrWhitespace();
+        limit.ThrowIfInvalidLimit(MaxKlinesQueryLimit);
+        ExceptionUtility.ThrowIfInvalidPeriod(startTime, endTime);
 
         QueryBuilder qs = new QueryBuilder(109);
         qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
@@ -1268,10 +1212,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     public IDeferredQuery<List<PremiumInfo>> PrepareGetPremiumInfoOnPair(string pair)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(pair))
-        {
-            throw new ArgumentNullException(nameof(pair));
-        }
+        pair.ThrowIfNullOrWhitespace();
 
         QueryWeight[] weights = new QueryWeight[]
         {
@@ -1322,10 +1263,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     public IDeferredQuery<PremiumInfo> PrepareGetPremiumInfoOnSymbol(string symbol)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(symbol))
-        {
-            throw new ArgumentNullException(nameof(symbol));
-        }
+        symbol.ThrowIfNullOrWhitespace();
 
         QueryWeight[] weights = new QueryWeight[]
         {
@@ -1485,24 +1423,15 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     /// <para>If not specified, the default value <see cref="DefaultFundingHistoryQueryLimit"/> (100) is used.</para>
     /// </param>
     public IDeferredQuery<List<FundingRate>> PrepareGetFundingRateHistory(
-        string? symbol,
+        string symbol,
         DateTime? startTime = null,
         DateTime? endTime = null,
         int? limit = null)
     {
         ThrowIfDisposed();
-        if (string.IsNullOrWhiteSpace(symbol))
-        {
-            throw new ArgumentNullException(nameof(symbol));
-        }
-        if (startTime != null && endTime != null && endTime.Value < startTime.Value)
-        {
-            throw new ArgumentException($"The specified time period [{startTime} ; {endTime}] is invalid.");
-        }
-        if (limit < 1 || limit > MaxFundingHistoryQueryLimit)
-        {
-            throw new ArgumentOutOfRangeException(nameof(limit));
-        }
+        symbol.ThrowIfNullOrWhitespace();
+        limit.ThrowIfInvalidLimit(MaxFundingHistoryQueryLimit);
+        ExceptionUtility.ThrowIfInvalidPeriod(startTime, endTime);
 
         QueryWeight[] weights = new QueryWeight[]
         {
@@ -1737,10 +1666,7 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
     public IDeferredQuery<OpenInterest> PrepareGetOpenInterest(string symbol)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(symbol))
-        {
-            throw new ArgumentNullException(nameof(symbol));
-        }
+        symbol.ThrowIfNullOrWhitespace();
 
         QueryWeight[] weights = new QueryWeight[]
         {
@@ -1848,18 +1774,9 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
         int? limit = null)
     {
         ThrowIfDisposed();
-        if (string.IsNullOrWhiteSpace(pair))
-        {
-            throw new ArgumentNullException(nameof(pair));
-        }
-        if (startTime != null && endTime != null && endTime.Value < startTime.Value)
-        {
-            throw new ArgumentException($"The specified time period [{startTime} ; {endTime}] is invalid.");
-        }
-        if (limit < 1 || limit > MaxMarketStatsQueryLimit)
-        {
-            throw new ArgumentOutOfRangeException(nameof(limit));
-        }
+        pair.ThrowIfNullOrWhitespace();
+        limit.ThrowIfInvalidLimit(MaxMarketStatsQueryLimit);
+        ExceptionUtility.ThrowIfInvalidPeriod(startTime, endTime);
 
         QueryBuilder qs = new QueryBuilder(110);
         qs.AddParameter("pair", CommonUtility.NormalizeSymbol(pair));
@@ -1990,18 +1907,9 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
         int? limit = null)
     {
         ThrowIfDisposed();
-        if (string.IsNullOrWhiteSpace(pair))
-        {
-            throw new ArgumentNullException(nameof(pair));
-        }
-        if (startTime != null && endTime != null && endTime.Value < startTime.Value)
-        {
-            throw new ArgumentException($"The specified time period [{startTime} ; {endTime}] is invalid.");
-        }
-        if (limit < 1 || limit > MaxMarketStatsQueryLimit)
-        {
-            throw new ArgumentOutOfRangeException(nameof(limit));
-        }
+        pair.ThrowIfNullOrWhitespace();
+        limit.ThrowIfInvalidLimit(MaxMarketStatsQueryLimit);
+        ExceptionUtility.ThrowIfInvalidPeriod(startTime, endTime);
 
         QueryBuilder qs = new QueryBuilder(83);
         qs.AddParameter("pair", CommonUtility.NormalizeSymbol(pair));
@@ -2057,18 +1965,9 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
         int? limit = null)
     {
         ThrowIfDisposed();
-        if (string.IsNullOrWhiteSpace(pair))
-        {
-            throw new ArgumentNullException(nameof(pair));
-        }
-        if (startTime != null && endTime != null && endTime.Value < startTime.Value)
-        {
-            throw new ArgumentException($"The specified time period [{startTime} ; {endTime}] is invalid.");
-        }
-        if (limit < 1 || limit > MaxMarketStatsQueryLimit)
-        {
-            throw new ArgumentOutOfRangeException(nameof(limit));
-        }
+        pair.ThrowIfNullOrWhitespace();
+        limit.ThrowIfInvalidLimit(MaxMarketStatsQueryLimit);
+        ExceptionUtility.ThrowIfInvalidPeriod(startTime, endTime);
 
         QueryBuilder qs = new QueryBuilder(83);
         qs.AddParameter("pair", CommonUtility.NormalizeSymbol(pair));
@@ -2128,18 +2027,9 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
         int? limit = null)
     {
         ThrowIfDisposed();
-        if (string.IsNullOrWhiteSpace(pair))
-        {
-            throw new ArgumentNullException(nameof(pair));
-        }
-        if (startTime != null && endTime != null && endTime.Value < startTime.Value)
-        {
-            throw new ArgumentException($"The specified time period [{startTime} ; {endTime}] is invalid.");
-        }
-        if (limit < 1 || limit > MaxMarketStatsQueryLimit)
-        {
-            throw new ArgumentOutOfRangeException(nameof(limit));
-        }
+        pair.ThrowIfNullOrWhitespace();
+        limit.ThrowIfInvalidLimit(MaxMarketStatsQueryLimit);
+        ExceptionUtility.ThrowIfInvalidPeriod(startTime, endTime);
 
         QueryBuilder qs = new QueryBuilder(83);
         qs.AddParameter("pair", CommonUtility.NormalizeSymbol(pair));
@@ -2206,18 +2096,9 @@ public class FuturesCMMarketApiClient : FuturesCMClientBase
         int? limit = null)
     {
         ThrowIfDisposed();
-        if (string.IsNullOrWhiteSpace(pair))
-        {
-            throw new ArgumentNullException(nameof(pair));
-        }
-        if (startTime != null && endTime != null && endTime.Value < startTime.Value)
-        {
-            throw new ArgumentException($"The specified time period [{startTime} ; {endTime}] is invalid.");
-        }
-        if (limit < 1 || limit > MaxMarketStatsQueryLimit)
-        {
-            throw new ArgumentOutOfRangeException(nameof(limit));
-        }
+        pair.ThrowIfNullOrWhitespace();
+        limit.ThrowIfInvalidLimit(MaxMarketStatsQueryLimit);
+        ExceptionUtility.ThrowIfInvalidPeriod(startTime, endTime);
 
         QueryBuilder qs = new QueryBuilder(110);
         qs.AddParameter("pair", CommonUtility.NormalizeSymbol(pair));

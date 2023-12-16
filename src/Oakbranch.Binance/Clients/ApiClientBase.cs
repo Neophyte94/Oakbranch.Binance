@@ -225,8 +225,7 @@ public abstract class ApiClientBase : IDisposable
 
     private static RateLimitType ParseRateLimitType(string s)
     {
-        if (string.IsNullOrWhiteSpace(s))
-            throw new ArgumentNullException(nameof(s));
+        s.ThrowIfNullOrWhitespace();
 
         return s switch
         {
@@ -239,8 +238,7 @@ public abstract class ApiClientBase : IDisposable
 
     private static Interval ParseInterval(string s)
     {
-        if (string.IsNullOrWhiteSpace(s))
-            throw new ArgumentNullException(nameof(s));
+        s.ThrowIfNullOrWhitespace();
 
         return s switch
         {

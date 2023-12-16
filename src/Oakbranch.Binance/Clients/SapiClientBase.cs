@@ -170,8 +170,7 @@ namespace Oakbranch.Binance.Clients
         protected void RegisterRateLimitsIfNotExist(string discriminativeEndpoint, RateLimitType limitType)
         {
             ThrowIfNotRunning();
-            if (string.IsNullOrWhiteSpace(discriminativeEndpoint))
-                throw new ArgumentNullException(nameof(discriminativeEndpoint));
+            discriminativeEndpoint.ThrowIfNullOrWhitespace();
 
             // Check whether rate limits have been registered for the specified "endpoint - limit type" pair.
             int dimId = GetWeightDimensionId(discriminativeEndpoint, limitType);

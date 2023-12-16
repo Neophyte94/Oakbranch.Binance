@@ -227,13 +227,13 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
     }
 
     [TestCaseSource(nameof(NullAndWhitespaceStringCases))]
-    public void GetOldTrades_ThrowsArgumentNullException_WhenEmptySymbolSpecified(string symbol)
+    public void GetOldTrades_ThrowsArgumentException_WhenEmptySymbolSpecified(string symbol)
     {
         // Arrange.
         TestDelegate td = new TestDelegate(() => _client.PrepareGetOldTrades(symbol));
 
         // Act & Assert.
-        Assert.That(td, Throws.ArgumentNullException);
+        Assert.That(td, Throws.InstanceOf<ArgumentException>());
     }
 
     // Get aggregate trades.
@@ -269,13 +269,13 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
     }
 
     [TestCaseSource(nameof(NullAndWhitespaceStringCases))]
-    public void GetAggregateTrades_ThrowsArgumentNullException_WhenEmptySymbolSpecified(string symbol)
+    public void GetAggregateTrades_ThrowsArgumentException_WhenEmptySymbolSpecified(string symbol)
     {
         // Arrange.
         TestDelegate td = new TestDelegate(() => _client.PrepareGetAggregateTrades(symbol));
 
         // Act & Assert.
-        Assert.That(td, Throws.ArgumentNullException);
+        Assert.That(td, Throws.InstanceOf<ArgumentException>());
     }
 
     [TestCaseSource(nameof(InvalidQueryPeriodCases))]
@@ -392,13 +392,13 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
     }
 
     [TestCaseSource(nameof(NullAndWhitespaceStringCases))]
-    public void GetSymbolPriceKlines_ThrowsArgumentNullException_WhenEmptySymbolSpecified(string symbol)
+    public void GetSymbolPriceKlines_ThrowsArgumentException_WhenEmptySymbolSpecified(string symbol)
     {
         // Arrange.
         TestDelegate td = new TestDelegate(() => _client.PrepareGetSymbolPriceKlines(symbol, KlineInterval.Hour1));
 
         // Act & Assert.
-        Assert.That(td, Throws.ArgumentNullException);
+        Assert.That(td, Throws.InstanceOf<ArgumentException>());
     }
 
     [TestCaseSource(nameof(InvalidQueryPeriodCases))]
@@ -520,7 +520,7 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
     }
 
     [TestCaseSource(nameof(NullAndWhitespaceStringCases))]
-    public void GetContractPriceKlines_ThrowsArgumentNullException_WhenEmptySymbolSpecified(string symbol)
+    public void GetContractPriceKlines_ThrowsArgumentException_WhenEmptySymbolSpecified(string symbol)
     {
         // Arrange.
         TestDelegate td = new TestDelegate(() =>
@@ -530,7 +530,7 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
                 interval: KlineInterval.Hour1));
 
         // Act & Assert.
-        Assert.That(td, Throws.ArgumentNullException);
+        Assert.That(td, Throws.InstanceOf<ArgumentException>());
     }
 
     [TestCaseSource(nameof(InvalidQueryPeriodCases))]
@@ -651,7 +651,7 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
     }
 
     [TestCaseSource(nameof(NullAndWhitespaceStringCases))]
-    public void GetIndexPriceKlines_ThrowsArgumentNullException_WhenEmptySymbolSpecified(string symbol)
+    public void GetIndexPriceKlines_ThrowsArgumentException_WhenEmptySymbolSpecified(string symbol)
     {
         // Arrange.
         TestDelegate td = new TestDelegate(() =>
@@ -660,7 +660,7 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
                 interval: KlineInterval.Hour1));
 
         // Act & Assert.
-        Assert.That(td, Throws.ArgumentNullException);
+        Assert.That(td, Throws.InstanceOf<ArgumentException>());
     }
 
     [TestCaseSource(nameof(InvalidQueryPeriodCases))]
@@ -779,7 +779,7 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
     }
 
     [TestCaseSource(nameof(NullAndWhitespaceStringCases))]
-    public void GetMarkPriceKlines_ThrowsArgumentNullException_WhenEmptySymbolSpecified(string symbol)
+    public void GetMarkPriceKlines_ThrowsArgumentException_WhenEmptySymbolSpecified(string symbol)
     {
         // Arrange.
         TestDelegate td = new TestDelegate(() =>
@@ -788,7 +788,7 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
                 interval: KlineInterval.Hour1));
 
         // Act & Assert.
-        Assert.That(td, Throws.ArgumentNullException);
+        Assert.That(td, Throws.InstanceOf<ArgumentException>());
     }
 
     [TestCaseSource(nameof(InvalidQueryPeriodCases))]
@@ -907,7 +907,7 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
     }
 
     [TestCaseSource(nameof(NullAndWhitespaceStringCases))]
-    public void GetPremiumIndexKlines_ThrowsArgumentNullException_WhenEmptySymbolSpecified(string symbol)
+    public void GetPremiumIndexKlines_ThrowsArgumentException_WhenEmptySymbolSpecified(string symbol)
     {
         // Arrange.
         TestDelegate td = new TestDelegate(() =>
@@ -916,7 +916,7 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
                 interval: KlineInterval.Hour1));
 
         // Act & Assert.
-        Assert.That(td, Throws.ArgumentNullException);
+        Assert.That(td, Throws.InstanceOf<ArgumentException>());
     }
 
     [TestCaseSource(nameof(InvalidQueryPeriodCases))]
@@ -1037,14 +1037,14 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
     }
 
     [TestCaseSource(nameof(NullAndWhitespaceStringCases))]
-    public void GetPremiumInfo_ThrowsArgumentNullException_WhenEmptySymbolSpecified(string symbol)
+    public void GetPremiumInfo_ThrowsArgumentException_WhenEmptySymbolSpecified(string symbol)
     {
         // Arrange.
         TestDelegate td = new TestDelegate(() =>
             _client.PrepareGetPremiumInfo(symbol));
 
         // Act & Assert.
-        Assert.That(td, Throws.ArgumentNullException);
+        Assert.That(td, Throws.InstanceOf<ArgumentException>());
     }
 
     // Get funding rate history.
