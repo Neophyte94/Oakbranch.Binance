@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using Oakbranch.Binance.Utility;
 
 namespace Oakbranch.Binance.Core;
 
@@ -20,12 +20,16 @@ public readonly struct BaseEndpoint : IEquatable<BaseEndpoint>
 
     public BaseEndpoint(NetworkType type, string url, string? description)
     {
-        if (string.IsNullOrWhiteSpace(url))
-            throw new ArgumentNullException(nameof(url));
+        url.ThrowIfNullOrWhitespace();
         if (!url.StartsWith("https://"))
+        {
             throw new ArgumentException($"The specified URL \"{url}\" is invalid.");
+        }
+
         if (string.IsNullOrWhiteSpace(description))
+        {
             description = string.Empty;
+        }
 
         Type = type;
         Url = url;

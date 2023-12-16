@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Oakbranch.Binance.Utility;
 
 namespace Oakbranch.Binance.Core;
 
@@ -28,10 +28,8 @@ public readonly struct QueryParams
         QueryBuilder? queryString = null,
         bool isSecured = false)
     {
-        if (string.IsNullOrWhiteSpace(baseEndpoint))
-            throw new ArgumentNullException(nameof(baseEndpoint));
-        if (string.IsNullOrWhiteSpace(relativeEndpoint))
-            throw new ArgumentNullException(nameof(relativeEndpoint));
+        baseEndpoint.ThrowIfNullOrWhitespace();
+        relativeEndpoint.ThrowIfNullOrWhitespace();
 
         Method = method;
         BaseEndpoint = baseEndpoint;

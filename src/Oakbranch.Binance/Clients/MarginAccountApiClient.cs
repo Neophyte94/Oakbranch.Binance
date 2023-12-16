@@ -119,148 +119,6 @@ public class MarginAccountApiClient : SapiClientBase
 
     #endregion
 
-    #region Static methods
-
-    private static string Format(TransferDirection value)
-    {
-        if (value == TransferDirection.RollIn)
-            return "ROLL_IN";
-        else if (value == TransferDirection.RollOut)
-            return "ROLL_OUT";
-        else
-            throw new NotImplementedException($"The transfer direction \"{value}\" is not implemented.");
-    }
-
-    private static TransferDirection ParseTransferDirection(string s)
-    {
-        return s switch
-        {
-            "ROLL_IN" => TransferDirection.RollIn,
-            "ROLL_OUT" => TransferDirection.RollOut,
-            _ => throw new JsonException($"The transfer direction \"{s}\" is unknown."),
-        };
-    }
-
-    private static string Format(AccountType value)
-    {
-        return value switch
-        {
-            AccountType.Spot => "SPOT",
-            AccountType.IsolatedMargin => "ISOLATED_MARGIN",
-            _ => throw new NotSupportedException($"The account type \"{value}\" is not supported."),
-        };
-    }
-
-    private static AccountType ParseAccountType(string s)
-    {
-        return s switch
-        {
-            "SPOT" => AccountType.Spot,
-            "ISOLATED_MARGIN" => AccountType.IsolatedMargin,
-            _ => throw new JsonException($"The unknown account type \"{s}\" was encountered."),
-        };
-    }
-
-    private static string Format(MarginSideEffect value)
-    {
-        return value switch
-        {
-            MarginSideEffect.NoSideEffect => "NO_SIDE_EFFECT",
-            MarginSideEffect.MarginBuy => "MARGIN_BUY",
-            MarginSideEffect.AutoRepay => "AUTO_REPAY",
-            _ => throw new NotImplementedException($"The margin side effect type \"{value}\" is not implemented."),
-        };
-    }
-
-    private static MarginStatus ParseMarginStatus(string s)
-    {
-        return s switch
-        {
-            "EXCESSIVE" => MarginStatus.Excessive,
-            "NORMAL" => MarginStatus.Normal,
-            "MARGIN_CALL" => MarginStatus.MarginCall,
-            "PRE_LIQUIDATION" => MarginStatus.PreLiquidation,
-            "FORCE_LIQUIDATION" => MarginStatus.ForceLiquidation,
-            _ => throw new JsonException($"An unknown margin status \"{s}\" was encountered."),
-        };
-    }
-
-    private static TransactionStatus ParseTransactionStatus(string s)
-    {
-        return s switch
-        {
-            "PENDING" => TransactionStatus.Pending,
-            "CONFIRMED" or "CONFIRM" => TransactionStatus.Confirmed,
-            "FAILED" => TransactionStatus.Failed,
-            _ => throw new JsonException($"An unknown transaction status \"{s}\" was encountered."),
-        };
-    }
-
-    private static string Format(TimeInForce value)
-    {
-        return value switch
-        {
-            TimeInForce.GoodTillCanceled => "GTC",
-            TimeInForce.FillOrKill => "FOK",
-            TimeInForce.ImmediateOrCancel => "IOC",
-            _ => throw new NotImplementedException($"The time-in-force type \"{value}\" is not implemented."),
-        };
-    }
-
-    private static TimeInForce ParseTimeInForce(string s)
-    {
-        return s switch
-        {
-            "GTC" => TimeInForce.GoodTillCanceled,
-            "IOC" => TimeInForce.ImmediateOrCancel,
-            "FOK" => TimeInForce.FillOrKill,
-            _ => throw new JsonException($"An unknown time in force rule \"{s}\" was encountered."),
-        };
-    }
-
-    private static string Format(OrderType value)
-    {
-        return value switch
-        {
-            OrderType.Limit => "LIMIT",
-            OrderType.LimitMaker => "LIMIT_MAKER",
-            OrderType.Market => "MARKET",
-            OrderType.StopLoss => "STOP_LOSS",
-            OrderType.StopLossLimit => "STOP_LOSS_LIMIT",
-            OrderType.TakeProfit => "TAKE_PROFIT",
-            OrderType.TakeProfitLimit => "TAKE_PROFIT_LIMIT",
-            _ => throw new NotImplementedException($"The order type \"{value}\" is not implemented."),
-        };
-    }
-
-    private static OrderType ParseOrderType(string s)
-    {
-        return s switch
-        {
-            "LIMIT" => OrderType.Limit,
-            "LIMIT_MAKER" => OrderType.LimitMaker,
-            "MARKET" => OrderType.Market,
-            "STOP_LOSS" => OrderType.StopLoss,
-            "STOP_LOSS_LIMIT" => OrderType.StopLossLimit,
-            "TAKE_PROFIT" => OrderType.TakeProfit,
-            "TAKE_PROFIT_LIMIT" => OrderType.TakeProfitLimit,
-            _ => throw new JsonException($"The order type \"{s}\" is unknown."),
-        };
-    }
-
-    private static string Format(OrderResponseType value)
-    {
-        return value switch
-        {
-            OrderResponseType.Ack => "ACK",
-            OrderResponseType.Full => "FULL",
-            OrderResponseType.Result => "RESULT",
-            _ => throw new NotImplementedException($"The order response type \"{value}\" is not implemented."),
-        };
-    }
-
-    #endregion
-
     #region Instance methods
 
     // All cross margin pairs.
@@ -687,7 +545,7 @@ public class MarginAccountApiClient : SapiClientBase
                         validator.RegisterProperty(5);
                         break;
                     case "marginLevelStatus":
-                        info.MarginLevelStatus = ParseMarginStatus(
+                        info.MarginLevelStatus = MarginUtility.ParseMarginStatus(
                             ParseUtility.GetNonEmptyString(ref reader, propName));
                         break;
                     case "marginRatio":
@@ -888,7 +746,7 @@ public class MarginAccountApiClient : SapiClientBase
         if (!string.IsNullOrWhiteSpace(crossAsset))
             qs.AddParameter("asset", CommonUtility.NormalizeSymbol(crossAsset));
         if (direction != null)
-            qs.AddParameter("type", Format(direction.Value));
+            qs.AddParameter("type", MarginUtility.Format(direction.Value));
         if (startTime != null)
             qs.AddParameter("startTime", CommonUtility.ConvertToApiTime(startTime.Value));
         if (endTime != null)
@@ -986,7 +844,7 @@ public class MarginAccountApiClient : SapiClientBase
                                     validator.RegisterProperty(1);
                                     break;
                                 case "status":
-                                    status = ParseTransactionStatus(ParseUtility.GetNonEmptyString(ref reader, propName));
+                                    status = MarginUtility.ParseTransactionStatus(ParseUtility.GetNonEmptyString(ref reader, propName));
                                     validator.RegisterProperty(2);
                                     break;
                                 case "timestamp":
@@ -998,7 +856,7 @@ public class MarginAccountApiClient : SapiClientBase
                                     validator.RegisterProperty(4);
                                     break;
                                 case "type":
-                                    TransferDirection dir = ParseTransferDirection(
+                                    TransferDirection dir = MarginUtility.ParseTransferDirection(
                                         ParseUtility.GetNonEmptyString(ref reader, propName));
                                     if (dir == TransferDirection.RollIn)
                                     {
@@ -1139,9 +997,9 @@ public class MarginAccountApiClient : SapiClientBase
         if (direction != null)
         {
             if (direction.Value == TransferDirection.RollIn)
-                qs.AddParameter("transTo", Format(AccountType.IsolatedMargin));
+                qs.AddParameter("transTo", MarginUtility.Format(AccountType.IsolatedMargin));
             else if (direction.Value == TransferDirection.RollOut)
-                qs.AddParameter("transFrom", Format(AccountType.IsolatedMargin));
+                qs.AddParameter("transFrom", MarginUtility.Format(AccountType.IsolatedMargin));
             else
                 throw new NotImplementedException($"The transfer direction \"{direction.Value}\" is not implemented.");
         }
@@ -1252,7 +1110,7 @@ public class MarginAccountApiClient : SapiClientBase
                                     validator.RegisterProperty(1);
                                     break;
                                 case "status":
-                                    status = ParseTransactionStatus(ParseUtility.GetNonEmptyString(ref reader, propName));
+                                    status = MarginUtility.ParseTransactionStatus(ParseUtility.GetNonEmptyString(ref reader, propName));
                                     validator.RegisterProperty(2);
                                     break;
                                 case "timestamp":
@@ -1264,11 +1122,11 @@ public class MarginAccountApiClient : SapiClientBase
                                     validator.RegisterProperty(4);
                                     break;
                                 case "transFrom":
-                                    source = ParseAccountType(ParseUtility.GetNonEmptyString(ref reader, propName));
+                                    source = MarginUtility.ParseAccountType(ParseUtility.GetNonEmptyString(ref reader, propName));
                                     validator.RegisterProperty(5);
                                     break;
                                 case "transTo":
-                                    source = ParseAccountType(ParseUtility.GetNonEmptyString(ref reader, propName));
+                                    source = MarginUtility.ParseAccountType(ParseUtility.GetNonEmptyString(ref reader, propName));
                                     validator.RegisterProperty(6);
                                     break;
                                 case "clientTag":
@@ -1709,7 +1567,7 @@ public class MarginAccountApiClient : SapiClientBase
                                     validator.RegisterProperty(4);
                                     break;
                                 case "status":
-                                    status = ParseTransactionStatus(ParseUtility.GetNonEmptyString(ref reader, propName));
+                                    status = MarginUtility.ParseTransactionStatus(ParseUtility.GetNonEmptyString(ref reader, propName));
                                     validator.RegisterProperty(5);
                                     break;
                                 case "clientTag":
@@ -2030,7 +1888,7 @@ public class MarginAccountApiClient : SapiClientBase
                                     validator.RegisterProperty(6);
                                     break;
                                 case "status":
-                                    status = ParseTransactionStatus(ParseUtility.GetNonEmptyString(ref reader, propName));
+                                    status = MarginUtility.ParseTransactionStatus(ParseUtility.GetNonEmptyString(ref reader, propName));
                                     validator.RegisterProperty(7);
                                     break;
                                 case "clientTag":
@@ -2753,10 +2611,10 @@ public class MarginAccountApiClient : SapiClientBase
         qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
         qs.AddParameter("isIsolated", isIsolated);
         qs.AddParameter("side", Format(side));
-        qs.AddParameter("type", Format(type));
+        qs.AddParameter("type", MarginUtility.Format(type));
         if (tif != null)
         {
-            qs.AddParameter("timeInForce", Format(tif.Value));
+            qs.AddParameter("timeInForce", MarginUtility.Format(tif.Value));
         }
         if (price != null)
         {
@@ -2784,11 +2642,11 @@ public class MarginAccountApiClient : SapiClientBase
         }
         if (orderResponseType != null)
         {
-            qs.AddParameter("newOrderRespType", Format(orderResponseType.Value));
+            qs.AddParameter("newOrderRespType", MarginUtility.Format(orderResponseType.Value));
         }
         if (sideEffect != null)
         {
-            qs.AddParameter("sideEffectType", Format(sideEffect.Value));
+            qs.AddParameter("sideEffectType", MarginUtility.Format(sideEffect.Value));
         }
 
         OrderResponseType expectedRspType;
@@ -2949,11 +2807,11 @@ public class MarginAccountApiClient : SapiClientBase
                     validator.RegisterProperty(3);
                     break;
                 case "timeInForce":
-                    response.TimeInForce = ParseTimeInForce(ParseUtility.GetNonEmptyString(ref reader, propName));
+                    response.TimeInForce = MarginUtility.ParseTimeInForce(ParseUtility.GetNonEmptyString(ref reader, propName));
                     validator.RegisterProperty(4);
                     break;
                 case "type":
-                    response.OrderType = ParseOrderType(ParseUtility.GetNonEmptyString(ref reader, propName));
+                    response.OrderType = MarginUtility.ParseOrderType(ParseUtility.GetNonEmptyString(ref reader, propName));
                     validator.RegisterProperty(5);
                     break;
                 case "isIsolated":
@@ -3053,11 +2911,11 @@ public class MarginAccountApiClient : SapiClientBase
                     validator.RegisterProperty(3);
                     break;
                 case "timeInForce":
-                    response.TimeInForce = ParseTimeInForce(ParseUtility.GetNonEmptyString(ref reader, propName));
+                    response.TimeInForce = MarginUtility.ParseTimeInForce(ParseUtility.GetNonEmptyString(ref reader, propName));
                     validator.RegisterProperty(4);
                     break;
                 case "type":
-                    response.OrderType = ParseOrderType(ParseUtility.GetNonEmptyString(ref reader, propName));
+                    response.OrderType = MarginUtility.ParseOrderType(ParseUtility.GetNonEmptyString(ref reader, propName));
                     validator.RegisterProperty(5);
                     break;
                 case "side":
@@ -4081,11 +3939,11 @@ public class MarginAccountApiClient : SapiClientBase
                     order.Time = CommonUtility.ConvertToDateTime(reader.GetInt64());
                     break;
                 case "timeInForce":
-                    order.TimeInForce = ParseTimeInForce(ParseUtility.GetNonEmptyString(ref reader, propName));
+                    order.TimeInForce = MarginUtility.ParseTimeInForce(ParseUtility.GetNonEmptyString(ref reader, propName));
                     validator.RegisterProperty(6);
                     break;
                 case "type":
-                    order.Type = ParseOrderType(ParseUtility.GetNonEmptyString(ref reader, propName));
+                    order.Type = MarginUtility.ParseOrderType(ParseUtility.GetNonEmptyString(ref reader, propName));
                     validator.RegisterProperty(7);
                     break;
                 case "updateTime":

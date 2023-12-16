@@ -27,15 +27,13 @@ public sealed class QueryBuilder
     /// <param name="name">The name of the parameter.</param>
     /// <param name="value">The value of the parameter.</param>
     /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="ArgumentException"/>
     public void AddParameter(string name, string value)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentNullException(nameof(name));
-        if (string.IsNullOrEmpty(value))
-            throw new ArgumentNullException(nameof(value));
+        name.ThrowIfNullOrWhitespace();
+        ArgumentNullException.ThrowIfNull(value);
 
-        if (_container.Length != 0)
-            _container.Append('&');
+        if (_container.Length != 0) { _container.Append('&'); }
         _container.Append(name);
         _container.Append('=');
         _container.Append(value);
@@ -49,16 +47,14 @@ public sealed class QueryBuilder
     /// <exception cref="ArgumentNullException"/>
     public void AddParameter(string name, string[] values)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentNullException(nameof(name));
-        if (values == null)
-            throw new ArgumentNullException(nameof(values));
+        name.ThrowIfNullOrWhitespace();
+        ArgumentNullException.ThrowIfNull(values);
 
-        if (_container.Length != 0)
-            _container.Append('&');
+        if (_container.Length != 0) { _container.Append('&'); }
 
         _container.Append(name);
         _container.Append("=[");
+
         for (int i = 0; i != values.Length; ++i)
         {
             if (i != 0) { _container.Append(','); }
@@ -66,6 +62,7 @@ public sealed class QueryBuilder
             _container.Append(values[i]);
             _container.Append('"');
         }
+
         _container.Append(']');
     }
 
@@ -77,14 +74,10 @@ public sealed class QueryBuilder
     /// <exception cref="ArgumentNullException"/>
     public void AddParameter(string name, IEnumerable<string> values)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentNullException(nameof(name));
-        if (values == null)
-            throw new ArgumentNullException(nameof(values));
+        name.ThrowIfNullOrWhitespace();
+        ArgumentNullException.ThrowIfNull(values);
 
-        if (_container.Length != 0)
-            _container.Append('&');
-
+        if (_container.Length != 0) { _container.Append('&'); }
         _container.Append(name);
         _container.Append("=[");
 
@@ -98,6 +91,7 @@ public sealed class QueryBuilder
             _container.Append(val);
             _container.Append('"');
         }
+
         _container.Append(']');
     }
 

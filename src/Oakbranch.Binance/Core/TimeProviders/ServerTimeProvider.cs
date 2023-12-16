@@ -50,8 +50,7 @@ public class ServerTimeProvider : ITimeProvider
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="serverTimeZone"/> is null.</exception>
     public ServerTimeProvider(TimeZoneInfo serverTimeZone, DateTime serverNow)
     {
-        if (serverTimeZone == null)
-            throw new ArgumentNullException(nameof(serverTimeZone));
+        ArgumentNullException.ThrowIfNull(serverTimeZone);
 
         _timeCounter = new Stopwatch();
         _serverZoneOffset = serverTimeZone.BaseUtcOffset.Ticks;

@@ -10,13 +10,7 @@ namespace Oakbranch.Binance.Utility;
 
 internal static class ParseUtility
 {
-    #region Static props & fields
-
     public static JsonReaderOptions ReaderOptions { get; } = new JsonReaderOptions();
-
-    #endregion
-
-    #region Static methods
 
     // JSON reading.
     public static void ReadObjectStart(ref Utf8JsonReader reader)
@@ -897,6 +891,4 @@ internal static class ParseUtility
                 $"A value of the property \"{propName}\" cannot be parsed to a decimal number: \"{s}\".");
         }
     }
-
-    #endregion
 }

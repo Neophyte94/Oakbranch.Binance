@@ -73,52 +73,6 @@ public class SpotMarketApiClient : ApiV3ClientBase
 
     #endregion
 
-    #region Static methods
-
-    protected static string Format(KlineInterval value)
-    {
-        return value switch
-        {
-            KlineInterval.Second1 => "1s",
-            KlineInterval.Minute1 => "1m",
-            KlineInterval.Minute3 => "3m",
-            KlineInterval.Minute5 => "5m",
-            KlineInterval.Minute15 => "15m",
-            KlineInterval.Minute30 => "30m",
-            KlineInterval.Hour1 => "1h",
-            KlineInterval.Hour2 => "2h",
-            KlineInterval.Hour4 => "4h",
-            KlineInterval.Day1 => "1d",
-            KlineInterval.Week1 => "1w",
-            KlineInterval.Hour6 => "6h",
-            KlineInterval.Hour8 => "8h",
-            KlineInterval.Hour12 => "12h",
-            KlineInterval.Day3 => "3d",
-            KlineInterval.Month1 => "1M",
-            _ => throw new NotImplementedException($"The interval \"{value}\" is not implemented."),
-        };
-    }
-
-    private static SymbolStatus ParseSymbolStatus(string s)
-    {
-        if (string.IsNullOrWhiteSpace(s))
-            throw new ArgumentNullException(nameof(s));
-
-        return s switch
-        {
-            "TRADING" => SymbolStatus.Trading,
-            "BREAK" => SymbolStatus.Break,
-            "PRE_TRADING" => SymbolStatus.PreTrading,
-            "POST_TRADING" => SymbolStatus.PostTrading,
-            "END_OF_DAY" => SymbolStatus.EndOfDay,
-            "HALT" => SymbolStatus.Halt,
-            "AUCTION_MATCH" => SymbolStatus.AuctionMatch,
-            _ => throw new JsonException($"The symbol status \"{s}\" is unknown."),
-        };
-    }
-
-    #endregion
-
     #region Instance methods
 
     // Get server time.
@@ -365,7 +319,7 @@ public class SpotMarketApiClient : ApiV3ClientBase
                     validator.RegisterProperty(0);
                     break;
                 case "status":
-                    symbol.Status = ParseSymbolStatus(ParseUtility.GetNonEmptyString(ref reader, propName));
+                    symbol.Status = SpotUtility.ParseSymbolStatus(ParseUtility.GetNonEmptyString(ref reader, propName));
                     validator.RegisterProperty(1);
                     break;
                 case "baseAsset":
@@ -714,10 +668,7 @@ public class SpotMarketApiClient : ApiV3ClientBase
     public IDeferredQuery<List<Trade>> PrepareGetOldTrades(string symbol, int? limit = null, long? fromId = null)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(symbol))
-        {
-            throw new ArgumentNullException(nameof(symbol));
-        }
+        symbol.ThrowIfNullOrWhitespace();
 
         QueryWeight[] weights = new QueryWeight[]
         {
@@ -868,18 +819,9 @@ public class SpotMarketApiClient : ApiV3ClientBase
         int? limit = null)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(symbol))
-        {
-            throw new ArgumentNullException(nameof(symbol));
-        }
-        if (startTime != null && endTime != null && endTime.Value < startTime.Value)
-        {
-            throw new ArgumentException($"The specified period [{startTime} - {endTime}] is invalid.");
-        }
-        if (limit != null && (limit < 1 || limit > MaxTradesQueryLimit))
-        {
-            throw new ArgumentOutOfRangeException(nameof(limit));
-        }
+        symbol.ThrowIfNullOrWhitespace();
+        limit.ThrowIfInvalidLimit(MaxTradesQueryLimit);
+        ExceptionUtility.ThrowIfInvalidPeriod(startTime, endTime);
 
         QueryWeight[] weights = new QueryWeight[]
         {
@@ -946,14 +888,8 @@ public class SpotMarketApiClient : ApiV3ClientBase
         string symbol, long fromId, int? limit = null)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(symbol))
-        {
-            throw new ArgumentNullException(nameof(symbol));
-        }
-        if (limit != null && (limit < 1 || limit > MaxTradesQueryLimit))
-        {
-            throw new ArgumentOutOfRangeException(nameof(limit));
-        }
+        symbol.ThrowIfNullOrWhitespace();
+        limit.ThrowIfInvalidLimit(MaxTradesQueryLimit);
 
         QueryWeight[] weights = new QueryWeight[]
         {
@@ -1115,18 +1051,9 @@ public class SpotMarketApiClient : ApiV3ClientBase
         DateTime? endTime = null)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(symbol))
-        {
-            throw new ArgumentNullException(nameof(symbol));
-        }
-        if (startTime != null && endTime != null && endTime.Value < startTime.Value)
-        {
-            throw new ArgumentException($"The specified period [{startTime} - {endTime}] is invalid.");
-        }
-        if (limit != null && (limit < 1 || limit > MaxKlinesQueryLimit))
-        {
-            throw new ArgumentOutOfRangeException(nameof(limit));
-        }
+        symbol.ThrowIfNullOrWhitespace();
+        limit.ThrowIfInvalidLimit(MaxKlinesQueryLimit);
+        ExceptionUtility.ThrowIfInvalidPeriod(startTime, endTime);
 
         QueryWeight[] weights = new QueryWeight[]
         {
@@ -1135,7 +1062,7 @@ public class SpotMarketApiClient : ApiV3ClientBase
 
         QueryBuilder qs = new QueryBuilder(109);
         qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
-        qs.AddParameter("interval", Format(interval));
+        qs.AddParameter("interval", SpotUtility.Format(interval));
         if (limit != null)
             qs.AddParameter("limit", limit.Value);
         if (startTime != null)

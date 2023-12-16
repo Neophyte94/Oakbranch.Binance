@@ -43,7 +43,10 @@ internal sealed class DeferredQuery<T> : IDeferredQuery<T>
         IReadOnlyDictionary<string, int>? headersToLimitsMap = null)
     {
         if (query.IsUndefined)
-            throw new ArgumentNullException(nameof(query), $"The specified query parameters are empty.");
+        {
+            throw new ArgumentException($"The specified query parameters are empty.", nameof(query));
+        }
+
         _executeHandler = executeHandler ?? throw new ArgumentNullException(nameof(executeHandler));
         _parseHandler = parseHandler ?? throw new ArgumentNullException(nameof(parseHandler));
         _params = query;

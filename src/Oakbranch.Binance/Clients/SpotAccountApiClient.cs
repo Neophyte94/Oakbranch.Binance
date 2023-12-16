@@ -54,89 +54,6 @@ public class SpotAccountApiClient : ApiV3ClientBase
 
     #endregion
 
-    #region Static methods
-
-    private static string Format(TimeInForce value)
-    {
-        return value switch
-        {
-            TimeInForce.GoodTillCanceled => "GTC",
-            TimeInForce.FillOrKill => "FOK",
-            TimeInForce.ImmediateOrCancel => "IOC",
-            _ => throw new NotImplementedException($"The time-in-force type \"{value}\" is not implemented."),
-        };
-    }
-
-    private static TimeInForce ParseTimeInForce(string s)
-    {
-        if (string.IsNullOrWhiteSpace(s))
-            throw new JsonException($"The time in force rule value is null.");
-
-        return s switch
-        {
-            "GTC" => TimeInForce.GoodTillCanceled,
-            "IOC" => TimeInForce.ImmediateOrCancel,
-            "FOK" => TimeInForce.FillOrKill,
-            _ => throw new JsonException($"An unknown time in force rule \"{s}\" was encountered."),
-        };
-    }
-
-    private static string Format(OrderType value)
-    {
-        return value switch
-        {
-            OrderType.Limit => "LIMIT",
-            OrderType.LimitMaker => "LIMIT_MAKER",
-            OrderType.Market => "MARKET",
-            OrderType.StopLossMarket => "STOP_LOSS",
-            OrderType.StopLossLimit => "STOP_LOSS_LIMIT",
-            OrderType.TakeProfitMarket => "TAKE_PROFIT",
-            OrderType.TakeProfitLimit => "TAKE_PROFIT_LIMIT",
-            _ => throw new NotImplementedException($"The order type \"{value}\" is not implemented."),
-        };
-    }
-
-    private static OrderType ParseOrderType(string s)
-    {
-        if (string.IsNullOrWhiteSpace(s))
-            throw new JsonException($"The order type value is null.");
-
-        return s switch
-        {
-            "LIMIT" => OrderType.Limit,
-            "LIMIT_MAKER" => OrderType.LimitMaker,
-            "MARKET" => OrderType.Market,
-            "STOP_LOSS" => OrderType.StopLossMarket,
-            "STOP_LOSS_LIMIT" => OrderType.StopLossLimit,
-            "TAKE_PROFIT" => OrderType.TakeProfitMarket,
-            "TAKE_PROFIT_LIMIT" => OrderType.TakeProfitLimit,
-            _ => throw new JsonException($"The order type \"{s}\" is unknown."),
-        };
-    }
-
-    private static string Format(CancellationRestriction value)
-    {
-        return value switch
-        {
-            CancellationRestriction.OnlyNew => "ONLY_NEW",
-            CancellationRestriction.OnlyPartiallyFilled => "ONLY_PARTIALLY_FILLED",
-            _ => throw new NotImplementedException($"The cancellation restriction rule \"{value}\" is not implemented."),
-        };
-    }
-
-    private static string Format(OrderResponseType value)
-    {
-        return value switch
-        {
-            OrderResponseType.Ack => "ACK",
-            OrderResponseType.Full => "FULL",
-            OrderResponseType.Result => "RESULT",
-            _ => throw new NotImplementedException($"The order response type \"{value}\" is not implemented."),
-        };
-    }
-
-    #endregion
-
     #region Instance methods
 
     // Account information.
@@ -751,20 +668,13 @@ public class SpotAccountApiClient : ApiV3ClientBase
         string? id, OrderResponseType? orderResponseType, SelfTradePreventionMode? selfTradePreventionMode)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(symbol))
-            throw new ArgumentNullException(nameof(symbol));
-        if (price <= 0.0m)
-            throw new ArgumentOutOfRangeException(nameof(price));
-        if (stopPrice <= 0.0m)
-            throw new ArgumentOutOfRangeException(nameof(stopPrice));
-        if (quantity <= 0.0m)
-            throw new ArgumentOutOfRangeException(nameof(quantity));
-        if (quoteQuantity <= 0.0m)
-            throw new ArgumentOutOfRangeException(nameof(quoteQuantity));
-        if (icebergQuantity <= 0.0m)
-            throw new ArgumentOutOfRangeException(nameof(icebergQuantity));
-        if (id != null && string.IsNullOrWhiteSpace(id))
-            throw new ArgumentException("The specified custom ID is empty.", nameof(id));
+        symbol.ThrowIfNullOrWhitespace();
+        price.ThrowIfLessOrEqualToZero();
+        stopPrice.ThrowIfLessOrEqualToZero();
+        quantity.ThrowIfLessOrEqualToZero();
+        quoteQuantity.ThrowIfLessOrEqualToZero();
+        icebergQuantity.ThrowIfLessOrEqualToZero();
+        id.ThrowIfEmptyOrWhitespace();
 
         QueryWeight[] weights = new QueryWeight[]
         {
@@ -775,10 +685,10 @@ public class SpotAccountApiClient : ApiV3ClientBase
         QueryBuilder qs = new QueryBuilder(327);
         qs.AddParameter("symbol", CommonUtility.NormalizeSymbol(symbol));
         qs.AddParameter("side", Format(side));
-        qs.AddParameter("type", Format(type));
+        qs.AddParameter("type", SpotUtility.Format(type));
         if (tif != null)
         {
-            qs.AddParameter("timeInForce", Format(tif.Value));
+            qs.AddParameter("timeInForce", SpotUtility.Format(tif.Value));
         }
         if (price != null)
         {
@@ -810,7 +720,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
         }
         if (orderResponseType != null)
         {
-            qs.AddParameter("newOrderRespType", Format(orderResponseType.Value));
+            qs.AddParameter("newOrderRespType", SpotUtility.Format(orderResponseType.Value));
         }
         if (selfTradePreventionMode != null)
         {
@@ -965,12 +875,12 @@ public class SpotAccountApiClient : ApiV3ClientBase
                     validator.RegisterProperty(3);
                     break;
                 case "timeInForce":
-                    response.TimeInForce = ParseTimeInForce(
+                    response.TimeInForce = SpotUtility.ParseTimeInForce(
                         ParseUtility.GetNonEmptyString(ref reader, propName));
                     validator.RegisterProperty(4);
                     break;
                 case "type":
-                    response.OrderType = ParseOrderType(
+                    response.OrderType = SpotUtility.ParseOrderType(
                         ParseUtility.GetNonEmptyString(ref reader, propName));
                     validator.RegisterProperty(5);
                     break;
@@ -1083,12 +993,12 @@ public class SpotAccountApiClient : ApiV3ClientBase
                     validator.RegisterProperty(3);
                     break;
                 case "timeInForce":
-                    response.TimeInForce = ParseTimeInForce(
+                    response.TimeInForce = SpotUtility.ParseTimeInForce(
                         ParseUtility.GetNonEmptyString(ref reader, propName));
                     validator.RegisterProperty(4);
                     break;
                 case "type":
-                    response.OrderType = ParseOrderType(
+                    response.OrderType = SpotUtility.ParseOrderType(
                         ParseUtility.GetNonEmptyString(ref reader, propName));
                     validator.RegisterProperty(5);
                     break;
@@ -1149,8 +1059,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
     /// <param name="orderId">The global numerical identifier of the order to cancel.</param>
     public IDeferredQuery<SpotOrder> PrepareCancelOrder(string symbol, long orderId)
     {
-        if (string.IsNullOrWhiteSpace(symbol))
-            throw new ArgumentNullException(nameof(symbol));
+        symbol.ThrowIfNullOrWhitespace();
 
         return PrepareCancelOrder(
             symbol: symbol,
@@ -1178,10 +1087,8 @@ public class SpotAccountApiClient : ApiV3ClientBase
     /// <param name="clientOrderId">The original custom identifier of the order to cancel.</param>
     public IDeferredQuery<SpotOrder> PrepareCancelOrder(string symbol, string clientOrderId)
     {
-        if (string.IsNullOrWhiteSpace(symbol))
-            throw new ArgumentNullException(nameof(symbol));
-        if (string.IsNullOrWhiteSpace(clientOrderId))
-            throw new ArgumentNullException(nameof(clientOrderId));
+        symbol.ThrowIfNullOrWhitespace();
+        clientOrderId.ThrowIfNullOrWhitespace();
 
         return PrepareCancelOrder(
             symbol: symbol,
@@ -1232,7 +1139,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
         }
         if (restriction != null)
         {
-            qs.AddParameter("cancelRestrictions", Format(restriction.Value));
+            qs.AddParameter("cancelRestrictions", SpotUtility.Format(restriction.Value));
         }
 
         return new DeferredQuery<SpotOrder>(
@@ -1251,8 +1158,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
     public IDeferredQuery<List<SpotOrder>> PrepareCancelAllOrders(string symbol)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(symbol))
-            throw new ArgumentNullException(nameof(symbol));
+        symbol.ThrowIfNullOrWhitespace();
 
         QueryWeight[] weights = new QueryWeight[]
         {
@@ -1278,8 +1184,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
     /// <param name="orderId">The unique numerical identifier of the order to fetch.</param>
     public IDeferredQuery<SpotOrder> PrepareGetOrder(string symbol, long orderId)
     {
-        if (string.IsNullOrWhiteSpace(symbol))
-            throw new ArgumentNullException(nameof(symbol));
+        symbol.ThrowIfNullOrWhitespace();
 
         return PrepareGetOrder(
             symbol: symbol,
@@ -1294,10 +1199,8 @@ public class SpotAccountApiClient : ApiV3ClientBase
     /// <param name="clientOrderId">The original custom identifier of the order to fetch.</param>
     public IDeferredQuery<SpotOrder> PrepareGetOrder(string symbol, string clientOrderId)
     {
-        if (string.IsNullOrWhiteSpace(symbol))
-            throw new ArgumentNullException(nameof(symbol));
-        if (string.IsNullOrWhiteSpace(clientOrderId))
-            throw new ArgumentNullException(nameof(clientOrderId));
+        symbol.ThrowIfNullOrWhitespace();
+        clientOrderId.ThrowIfNullOrWhitespace();
 
         return PrepareGetOrder(
             symbol: symbol,
@@ -1447,11 +1350,8 @@ public class SpotAccountApiClient : ApiV3ClientBase
         string symbol, long? fromId, DateTime? startTime, DateTime? endTime, int? limit)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(symbol))
-            throw new ArgumentNullException(nameof(symbol));
-        if (startTime > endTime)
-            throw new ArgumentException(
-                $"The specified combination of the start time ({startTime}) and the end time ({endTime}) is invalid.");
+        symbol.ThrowIfNullOrWhitespace();
+        ExceptionUtility.ThrowIfInvalidPeriod(startTime, endTime);
 
         QueryWeight[] weights = new QueryWeight[]
         {
@@ -1527,8 +1427,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
     public IDeferredQuery<List<SpotOrder>> PrepareGetAllOpenOrders(string symbol)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(symbol))
-            throw new ArgumentNullException(nameof(symbol));
+        symbol.ThrowIfNullOrWhitespace();
 
         QueryWeight[] weights = new QueryWeight[]
         {
@@ -1577,8 +1476,7 @@ public class SpotAccountApiClient : ApiV3ClientBase
         DateTime? startTime = null, DateTime? endTime = null, long? fromId = null, int? limit = null)
     {
         ThrowIfNotRunning();
-        if (string.IsNullOrWhiteSpace(symbol))
-            throw new ArgumentNullException(nameof(symbol));
+        symbol.ThrowIfNullOrWhitespace();
 
         QueryWeight[] weights = new QueryWeight[]
         {
@@ -1597,18 +1495,29 @@ public class SpotAccountApiClient : ApiV3ClientBase
         }
         if (endTime != null)
         {
-            if (startTime != null && (endTime.Value - startTime.Value).Ticks < TimeSpan.TicksPerMillisecond)
-                throw new ArgumentException("The end time must be later than the start one.");
-            else if ((endTime.Value - startTime!.Value).Ticks > AccountTradesMaxTimeRange)
-                throw new ArgumentException("A period between the start time and the end time cannot be longer than 24 hours.");
+            if (startTime != null)
+            {
+                if ((endTime.Value - startTime.Value).Ticks < TimeSpan.TicksPerMillisecond)
+                {
+                    throw new ArgumentException("The end time must be later than the start one.");
+                }
+                if ((endTime.Value - startTime!.Value).Ticks > AccountTradesMaxTimeRange)
+                {
+                    throw new ArgumentException("A period between the start time and the end time cannot be longer than 24 hours.");
+                }
+            }
             qs.AddParameter("endTime", CommonUtility.ConvertToApiTime(endTime.Value));
         }
         if (fromId != null)
         {
             if (fromId < 0)
+            {
                 throw new ArgumentOutOfRangeException(nameof(fromId));
+            }
             if (limit != null)
+            {
                 throw new ArgumentException("The trades limit cannot be specified along with the initial trade id.");
+            }
             qs.AddParameter("fromId", fromId.Value);
         }
         if (limit != null)
@@ -1828,11 +1737,11 @@ public class SpotAccountApiClient : ApiV3ClientBase
                     validator.RegisterProperty(2);
                     break;
                 case "timeInForce":
-                    order.TimeInForce = ParseTimeInForce(ParseUtility.GetNonEmptyString(ref reader, propName));
+                    order.TimeInForce = SpotUtility.ParseTimeInForce(ParseUtility.GetNonEmptyString(ref reader, propName));
                     validator.RegisterProperty(3);
                     break;
                 case "type":
-                    order.Type = ParseOrderType(ParseUtility.GetNonEmptyString(ref reader, propName));
+                    order.Type = SpotUtility.ParseOrderType(ParseUtility.GetNonEmptyString(ref reader, propName));
                     validator.RegisterProperty(4);
                     break;
                 case "side":

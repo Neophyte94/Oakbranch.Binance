@@ -630,8 +630,8 @@ public sealed class ApiConnector : IApiConnector, IDisposable
     /// </param>
     public void SetLimitMetricsMap(string relativeEndpoint, IEnumerable<string> limitKeysMap)
     {
-        if (limitKeysMap == null)
-            throw new ArgumentNullException(nameof(limitKeysMap));
+        ArgumentNullException.ThrowIfNull(limitKeysMap);
+
         lock (_limitMetricsMapsDict)
         {
             _limitMetricsMapsDict[relativeEndpoint] = limitKeysMap.ToArray();

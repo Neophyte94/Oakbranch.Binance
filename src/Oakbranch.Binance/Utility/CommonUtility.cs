@@ -10,16 +10,10 @@ namespace Oakbranch.Binance.Utility;
 
 internal static class CommonUtility
 {
-    #region Static props & fields
-
     public static readonly NumberFormatInfo NumberFormat;
 
     private static readonly DateTime s_apiBaseDate = new DateTime(1970, 1, 1);
     public static DateTime ApiBaseDate => s_apiBaseDate;
-
-    #endregion
-
-    #region Static constructor
 
     static CommonUtility()
     {
@@ -29,10 +23,6 @@ internal static class CommonUtility
         NumberFormat.PercentGroupSeparator = string.Empty;
         NumberFormat.NumberDecimalSeparator = ".";
     }
-
-    #endregion
-
-    #region Static methods
 
     /// <summary>
     /// Normalizes the given string representing an exchange symbol to the format accepted by the Binance API.
@@ -204,6 +194,4 @@ internal static class CommonUtility
             return hash1 + (hash2 * 92456655);
         }
     }
-
-    #endregion
 }

@@ -166,12 +166,16 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
 
         string propName = ParseUtility.ReadNonEmptyPropertyName(ref reader);
         if (propName != "serverTime")
+        {
             throw new JsonException($"The server time property was expected but \"{propName}\" encountered.");
+        }
 
         if (!reader.Read() || reader.TokenType != JsonTokenType.Number)
+        {
             throw new JsonException($"The server time value (number) was expected but \"{reader.TokenType}\" encountered.");
+        }
+        
         long ms = reader.GetInt64();
-
         ParseUtility.ReadObjectEnd(ref reader);
 
         return CommonUtility.ConvertToDateTime(ms);
