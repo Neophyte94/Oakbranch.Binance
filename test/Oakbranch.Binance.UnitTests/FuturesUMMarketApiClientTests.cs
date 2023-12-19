@@ -1249,5 +1249,46 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
         Assert.That(td, Throws.InstanceOf<ArgumentOutOfRangeException>());
     }
 
+    // Get top account long-short ratio.
+    [TestCaseSource(nameof(SymbolCases)), Retry(DefaultTestRetryLimit)]
+    public async Task GetTopAccountLongShortRatio_ReturnsValidList_WhenSymbolSpecified(string symbol)
+    {
+        // Act.
+        using IDeferredQuery<List<LongShortRatio>> query = _client
+            .PrepareGetTopAccountLongShortRatio(symbol, StatsInterval.Hour1);
+        List<LongShortRatio> result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.That(result, Is.Not.Null.And.Count.Not.Zero);
+
+        if (AreQueryResultsLogged)
+        {
+            LogCollection(result, 10);
+        }
+    }
+
+    [TestCaseSource(nameof(NullAndWhitespaceStringCases))]
+    public void GetTopAccountLongShortRatio_ThrowsArgumentException_WhenEmptySymbolSpecified(string symbol)
+    {
+        // Arrange.
+        TestDelegate td = new TestDelegate(() => _client.PrepareGetTopAccountLongShortRatio(symbol, StatsInterval.Hour1));
+
+        // Act & Assert.
+        Assert.That(td, Throws.InstanceOf<ArgumentException>());
+    }
+
+    [TestCase(0)]
+    [TestCase(-1)]
+    [TestCase(FuturesUMMarketApiClient.MaxMarketStatsQueryLimit + 1)]
+    public void GetTopAccountLongShortRatio_ThrowsArgumentOutOfRangeException_WhenInvalidLimitSpecified(int limit)
+    {
+        // Arrange.
+        TestDelegate td = new TestDelegate(() =>
+        _client.PrepareGetTopAccountLongShortRatio(DefaultSymbol, StatsInterval.Hour1, limit: limit));
+
+        // Act & Assert.
+        Assert.That(td, Throws.InstanceOf<ArgumentOutOfRangeException>());
+    }
+
     #endregion
 }
