@@ -1207,5 +1207,47 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
         }
     }
 
+    [Retry(DefaultTestRetryLimit)]
+    [TestCase(1)]
+    [TestCase(FuturesUMMarketApiClient.MaxMarketStatsQueryLimit)]
+    public async Task GetOpenInterestHistory_ReturnsExactCount_WhenLimitSpecified(int limit)
+    {
+        // Act.
+        using IDeferredQuery<List<OpenInterest>> query = _client
+            .PrepareGetOpenInterestHistory(DefaultSymbol, StatsInterval.Hour1, limit: limit);
+        List<OpenInterest> result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.That(result, Is.Not.Null.And.Count.EqualTo(limit));
+
+        if (AreQueryResultsLogged)
+        {
+            LogCollection(result, 10);
+        }
+    }
+
+    [TestCaseSource(nameof(NullAndWhitespaceStringCases))]
+    public void GetOpenInterestHistory_ThrowsArgumentException_WhenEmptySymbolSpecified(string symbol)
+    {
+        // Arrange.
+        TestDelegate td = new TestDelegate(() => _client.PrepareGetOpenInterestHistory(symbol, StatsInterval.Hour1));
+
+        // Act & Assert.
+        Assert.That(td, Throws.InstanceOf<ArgumentException>());
+    }
+
+    [TestCase(0)]
+    [TestCase(-1)]
+    [TestCase(FuturesUMMarketApiClient.MaxMarketStatsQueryLimit + 1)]
+    public void GetOpenInterestHistory_ThrowsArgumentOutOfRangeException_WhenInvalidLimitSpecified(int limit)
+    {
+        // Arrange.
+        TestDelegate td = new TestDelegate(() =>
+        _client.PrepareGetOpenInterestHistory(DefaultSymbol, StatsInterval.Hour1, limit: limit));
+
+        // Act & Assert.
+        Assert.That(td, Throws.InstanceOf<ArgumentOutOfRangeException>());
+    }
+
     #endregion
 }
