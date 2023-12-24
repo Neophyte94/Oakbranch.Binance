@@ -40,6 +40,18 @@ public class FuturesCMMarketApiClientTests : ApiClientTestsBase
             return new object[] { i, min, max };
         })
         .ToArray();
+    private static object[] SymbolCases { get; } = new object[]
+    {
+        "BTCUSD_PERP",
+        "btcusd_perp",
+        "eThUsD_Perp",
+    };
+    private static object[] PairCases { get; } = new object[]
+{
+        "BTCUSD",
+        "btcusd",
+        "eThUsD",
+};
 
     #endregion
 
@@ -952,6 +964,108 @@ public class FuturesCMMarketApiClientTests : ApiClientTestsBase
         {
             LogCollection(result, 10);
         }
+    }
+
+    [TestCaseSource(nameof(SymbolCases)), Retry(DefaultTestRetryLimit)]
+    public async Task GetPremiumInfo_ReturnsValidInstance_WhenPerpetualSymbolSpecified(string symbol)
+    {
+        // Act.
+        using IDeferredQuery<PremiumInfo> query = _client.PrepareGetPremiumInfoOnSymbol(symbol);
+        PremiumInfo result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.Multiple(() =>
+        {
+            Assert.That(string.Equals(result.Symbol, symbol, StringComparison.InvariantCultureIgnoreCase));
+            Assert.That(result.Pair, Is.Not.Null.And.Not.Empty);
+            Assert.That(result.Timestamp, Is.Not.EqualTo(default(DateTime)));
+            Assert.That(result.InterestRate, Is.Not.Null);
+            Assert.That(result.NextFundingTime, Is.Not.Null);
+        });
+
+        if (AreQueryResultsLogged)
+        {
+            LogObject(result);
+        }
+    }
+
+    [Test, Retry(DefaultTestRetryLimit)]
+    public async Task GetPremiumInfo_ReturnsValidInstance_WhenDeliverySymbolSpecified()
+    {
+        // Arrange.
+        DateTime now = DateTime.UtcNow;
+        int year = now.Year;
+        int month = now.Month;
+        if (month % 3 == 0)
+        {
+            if (now.Day >= 29)
+            {
+                month += 3;
+            }
+        }
+        if (month % 3 != 0)
+        {
+            month = (now.Month / 3 + 1) * 3;
+        }
+        if (month > 12)
+        {
+            ++year;
+            month -= 3;
+        }
+        DateTime quarterDelivery = new DateTime(year, month, 29);
+        string symbol = $"{DefaultPair}_{quarterDelivery:yyMMdd}";
+
+        // Act.
+        using IDeferredQuery<PremiumInfo> query = _client.PrepareGetPremiumInfoOnSymbol(symbol);
+        PremiumInfo result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.Multiple(() =>
+        {
+            Assert.That(string.Equals(result.Symbol, symbol, StringComparison.InvariantCultureIgnoreCase));
+            Assert.That(result.Pair, Is.Not.Null.And.Not.Empty);
+            Assert.That(result.Timestamp, Is.Not.EqualTo(default(DateTime)));
+            Assert.That(result.InterestRate, Is.Null);
+            Assert.That(result.NextFundingTime, Is.Null);
+        });
+
+        if (AreQueryResultsLogged)
+        {
+            LogObject(result);
+        }
+    }
+
+
+    [TestCaseSource(nameof(PairCases)), Retry(DefaultTestRetryLimit)]
+    public async Task GetPremiumInfo_ReturnsValidList_WhenPairSpecified(string pair)
+    {
+        // Act.
+        using IDeferredQuery<List<PremiumInfo>> query = _client.PrepareGetPremiumInfoOnPair(pair);
+        List<PremiumInfo> result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.Not.Null.And.Count.Not.Zero);
+            Assert.That(result, Has.All.Matches<PremiumInfo>((p) =>
+                string.Equals(p.Pair, pair, StringComparison.InvariantCultureIgnoreCase)));
+        });
+
+        if (AreQueryResultsLogged)
+        {
+            LogObject(result);
+        }
+    }
+
+    [TestCaseSource(nameof(NullAndWhitespaceStringCases))]
+    public void GetPremiumInfo_ThrowsArgumentException_WhenEmptySymbolSpecified(string symbol)
+    {
+        // Arrange.
+        TestDelegate td = new TestDelegate(() =>
+            _client.PrepareGetPremiumInfoOnSymbol(symbol));
+
+        // Act & Assert.
+        Assert.That(td, Throws.InstanceOf<ArgumentException>());
     }
 
     #endregion
