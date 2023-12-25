@@ -1249,6 +1249,33 @@ public class FuturesUMMarketApiClientTests : ApiClientTestsBase
         Assert.That(td, Throws.InstanceOf<ArgumentOutOfRangeException>());
     }
 
+    // Get quaterly contract delivery price.
+    [TestCaseSource(nameof(SymbolCases)), Retry(DefaultTestRetryLimit)]
+    public async Task GetQuaterlyDeliveryInfo_ReturnsValidList_WhenPairSpecified(string pair)
+    {
+        // Act.
+        using IDeferredQuery<List<DeliveryInfo>> query = _client.PrepareGetQuaterlyDeliveryInfo(pair);
+        List<DeliveryInfo> result = await query.ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+
+        // Assert.
+        Assert.That(result, Is.Not.Null.And.Count.Not.Zero);
+
+        if (AreQueryResultsLogged)
+        {
+            LogCollection(result, 10);
+        }
+    }
+
+    [TestCaseSource(nameof(NullAndWhitespaceStringCases))]
+    public void GetQuaterlyDeliveryInfo_ThrowsArgumentException_WhenEmptyPairSpecified(string pair)
+    {
+        // Arrange.
+        TestDelegate td = new TestDelegate(() => _client.PrepareGetQuaterlyDeliveryInfo(pair));
+
+        // Act & Assert.
+        Assert.That(td, Throws.InstanceOf<ArgumentException>());
+    }
+
     // Get top trades accounts long/short ratio.
     [TestCaseSource(nameof(SymbolCases)), Retry(DefaultTestRetryLimit)]
     public async Task GetTopAccountLongShortRatio_ReturnsValidList_WhenSymbolSpecified(string symbol)
