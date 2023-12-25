@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text.Json;
 using Oakbranch.Binance.Models;
 using Oakbranch.Binance.Models.Filters.Exchange;
@@ -245,6 +246,57 @@ internal static class ParseUtility
         }
     }
 
+    /// <summary>
+    /// Reads all tokens from the specified reader located on the same depth as its current position.
+    /// <para>Ignores all objects and arrays embedded into the current depth.</para>
+    /// </summary>
+    public static List<KeyValuePair<string, object?>> ReadAllOnCurrentDepth(ref Utf8JsonReader reader)
+    {
+        List<KeyValuePair<string, object?>> objectProps = new List<KeyValuePair<string, object?>>(5);
+        int depth = reader.CurrentDepth;
+
+        while (reader.Read() && reader.TokenType != JsonTokenType.EndObject && reader.CurrentDepth == depth)
+        {
+            string propName = GetNonEmptyPropertyName(ref reader);
+
+            if (!reader.Read())
+            {
+                throw GenerateNoPropertyValueException(propName);
+            }
+
+            switch (reader.TokenType)
+            {
+                case JsonTokenType.String:
+                    objectProps.Add(new KeyValuePair<string, object?>(propName, reader.GetString()));
+                    break;
+                case JsonTokenType.Number:
+                    objectProps.Add(new KeyValuePair<string, object?>(propName, reader.GetInt64()));
+                    break;
+                case JsonTokenType.True:
+                    objectProps.Add(new KeyValuePair<string, object?>(propName, true));
+                    break;
+                case JsonTokenType.False:
+                    objectProps.Add(new KeyValuePair<string, object?>(propName, false));
+                    break;
+                case JsonTokenType.Null:
+                    objectProps.Add(new KeyValuePair<string, object?>(propName, null));
+                    break;
+                case JsonTokenType.StartObject:
+                    SkipTillObjectEnd(ref reader, depth);
+                    break;
+                case JsonTokenType.StartArray:
+                    SkipTillArrayEnd(ref reader, depth);
+                    break;
+                default:
+                    throw new JsonException(
+                        $"The token \"{reader.TokenType}\" is not a valid value token" +
+                        $"for the symbol filter property \"{propName}\".");
+            }
+        }
+
+        return objectProps;
+    }
+
     // Exceptions.
     public static JsonException GenerateMissingPropertyException(string objName, string propName)
     {
@@ -484,65 +536,19 @@ internal static class ParseUtility
     {
         EnsureObjectStartToken(ref reader);
 
-        List<KeyValuePair<string, object?>> objectProps = new List<KeyValuePair<string, object?>>(5);
-        string? type = null;
+        List<KeyValuePair<string, object?>> objectProps = ReadAllOnCurrentDepth(ref reader);
+        object? type = objectProps.Where((pair) => pair.Key == "filterType").FirstOrDefault().Value;
 
-        while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
-        {
-            string propName = GetNonEmptyPropertyName(ref reader);
-
-            if (!reader.Read())
-                throw GenerateNoPropertyValueException(propName);
-
-            if (propName == "filterType")
-            {
-                if (reader.TokenType != JsonTokenType.String)
-                {
-                    throw new JsonException(
-                        $"A symbol filter cannot be parsed: " +
-                        $"the type property has an invalid value token ({reader.TokenType}).");
-                }
-
-                type = reader.GetString();
-                if (string.IsNullOrWhiteSpace(type))
-                {
-                    throw new JsonException(
-                        $"A symbol filter cannot be parsed: the value of the type property is null.");
-                }
-
-                continue;
-            }
-
-            switch (reader.TokenType)
-            {
-                case JsonTokenType.String:
-                    objectProps.Add(new KeyValuePair<string, object?>(propName, reader.GetString()));
-                    break;
-                case JsonTokenType.Number:
-                    objectProps.Add(new KeyValuePair<string, object?>(propName, reader.GetInt64()));
-                    break;
-                case JsonTokenType.True:
-                    objectProps.Add(new KeyValuePair<string, object?>(propName, true));
-                    break;
-                case JsonTokenType.False:
-                    objectProps.Add(new KeyValuePair<string, object?>(propName, false));
-                    break;
-                case JsonTokenType.Null:
-                    objectProps.Add(new KeyValuePair<string, object?>(propName, null));
-                    break;
-                default:
-                    throw new JsonException(
-                        $"The token \"{reader.TokenType}\" is not a valid value token" +
-                        $"for the symbol filter property \"{propName}\".");
-            }
-        }
-
-        if (type == null)
+        if (type is null)
         {
             throw new JsonException("A symbol filter cannot be parsed because the filter type property is missing.");
         }
+        else if (type is not string)
+        {
+            throw new JsonException($"The type property of the symbol filter has an invalid type \"{type.GetType().Name}\".");
+        }
 
-        return type switch
+        return (string)type switch
         {
             "PRICE_FILTER" => ParseAbsolutePriceFilter(objectProps),
             "PERCENT_PRICE" => ParseRelativePriceFilter(objectProps),

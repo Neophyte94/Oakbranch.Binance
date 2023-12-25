@@ -13,6 +13,8 @@ using Oakbranch.Binance.Models.Filters.Exchange;
 using Oakbranch.Binance.Models.Filters.Symbol;
 using Oakbranch.Binance.Core;
 using Oakbranch.Binance.Abstractions;
+using System.Linq;
+using Oakbranch.Binance.Exceptions;
 
 namespace Oakbranch.Binance.Clients;
 
@@ -88,6 +90,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
     private const string GetSymbolPriceTickerEndpoint = "/fapi/v1/ticker/price";
     private const string GetSymbolOrderBookTickerEndpoint = "/fapi/v1/ticker/bookTicker";
     private const string GetCurrentOpenInterestEndpoint = "/fapi/v1/openInterest";
+    private const string GetQuaterlySettlementPriceEndpoint = "/futures/data/delivery-price";
     private const string GetOpenInterestHistoryEndpoint = "/futures/data/openInterestHist";
     private const string GetTopAccountLSRatioEndpoint = "/futures/data/topLongShortAccountRatio";
     private const string GetTopPositionLSRatioEndpoint = "/futures/data/topLongShortPositionRatio";
@@ -1491,7 +1494,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
         DateTime? endTime = null,
         int? limit = null)
     {
-        ThrowIfDisposed();
+        ThrowIfNotRunning();
         symbol.ThrowIfEmptyOrWhitespace();
         limit.ThrowIfInvalidLimit(MaxFundingHistoryQueryLimit);
         ExceptionUtility.ThrowIfInvalidPeriod(startTime, endTime);
@@ -1631,7 +1634,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
     /// </summary>
     public IDeferredQuery<List<FundingRateConfig>> PrepareGetFundingRateInfo()
     {
-        ThrowIfDisposed();
+        ThrowIfNotRunning();
 
         QueryWeight[] weights = new QueryWeight[]
         {
@@ -1832,7 +1835,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
         DateTime? endTime = null,
         int? limit = null)
     {
-        ThrowIfDisposed();
+        ThrowIfNotRunning();
         symbol.ThrowIfNullOrWhitespace();
         limit.ThrowIfInvalidLimit(MaxMarketStatsQueryLimit);
         ExceptionUtility.ThrowIfInvalidPeriod(startTime, endTime);
@@ -1944,6 +1947,131 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
         return resultList;
     }
 
+    // Get quaterly contract delivery price.
+    /// <summary>
+    /// Prepare a query for delivery time and price of all quaterly contracts for the specified pair.
+    /// </summary>
+    /// <param name="pair">The pair to get contract delivery info for.</param>
+    public IDeferredQuery<List<DeliveryInfo>> PrepareGetQuaterlyDeliveryInfo(string pair)
+    {
+        ThrowIfNotRunning();
+        pair.ThrowIfNullOrWhitespace();
+
+        QueryBuilder qs = new QueryBuilder(15);
+        qs.AddParameter("pair", CommonUtility.NormalizeSymbol(pair));
+
+        return new DeferredQuery<List<DeliveryInfo>>(
+            query: new QueryParams(HttpMethod.GET, RESTEndpoint.Url, GetQuaterlySettlementPriceEndpoint, qs, false),
+            executeHandler: ExecuteQueryAsync,
+            parseHandler: ParseDeliveryInfoList,
+            headersToLimitsMap: HeadersToLimitsMap);
+    }
+
+    /// <summary>
+    /// Gets delivery time and price of all quaterly contracts for the specified pair, asynchronously.
+    /// </summary>
+    public Task<List<DeliveryInfo>> GetQuaterlyDeliveryInfoAsync(string pair, CancellationToken ct)
+    {
+        using (var query = PrepareGetQuaterlyDeliveryInfo(pair))
+        {
+            return query.ExecuteAsync(ct);
+        }
+    }
+
+    private List<DeliveryInfo> ParseDeliveryInfoList(byte[] data, object? parseArgs = null)
+    {
+        Utf8JsonReader reader = new Utf8JsonReader(data, ParseUtility.ReaderOptions);
+
+        if (!reader.Read())
+        {
+            throw new JsonException("An unexpected end of data was encountered.");
+        }
+
+        List<DeliveryInfo> resultList = new List<DeliveryInfo>();
+
+        if (reader.TokenType == JsonTokenType.StartObject)
+        {
+            resultList.Add(ParseDeliveryInfo(ref reader));
+        }
+        else if (reader.TokenType == JsonTokenType.StartArray)
+        {
+            while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+            {
+                resultList.Add(ParseDeliveryInfo(ref reader));
+            }
+        }
+        else
+        {
+            throw new JsonException($"An unexpected token was encountered: {reader.TokenType}.");
+        }
+
+        // Return the result.
+        return resultList;
+    }
+
+    private DeliveryInfo ParseDeliveryInfo(ref Utf8JsonReader reader)
+    {
+        ParseSchemaValidator validator = new ParseSchemaValidator(2);
+        decimal price = -1.0m;
+        DateTime time = DateTime.MinValue;
+
+        ParseUtility.EnsureObjectStartToken(ref reader);
+
+        while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+        {
+            string propName = ParseUtility.GetNonEmptyPropertyName(ref reader);
+
+            if (!reader.Read())
+            {
+                throw ParseUtility.GenerateNoPropertyValueException(propName);
+            }
+
+            switch (propName)
+            {
+                case "deliveryTime":
+                    time = CommonUtility.ConvertToDateTime(reader.GetInt64());
+                    validator.RegisterProperty(0);
+                    break;
+                case "deliveryPrice":
+                    price = reader.GetDecimal();
+                    validator.RegisterProperty(1);
+                    break;
+                case "status":
+                    if (!string.Equals(reader.GetString(), "error", StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new JsonException(
+                            $"An unknown property \"{propName}\" with the value \"{reader.GetString()}\" was encountered.");
+                    }
+
+                    List<KeyValuePair<string, object?>> errorContent = ParseUtility.ReadAllOnCurrentDepth(ref reader);
+                    string? errorData = errorContent
+                        .Where((p) => string.Equals(p.Key, "errorData", StringComparison.OrdinalIgnoreCase))
+                        .FirstOrDefault()
+                        .Value as string;
+
+                    throw new QueryException(FailureReason.InvalidInput, errorData);
+                default:
+                    throw ParseUtility.GenerateUnknownPropertyException(propName);
+            }
+        }
+
+        // Check whether all the essential properties were provided.
+        if (!validator.IsComplete())
+        {
+            const string objName = "delivery info";
+            int missingPropNum = validator.GetMissingPropertyNumber();
+            throw missingPropNum switch
+            {
+                0 => ParseUtility.GenerateMissingPropertyException(objName, "time"),
+                1 => ParseUtility.GenerateMissingPropertyException(objName, "price"),
+                _ => ParseUtility.GenerateMissingPropertyException(objName, $"unknown {missingPropNum}"),
+            };
+        }
+
+        // Add the item to the results list.
+        return new(time, price);
+    }
+
     // Get top trader accounts long/short ratio.
     /// <summary>
     /// Prepares a query for the history of the long/short ratio of top trader accounts.
@@ -1964,7 +2092,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
         DateTime? endTime = null,
         int? limit = null)
     {
-        ThrowIfDisposed();
+        ThrowIfNotRunning();
         symbol.ThrowIfNullOrWhitespace();
         limit.ThrowIfInvalidLimit(MaxMarketStatsQueryLimit);
         ExceptionUtility.ThrowIfInvalidPeriod(startTime, endTime);
@@ -2026,7 +2154,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
         DateTime? endTime = null,
         int? limit = null)
     {
-        ThrowIfDisposed();
+        ThrowIfNotRunning();
         symbol.ThrowIfNullOrWhitespace();
         limit.ThrowIfInvalidLimit(MaxMarketStatsQueryLimit);
         ExceptionUtility.ThrowIfInvalidPeriod(startTime, endTime);
@@ -2088,7 +2216,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
         DateTime? endTime = null,
         int? limit = null)
     {
-        ThrowIfDisposed();
+        ThrowIfNotRunning();
         symbol.ThrowIfNullOrWhitespace();
         limit.ThrowIfInvalidLimit(MaxMarketStatsQueryLimit);
         ExceptionUtility.ThrowIfInvalidPeriod(startTime, endTime);
@@ -2150,7 +2278,7 @@ public class FuturesUMMarketApiClient : FuturesUMClientBase
         DateTime? endTime = null,
         int? limit = null)
     {
-        ThrowIfDisposed();
+        ThrowIfNotRunning();
         symbol.ThrowIfNullOrWhitespace();
         limit.ThrowIfInvalidLimit(MaxMarketStatsQueryLimit);
         ExceptionUtility.ThrowIfInvalidPeriod(startTime, endTime);

@@ -22,7 +22,7 @@ namespace Oakbranch.Binance.Exceptions
                 }
                 else
                 {
-                    return s + "(" + Reason + ")";
+                    return s + " (" + Reason + ")";
                 }
             }
         }
